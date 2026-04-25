@@ -23,7 +23,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-[#0a0a0a] text-white antialiased">
         <Web3Provider>
           <Sidebar />
-          <main className="ml-[220px] min-h-screen">{children}</main>
+          <main className="ml-[300px] min-h-screen">{children}</main>
         </Web3Provider>
       </body>
     </html>
