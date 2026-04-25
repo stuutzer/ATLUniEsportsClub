@@ -113,7 +113,7 @@ export default function ProfilePage() {
 
   return (
     <div className="p-8 max-w-full">
-      <h1 className="text-xl font-semibold text-white mb-7">Profile</h1>
+      <h1 className="text-2xl font-semibold text-white mb-7">Profile</h1>
 
       {/* ── Identity Card ─────────────────────────────────────────────────── */}
       <div className="rounded-xl bg-[#141414] border border-white/[0.07] p-6 mb-4 flex items-center gap-5">

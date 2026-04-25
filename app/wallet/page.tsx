@@ -113,7 +113,7 @@ export default function WalletPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-8 relative">
+    <div className="p-8 relative">
       
       {/* Custom Install Wallet Modal */}
       {showInstallModal && (
@@ -150,7 +150,7 @@ export default function WalletPage() {
       {/* Header navigation section */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Agent Wallet</h1>
+          <h1 className="text-2xl font-bold text-white mb-1">Wallet</h1>
           <p className="text-white/40 text-sm">Manage funds and view AI spending history</p>
         </div>
         
