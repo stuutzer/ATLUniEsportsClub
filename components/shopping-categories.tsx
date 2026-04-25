@@ -1,35 +1,52 @@
-// components/shopping-categories.tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShoppingCart, Home, Plane, Monitor, Gem, Shirt } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ShoppingCart, Home, Plane, Power, Gem, Shirt } from "lucide-react";
+import { useIdentity } from "@/context/IdentityContext";
 
 const categories = [
-  { id: "groceries", label: "Groceries", icon: ShoppingCart },
-  { id: "home", label: "Home & Furniture", icon: Home },
-  { id: "travel", label: "Travel & Leisure", icon: Plane },
-  { id: "electronics", label: "Electronics", icon: Monitor },
-  { id: "jewellery", label: "Jewellery", icon: Gem },
-  { id: "fashion", label: "Clothes & Fashion", icon: Shirt },
+  { id: "groceries", label: "Groceries", icon: ShoppingCart, prompt: "Show me groceries options" },
+  { id: "home", label: "Home & Furniture", icon: Home, prompt: "Browse Home & Furniture items" },
+  { id: "travel", label: "Travel & Leisure", icon: Plane, prompt: "Find Travel & Leisure deals" },
+  { id: "electronics", label: "Electronics", icon: Power, prompt: "Shop Electronics" },
+  { id: "jewellery", label: "Jewellery", icon: Gem, prompt: "Browse Jewellery" },
+  { id: "fashion", label: "Clothes & Fashion", icon: Shirt, prompt: "Explore Clothes & Fashion" },
 ];
 
-interface Props {
-  onSelect?: (label: string) => void;
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
 }
 
-export function ShoppingCategories({ onSelect }: Props) {
+export function ShoppingCategories() {
   const [visible, setVisible] = useState(false);
+  const router = useRouter();
+  const { displayName } = useIdentity();
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80);
     return () => clearTimeout(t);
   }, []);
 
+  const handleCategory = (prompt: string) => {
+    router.push(`/agent?q=${encodeURIComponent(prompt)}`);
+  };
+
+  const name = displayName
+    ? displayName.startsWith("0x")
+      ? `${displayName.slice(0, 6)}…`
+      : displayName.split(".")[0]
+    : "there";
+
   return (
-    <div className="flex flex-col items-center px-4 py-8 w-full">
-      <div className="text-center mb-8">
+    <div className="flex flex-col items-center w-full">
+      {/* Greeting */}
+      <div className="text-center mb-10">
         <p
-          className="text-white/40 text-xs tracking-wide font-light mb-1.5"
+          className="text-white/45 text-[13px] italic font-light mb-2"
           style={{
             opacity: visible ? 1 : 0,
             transform: visible ? "translateY(0)" : "translateY(10px)",
@@ -37,10 +54,10 @@ export function ShoppingCategories({ onSelect }: Props) {
             transitionDelay: "60ms",
           }}
         >
-          Good morning, Justin.
+          {getGreeting()}, {name}.
         </p>
-        <p
-          className="text-white text-xl font-medium tracking-tight"
+        <h1
+          className="text-white text-[28px] md:text-[32px] font-semibold tracking-tight"
           style={{
             opacity: visible ? 1 : 0,
             transform: visible ? "translateY(0)" : "translateY(12px)",
@@ -48,43 +65,32 @@ export function ShoppingCategories({ onSelect }: Props) {
             transitionDelay: "130ms",
           }}
         >
-          What's on our shopping list today?
-        </p>
+          What&rsquo;s on our shopping list today?
+        </h1>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 w-[480px] max-w-full mx-auto">
+      {/* 2 × 3 grid of large tiles */}
+      <div className="grid grid-cols-2 gap-4 w-full max-w-2xl">
         {categories.map((cat, i) => {
           const Icon = cat.icon;
           return (
             <button
               key={cat.id}
-              onClick={() => onSelect?.(cat.label)}
-              className="group relative overflow-hidden rounded-2xl bg-[#1c1c1c] border border-white/5 p-5 flex items-center gap-3.5 text-left hover:border-purple-500/30 hover:bg-[#212121] active:scale-[0.97] w-full"
+              onClick={() => handleCategory(cat.prompt)}
+              className="group relative overflow-hidden rounded-2xl bg-[#262626] border border-white/[0.04] py-9 px-6 flex items-center justify-center gap-3 text-center hover:bg-[#2c2c2c] hover:border-white/10 active:scale-[0.985] transition-[background,border-color,transform] duration-200"
               style={{
                 opacity: visible ? 1 : 0,
                 transform: visible ? "translateY(0) scale(1)" : "translateY(22px) scale(0.96)",
-                transition: [
-                  `opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1) ${200 + i * 80}ms`,
-                  `transform 0.65s cubic-bezier(0.22, 1, 0.36, 1) ${200 + i * 80}ms`,
-                  "background 0.2s ease",
-                  "border-color 0.25s ease",
-                ].join(", "),
+                transitionProperty: "opacity, transform, background-color, border-color",
+                transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
+                transitionDuration: "0.55s",
+                transitionDelay: `${200 + i * 70}ms`,
               }}
             >
-              <div className="w-10 h-10 min-w-[40px] rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors duration-300">
-                <Icon className="w-[19px] h-[19px] text-purple-400 transition-transform duration-300 group-hover:scale-110" />
-              </div>
-              <span className="text-white/85 text-sm font-medium leading-snug">{cat.label}</span>
-              <div
-                className="pointer-events-none absolute -right-5 -bottom-5 w-20 h-20 rounded-full bg-purple-600/10 blur-2xl"
-                style={{ opacity: 0, transition: "opacity 0.35s ease" }}
-                ref={(el) => {
-                  if (!el) return;
-                  const btn = el.closest("button")!;
-                  btn.addEventListener("mouseenter", () => (el.style.opacity = "1"));
-                  btn.addEventListener("mouseleave", () => (el.style.opacity = "0"));
-                }}
-              />
+              <Icon className="w-[18px] h-[18px] text-white/85 flex-shrink-0" />
+              <span className="text-white/90 text-[15px] font-medium">
+                {cat.label}
+              </span>
             </button>
           );
         })}

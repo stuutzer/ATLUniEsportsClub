@@ -5,6 +5,8 @@ import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseUnits } from "viem";
 import { Bot } from "lucide-react";
 import { useAgent } from "@/context/AgentContext";
+import { PurchaseModal } from "@/components/purchase-modal";
+import type { Product } from "@/lib/mockData";
 
 // Standard ERC20 ABI for the transfer function
 const erc20Abi = [
@@ -26,31 +28,30 @@ const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
 // Dummy Merchant Address (Replace with any wallet address you control if you want to see the funds arrive)
 const DUMMY_MERCHANT_ADDRESS = "0x000000000000000000000000000000000000dEaD"; 
 
-// Define a simple product type based on your mockData
-interface ProductProp {
-  name: string;
-  price: number;
-}
-
-export function BuyItemButton({ product }: { product: ProductProp }) {
+export function BuyItemButton({ product }: { product: Product }) {
   const { executeAgentPurchase } = useAgent();
   const [isPurchased, setIsPurchased] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   // Wagmi hooks for writing to the blockchain
   const { writeContract, data: hash, isPending: isWalletPending, error } = useWriteContract();
-  
+
   // Wagmi hook to wait for the block to be mined
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
   const handleBuy = () => {
-    // 1. Trigger MetaMask to send the transaction
+    setModalOpen(true);
+  };
+
+  const handleConfirmPayment = () => {
+    setModalOpen(false);
     writeContract({
       address: DNZD_CONTRACT_ADDRESS,
       abi: erc20Abi,
       functionName: 'transfer',
       args: [
-        DUMMY_MERCHANT_ADDRESS, 
-        parseUnits(product.price.toString(), 6) // Convert price to 6 decimals for dNZD
+        DUMMY_MERCHANT_ADDRESS,
+        parseUnits(product.price.toString(), 6)
       ]
     });
   };
@@ -71,13 +72,22 @@ export function BuyItemButton({ product }: { product: ProductProp }) {
   if (isConfirmed) buttonText = "Purchase Complete!";
 
   return (
-    <button 
-      onClick={handleBuy}
-      disabled={isWalletPending || isConfirming || isConfirmed}
-      className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-xl disabled:opacity-50 transition-all text-sm font-medium mt-4 shadow-lg shadow-purple-900/20"
-    >
-      <Bot className="w-4 h-4" />
-      {buttonText}
-    </button>
+    <>
+      <button
+        onClick={handleBuy}
+        disabled={isWalletPending || isConfirming || isConfirmed}
+        className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-xl disabled:opacity-50 transition-all text-sm font-medium mt-4 shadow-lg shadow-purple-900/20"
+      >
+        <Bot className="w-4 h-4" />
+        {buttonText}
+      </button>
+      {modalOpen && (
+        <PurchaseModal
+          product={product}
+          onClose={() => setModalOpen(false)}
+          onConfirm={handleConfirmPayment}
+        />
+      )}
+    </>
   );
 }

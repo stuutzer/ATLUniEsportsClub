@@ -18,11 +18,12 @@ import { cn } from "@/lib/utils";
 interface PurchaseModalProps {
   product: Product;
   onClose: () => void;
+  onConfirm?: () => void;
 }
 
 const STEP_DELAYS = [800, 1000, 1200, 800];
 
-export function PurchaseModal({ product, onClose }: PurchaseModalProps) {
+export function PurchaseModal({ product, onClose, onConfirm }: PurchaseModalProps) {
   const { credential } = useIdentity();
   const [step, setStep] = useState(1);
   const [cardVisible, setCardVisible] = useState(false);
@@ -102,6 +103,7 @@ export function PurchaseModal({ product, onClose }: PurchaseModalProps) {
               cryptoTotal={cryptoTotal}
               gasUsd={gasUsd}
               onClose={onClose}
+              onConfirm={onConfirm}
             />
           )}
         </div>
@@ -268,12 +270,14 @@ function StepPayment({
   cryptoTotal,
   gasUsd,
   onClose,
+  onConfirm,
 }: {
   product: Product;
   preferredToken: string;
   cryptoTotal: string;
   gasUsd: number;
   onClose: () => void;
+  onConfirm?: () => void;
 }) {
   return (
     <div className="flex flex-col gap-5 flex-1">
@@ -309,10 +313,9 @@ function StepPayment({
           Cancel
         </button>
         <button
-          onClick={onClose}
+          onClick={() => (onConfirm ? onConfirm() : onClose())}
           className="flex-1 py-2.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]"
         >
-          {/* TODO: trigger MetaMask transaction via wagmi sendTransaction */}
           Confirm Payment
         </button>
       </div>
