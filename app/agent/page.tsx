@@ -1,4 +1,5 @@
 import { SearchBar } from "@/components/search-bar";
+import { IdentityBanner } from "@/components/identity-banner";
 import { Zap } from "lucide-react";
 
 // TODO: populate with AI agent search results
@@ -8,8 +9,11 @@ export default function AgentPage() {
   return (
     <div className="flex flex-col min-h-screen pb-36">
 
+      {/* Identity status banner */}
+      <IdentityBanner />
+
       {/* Hero */}
-      <div className="flex flex-col items-center text-center pt-20 pb-14 px-8">
+      <div className="flex flex-col items-center text-center pt-14 pb-14 px-8">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-600/10 border border-purple-500/20 text-purple-400 text-xs font-medium mb-7 tracking-wide">
           <Zap className="w-3 h-3" />
           AI-Powered Web3 Shopping
@@ -32,7 +36,7 @@ export default function AgentPage() {
 
       {/* Results grid */}
       <div className="px-10">
-        <p className="text-xs text-white/25 uppercase tracking-widest mb-4 pl-1">
+        <p className="text-xs text-white/20 uppercase tracking-widest mb-4 pl-1">
           Agent Results
         </p>
         <div className="grid grid-cols-3 gap-3 max-w-[960px] mx-auto">
