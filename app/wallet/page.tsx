@@ -6,8 +6,11 @@ import { injected } from "wagmi/connectors";
 import { baseSepolia } from "wagmi/chains";
 import { Wallet, LogOut, CheckCircle, Clock, ExternalLink, Bot, AlertCircle, Download, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { pdf } from "@react-pdf/renderer";
 import { useAgent } from "@/context/AgentContext";
 import { useIdentity } from "@/context/IdentityContext";
+import { InvoicePDF } from "@/components/invoice-pdf";
+import { generateInvoiceData, buildFilename } from "@/lib/invoiceData";
 
 // The dNZD contract address on Base Sepolia
 const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
@@ -28,27 +31,22 @@ export default function WalletPage() {
   async function handleDownloadInvoice(tx: ReturnType<typeof useAgent>["transactions"][0]) {
     setDownloadingTx(tx.id);
     try {
-      const cleanAmount = tx.amount.replace(/[+\-,\s]/g, "");
-      const amountNum = parseFloat(cleanAmount) || 0;
-      const fee = 0.001;
-      const { downloadInvoice } = await import("@/components/invoice-pdf");
-      await downloadInvoice(
-        {
-          invoiceNumber: tx.id.replace(/[^a-zA-Z0-9]/g, "").toUpperCase(),
-          agentName: "agentcart.eth",
-          userName: displayName ?? "Unknown",
-          merchantName: "AgentCart Marketplace",
-          itemName: tx.item,
-          amount: cleanAmount,
-          token: tx.token,
-          networkFee: fee.toFixed(3),
-          total: (amountNum + fee).toFixed(3),
-          txHash: tx.hash,
-          timestamp: tx.date,
-          status: tx.status === "Completed" ? "CONFIRMED" : "PENDING",
-        },
-        tx.id
-      );
+      const invoiceData = generateInvoiceData({
+        item: tx.item,
+        hash: tx.hash,
+        date: tx.date,
+        amount: tx.amount,
+        token: tx.token,
+        status: tx.status,
+        userName: displayName ?? undefined,
+      });
+      const blob = await pdf(<InvoicePDF data={invoiceData} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = buildFilename(invoiceData);
+      link.click();
+      URL.revokeObjectURL(url);
     } finally {
       setDownloadingTx(null);
     }

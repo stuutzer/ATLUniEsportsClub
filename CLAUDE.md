@@ -1,25 +1,289 @@
-Add auto-generated PDF invoices to AgentCart using @react-pdf/renderer.
+Add a professional PDF invoice generator to AgentCart using @react-pdf/renderer.
 
-1. Install: npm install @react-pdf/renderer
+## Setup
+Install the dependency:
+npm install @react-pdf/renderer
 
-2. Create /components/invoice-pdf.tsx:
-   - A React PDF document component
-   - Dark themed invoice (or white for print-friendliness)
-   - Shows: AgentCart logo text, invoice number (random), 
-     agent ENS name, user ENS name, merchant name,
-     item name, amount in crypto, network fee, total,
-     transaction hash, timestamp, "CONFIRMED" status stamp
-   - Footer: "Generated autonomously by AgentCart AI Agent"
+---
 
-3. In /components/order-tracking-modal.tsx:
-   - After status shows "delivered" or any completed state
-   - Add "Download Invoice" button in modal footer
-   - On click: use pdf() from @react-pdf/renderer to 
-     generate and trigger browser download of the PDF
-   - Filename: "agentcart-invoice-[txn_id].pdf"
+## Invoice Data Structure
 
-4. In /app/wallet/page.tsx transaction cards:
-   - Add a small download icon on each transaction row
-   - On click: generates and downloads invoice for that transaction
+Create /lib/invoiceData.ts:
 
-App must run with zero errors on npm run dev.
+```typescript
+export interface InvoiceData {
+  // Invoice Meta
+  invoiceNumber: string        // e.g. "INV-2025-0042"
+  issuedDate: string           // e.g. "April 25, 2025"
+  dueDate: string              // e.g. "May 25, 2025"
+  status: "PAID" | "PENDING"
+
+  // Agent Identity
+  agentName: string            // "agentcart.eth"
+  agentWallet: string          // "0x1a2b...3c4d"
+
+  // User (Bill To)
+  userName: string             // "Justin Tu."
+  userENS: string              // "justin.eth"
+  userWallet: string           // "0xAbCd...EfGh"
+  userLocation: string         // "Auckland, New Zealand"
+
+  // Merchant (Bill From)
+  merchantName: string         // "Sony Store"
+  merchantWebsite: string      // "sonystore.com"
+  merchantWallet: string       // "0xDead...Beef"
+
+  // Line Items
+  items: InvoiceItem[]
+
+  // Payment
+  subtotal: string             // "0.240 AVAX"
+  networkFee: string           // "0.001 AVAX"
+  total: string                // "0.241 AVAX"
+  totalUSD: string             // "≈ $8.42 USD"
+  token: string                // "AVAX"
+  network: string              // "Avalanche C-Chain"
+  txHash: string               // "0x1234...5678"
+  blockNumber: string          // "12845673"
+}
+
+export interface InvoiceItem {
+  name: string                 // "Sony WH-1000XM5 Headphones"
+  description: string          // "Noise cancelling wireless headphones"
+  quantity: number             // 1
+  unitPrice: string            // "0.240 AVAX"
+  total: string                // "0.240 AVAX"
+}
+```
+
+Create a generateInvoiceData() function in /lib/invoiceData.ts that takes
+a transaction object and fills in any missing fields with realistic mock data:
+
+```typescript
+export function generateInvoiceData(txn: Partial<Transaction>): InvoiceData {
+  return {
+    invoiceNumber: `INV-2025-${String(Math.floor(Math.random() * 9000) + 1000)}`,
+    issuedDate: txn.date || "April 25, 2025",
+    dueDate: "Paid on Receipt",
+    status: "PAID",
+
+    agentName: "agentcart.eth",
+    agentWallet: "0x1A2b3C4d5E6f7A8b9C0d1E2f3A4b5C6d7E8f9A0b",
+
+    userName: txn.userName || "Justin Tu.",
+    userENS: txn.userENS || "justin.eth",
+    userWallet: txn.userWallet || "0xAbCd1234EfGh5678IjKl9012MnOp3456QrSt7890",
+    userLocation: "Auckland, New Zealand",
+
+    merchantName: txn.vendor || "Sony Store",
+    merchantWebsite: txn.vendorWebsite || "sonystore.com",
+    merchantWallet: "0xDEaD000000000000000042069000bEEF00000000",
+
+    items: [{
+      name: txn.productName || "Product",
+      description: txn.productDescription || "Purchased autonomously by AgentCart AI Agent",
+      quantity: 1,
+      unitPrice: `${txn.amount || "0.240"} ${txn.token || "AVAX"}`,
+      total: `${txn.amount || "0.240"} ${txn.token || "AVAX"}`
+    }],
+
+    subtotal: `${txn.amount || "0.240"} ${txn.token || "AVAX"}`,
+    networkFee: "0.001 AVAX",
+    total: `${(parseFloat(txn.amount || "0.240") + 0.001).toFixed(3)} ${txn.token || "AVAX"}`,
+    totalUSD: "≈ $8.42 USD",
+    token: txn.token || "AVAX",
+    network: "Avalanche C-Chain (Fuji Testnet)",
+    txHash: txn.txHash || "0x3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a",
+    blockNumber: "12845673"
+  }
+}
+```
+
+---
+
+## Invoice PDF Component
+
+Create /components/invoice-pdf.tsx using @react-pdf/renderer.
+
+Use only these imports:
+```typescript
+import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
+```
+
+### Page Setup
+- Size: A4
+- Background: white (#FFFFFF)
+- Padding: 48px all sides
+- Font: Helvetica (built-in, no external font needed)
+
+### Layout (top to bottom):
+
+---
+
+### Section 1: Header Row
+Two columns, space-between:
+
+LEFT column:
+- Large bold text: "INVOICE" — 28px, color #0a0a0a, letter-spacing 4px
+- Below it: small text "Generated by AgentCart AI Agent" — 9px, color #888888
+- Below it: pill-shaped badge row:
+  - Dark rounded rectangle (#0a0a0a), white text "agentcart.eth" — 9px
+  - Small gap
+  - Light gray rounded rectangle (#f0f0f0), dark text "Avalanche C-Chain" — 9px
+
+RIGHT column (right-aligned):
+- Invoice number: "INV-2025-0042" — 11px bold, color #0a0a0a
+- Issued: "April 25, 2025" — 10px, color #555555
+- Status badge: rounded rectangle
+  - PAID → green background (#dcfce7), green text (#16a34a): "● PAID"
+  - PENDING → yellow background (#fef9c3), yellow text (#ca8a04): "● PENDING"
+
+Thick horizontal divider line below header: 2px, color #0a0a0a, full width
+
+---
+
+### Section 2: Billing Info Row
+Three equal columns:
+
+COLUMN 1 — "BILLED TO"
+- Label: "BILLED TO" — 8px, color #888888, uppercase, letter-spacing 1.5px
+- Name: userName — 12px bold, color #0a0a0a
+- ENS name — 10px, color #7c3aed (purple)
+- Wallet address (truncated to first 6 + last 4 chars) — 9px, color #555555, 
+  font: Helvetica (monospace feel)
+- Location — 10px, color #555555
+
+COLUMN 2 — "BILLED FROM"
+- Label: "BILLED FROM" — 8px, color #888888, uppercase, letter-spacing 1.5px
+- Merchant name — 12px bold, color #0a0a0a
+- Website — 10px, color #555555
+- Wallet address (truncated) — 9px, color #555555
+
+COLUMN 3 — "PAYMENT METHOD"
+- Label: "PAYMENT METHOD" — 8px, color #888888, uppercase, letter-spacing 1.5px
+- Network — 10px bold, color #0a0a0a
+- Token — 10px, color #555555
+- "Processed autonomously" — 9px italic, color #888888
+- "by AI Agent" — 9px italic, color #888888
+
+Thin divider below: 1px, color #e5e5e5
+
+---
+
+### Section 3: Line Items Table
+
+Table header row — background #f8f8f8, padding 8px 12px:
+- Columns: ITEM (50%) | DESCRIPTION (25%) | QTY (10%) | UNIT PRICE (15%) | TOTAL (15%)
+- All headers: 8px, color #888888, uppercase, letter-spacing 1px
+
+For each item in items array:
+- Row with padding 12px, border-bottom 1px #f0f0f0
+- Alternating row background: white / #fafafa
+- Item name: 11px bold, color #0a0a0a
+- Description: 10px, color #666666
+- Qty: 10px, centered
+- Unit price: 10px, right-aligned, color #0a0a0a
+- Total: 10px bold, right-aligned, color #0a0a0a
+
+---
+
+### Section 4: Totals Block
+Right-aligned block (~40% width), pushed to right:
+
+Rows (label left, value right):
+- "Subtotal" — 10px, color #555555 | value 10px, color #0a0a0a
+- "Network Fee (Gas)" — 10px, color #555555 | value 10px, color #0a0a0a
+- Thin divider line
+- "TOTAL" — 12px bold, color #0a0a0a | value 12px bold, color #0a0a0a
+- USD equivalent — 10px, color #888888 italic | value 10px, color #888888 italic
+
+---
+
+### Section 5: Transaction Details Box
+Full width box — background #f8f8f8, border-left 3px solid #7c3aed (purple),
+border-radius 4px, padding 16px
+
+- Label: "BLOCKCHAIN TRANSACTION DETAILS" — 8px, color #888888, 
+  uppercase, letter-spacing 1.5px
+- Two column layout:
+  LEFT:
+  - "Transaction Hash" label — 8px color #888888
+  - Full txHash value — 9px, color #0a0a0a, font Helvetica
+  - "Block Number" label — 8px color #888888
+  - blockNumber value — 9px, color #0a0a0a
+  RIGHT:
+  - "Network" label — 8px color #888888
+  - network value — 9px, color #0a0a0a
+  - "Agent Identity" label — 8px color #888888
+  - agentName value — 9px, color #7c3aed
+
+---
+
+### Section 6: Footer
+Thin divider line above footer: 1px #e5e5e5
+
+Two columns:
+LEFT:
+- "AgentCart" — 10px bold, color #0a0a0a
+- "AI-Powered Autonomous Shopping" — 8px, color #888888
+- "agentcart.eth" — 8px, color #7c3aed
+
+RIGHT (right-aligned):
+- "This invoice was generated autonomously" — 8px, color #888888 italic
+- "by an AI agent on behalf of the user." — 8px, color #888888 italic
+- "No human interaction required." — 8px, color #7c3aed italic
+
+---
+
+## Download Button Integration
+
+### In /components/order-tracking-modal.tsx:
+Add to modal footer, next to "View on Explorer":
+
+```typescript
+import { pdf } from '@react-pdf/renderer'
+import { InvoicePDF } from './invoice-pdf'
+import { generateInvoiceData } from '@/lib/invoiceData'
+
+const handleDownloadInvoice = async () => {
+  const invoiceData = generateInvoiceData(selectedTransaction)
+  const blob = await pdf(<InvoicePDF data={invoiceData} />).toBlob()
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `agentcart-invoice-${invoiceData.invoiceNumber}.pdf`
+  link.click()
+  URL.revokeObjectURL(url)
+}
+```
+
+Button styling:
+- Label: "Download Invoice ↓"
+- Style: outlined button, purple border (#7c3aed), purple text
+- On hover: purple background, white text
+- Place next to "View on Explorer →" in modal footer
+
+### In /app/profile/page.tsx:
+On each transaction card, add a small download icon (Download from lucide-react):
+- Positioned top-right of the card
+- Gray color, on hover turns purple
+- On click: generates and downloads invoice for that transaction
+- stopPropagation() so it doesn't open the tracking modal
+
+---
+
+## Files to Create/Modify
+- /lib/invoiceData.ts — data structure + generator function (new)
+- /components/invoice-pdf.tsx — PDF document component (new)
+- /components/order-tracking-modal.tsx — add download button
+- /app/profile/page.tsx — add download icon on transaction cards
+
+## Notes
+- @react-pdf/renderer only runs client-side — add 'use client' to invoice-pdf.tsx
+- Do not use next/dynamic for the PDF component — import directly in 
+  client components only
+- All wallet addresses truncated to: first 6 chars + "..." + last 4 chars
+- Purple accent (#7c3aed) used consistently as the AgentCart brand color
+- Invoice should look like a real fintech/crypto invoice — clean, minimal, 
+  professional
+- App must run with zero errors on npm run dev

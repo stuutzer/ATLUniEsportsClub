@@ -1,436 +1,501 @@
 "use client";
 
-import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
-
-export interface InvoiceData {
-  invoiceNumber: string;
-  agentName: string;
-  userName: string;
-  merchantName: string;
-  itemName: string;
-  amount: string;
-  token: string;
-  networkFee: string;
-  total: string;
-  txHash: string;
-  timestamp: string;
-  status: "CONFIRMED" | "PENDING";
-}
+import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import type { InvoiceData } from "@/lib/invoiceData";
+import { truncateAddress } from "@/lib/invoiceData";
 
 const S = StyleSheet.create({
   page: {
     backgroundColor: "#ffffff",
-    paddingTop: 40,
-    paddingBottom: 70,
-    paddingHorizontal: 44,
+    padding: 48,
     fontFamily: "Helvetica",
     fontSize: 10,
-    color: "#1a1a1a",
+    color: "#0a0a0a",
   },
-  header: {
+
+  // ── Section 1: Header ──────────────────────────────────────────
+  headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 20,
+    alignItems: "flex-start",
+    marginBottom: 16,
   },
-  logoText: {
-    fontSize: 26,
+  invoiceTitle: {
+    fontSize: 28,
     fontFamily: "Helvetica-Bold",
-    color: "#7c3aed",
+    color: "#0a0a0a",
+    letterSpacing: 4,
+    marginBottom: 6,
   },
-  logoSub: {
+  generatedBy: {
     fontSize: 9,
-    color: "#999999",
-    marginTop: 3,
+    color: "#888888",
+    marginBottom: 8,
   },
-  invoiceRight: {
+  badgeRow: {
+    flexDirection: "row",
+  },
+  badgeDark: {
+    backgroundColor: "#0a0a0a",
+    borderRadius: 4,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    marginRight: 6,
+  },
+  badgeDarkText: {
+    fontSize: 9,
+    fontFamily: "Helvetica-Bold",
+    color: "#ffffff",
+  },
+  badgeLight: {
+    backgroundColor: "#f0f0f0",
+    borderRadius: 4,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+  },
+  badgeLightText: {
+    fontSize: 9,
+    color: "#333333",
+  },
+  headerRight: {
     alignItems: "flex-end",
   },
-  invoiceLabel: {
-    fontSize: 16,
-    fontFamily: "Helvetica-Bold",
-    color: "#cccccc",
-    letterSpacing: 2,
-  },
-  invoiceNum: {
+  invoiceNumber: {
     fontSize: 11,
     fontFamily: "Helvetica-Bold",
-    color: "#333333",
-    marginTop: 4,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#eeeeee",
-    marginVertical: 16,
-  },
-  twoCol: {
-    flexDirection: "row",
-  },
-  col: {
-    flex: 1,
-  },
-  sectionLabel: {
-    fontSize: 8,
-    fontFamily: "Helvetica-Bold",
-    color: "#999999",
-    letterSpacing: 1.2,
-    marginBottom: 5,
-  },
-  primaryText: {
-    fontSize: 11,
-    fontFamily: "Helvetica-Bold",
-    color: "#1a1a1a",
-  },
-  secondaryText: {
-    fontSize: 9,
-    color: "#777777",
-    marginTop: 2,
-  },
-  infoRow: {
-    flexDirection: "row",
-    marginTop: 14,
-  },
-  tableHeaderRow: {
-    flexDirection: "row",
-    backgroundColor: "#f5f3ff",
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-    borderRadius: 4,
+    color: "#0a0a0a",
     marginBottom: 4,
   },
-  tableHeaderCell: {
+  issuedDate: {
+    fontSize: 10,
+    color: "#555555",
+    marginBottom: 8,
+  },
+  statusPaid: {
+    backgroundColor: "#dcfce7",
+    borderRadius: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+  },
+  statusPaidText: {
+    fontSize: 9,
+    fontFamily: "Helvetica-Bold",
+    color: "#16a34a",
+  },
+  statusPending: {
+    backgroundColor: "#fef9c3",
+    borderRadius: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+  },
+  statusPendingText: {
+    fontSize: 9,
+    fontFamily: "Helvetica-Bold",
+    color: "#ca8a04",
+  },
+  thickDivider: {
+    height: 2,
+    backgroundColor: "#0a0a0a",
+    marginBottom: 20,
+  },
+
+  // ── Section 2: Billing Info ────────────────────────────────────
+  billingRow: {
+    flexDirection: "row",
+    marginBottom: 20,
+  },
+  billingCol: {
+    flex: 1,
+  },
+  billingLabel: {
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
+    color: "#888888",
+    letterSpacing: 1.5,
+    marginBottom: 6,
+  },
+  billingName: {
+    fontSize: 12,
+    fontFamily: "Helvetica-Bold",
+    color: "#0a0a0a",
+    marginBottom: 3,
+  },
+  billingENS: {
+    fontSize: 10,
     color: "#7c3aed",
-    letterSpacing: 0.8,
+    marginBottom: 3,
+  },
+  billingMono: {
+    fontSize: 9,
+    color: "#555555",
+    marginBottom: 3,
+  },
+  billingText: {
+    fontSize: 10,
+    color: "#555555",
+    marginBottom: 3,
+  },
+  billingItalic: {
+    fontSize: 9,
+    fontFamily: "Helvetica-Oblique",
+    color: "#888888",
+    marginBottom: 2,
+  },
+  thinDivider: {
+    height: 1,
+    backgroundColor: "#e5e5e5",
+    marginBottom: 20,
+  },
+
+  // ── Section 3: Line Items Table ────────────────────────────────
+  tableHeaderRow: {
+    flexDirection: "row",
+    backgroundColor: "#f8f8f8",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  tableHeaderText: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+    color: "#888888",
+    letterSpacing: 1,
   },
   tableDataRow: {
     flexDirection: "row",
-    paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
   },
-  cellDesc: {
-    flex: 3,
+  tableDataRowAlt: {
+    backgroundColor: "#fafafa",
   },
-  cellAmount: {
-    flex: 1,
-    alignItems: "flex-end",
+  colItem: { flex: 4 },
+  colDesc: { flex: 3 },
+  colQty: { flex: 1 },
+  colUnitPrice: { flex: 2 },
+  colTotal: { flex: 2 },
+  itemName: {
+    fontSize: 11,
+    fontFamily: "Helvetica-Bold",
+    color: "#0a0a0a",
   },
-  itemText: {
+  itemDesc: {
     fontSize: 10,
-    color: "#1a1a1a",
+    color: "#666666",
   },
-  amountText: {
+  itemCenter: {
+    fontSize: 10,
+    color: "#0a0a0a",
+    textAlign: "center",
+  },
+  itemRight: {
+    fontSize: 10,
+    color: "#0a0a0a",
+    textAlign: "right",
+  },
+  itemRightBold: {
     fontSize: 10,
     fontFamily: "Helvetica-Bold",
-    color: "#1a1a1a",
+    color: "#0a0a0a",
+    textAlign: "right",
   },
-  feeContainer: {
-    paddingHorizontal: 10,
-    marginTop: 6,
+
+  // ── Section 4: Totals ──────────────────────────────────────────
+  totalsOuter: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 16,
+    marginBottom: 20,
   },
-  feeRow: {
+  totalsBlock: {
+    width: "42%",
+  },
+  totalsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingVertical: 4,
   },
-  feeLabel: {
-    fontSize: 9,
-    color: "#999999",
+  totalsLabel: {
+    fontSize: 10,
+    color: "#555555",
   },
-  feeValue: {
-    fontSize: 9,
-    color: "#666666",
+  totalsValue: {
+    fontSize: 10,
+    color: "#0a0a0a",
   },
-  totalBox: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: "#f5f3ff",
-    borderRadius: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginTop: 8,
+  totalsMiniDivider: {
+    height: 1,
+    backgroundColor: "#e5e5e5",
+    marginVertical: 6,
+  },
+  totalsBoldLabel: {
+    fontSize: 12,
+    fontFamily: "Helvetica-Bold",
+    color: "#0a0a0a",
+  },
+  totalsBoldValue: {
+    fontSize: 12,
+    fontFamily: "Helvetica-Bold",
+    color: "#0a0a0a",
+  },
+  totalsUSD: {
+    fontSize: 10,
+    fontFamily: "Helvetica-Oblique",
+    color: "#888888",
+  },
+
+  // ── Section 5: Transaction Details ────────────────────────────
+  txBox: {
+    backgroundColor: "#f8f8f8",
     borderLeftWidth: 3,
     borderLeftColor: "#7c3aed",
-  },
-  totalLabel: {
-    fontSize: 12,
-    fontFamily: "Helvetica-Bold",
-    color: "#7c3aed",
-  },
-  totalValue: {
-    fontSize: 12,
-    fontFamily: "Helvetica-Bold",
-    color: "#7c3aed",
-  },
-  txContainer: {
-    marginTop: 14,
-  },
-  txBox: {
-    padding: 10,
-    backgroundColor: "#fafafa",
     borderRadius: 4,
-    borderWidth: 1,
-    borderColor: "#eeeeee",
-    marginTop: 5,
+    padding: 16,
+    marginBottom: 28,
   },
-  txText: {
+  txBoxTitle: {
     fontSize: 8,
-    fontFamily: "Helvetica",
-    color: "#555555",
-    wordBreak: "break-all",
+    fontFamily: "Helvetica-Bold",
+    color: "#888888",
+    letterSpacing: 1.5,
+    marginBottom: 10,
   },
-  statusBlock: {
-    marginTop: 16,
-    borderRadius: 6,
-    overflow: "hidden",
-  },
-  statusBlockConfirmed: {
+  txTwoCol: {
     flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f0fdf4",
-    borderWidth: 1,
-    borderColor: "#bbf7d0",
-    borderRadius: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
   },
-  statusBlockPending: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fffbeb",
-    borderWidth: 1,
-    borderColor: "#fde68a",
-    borderRadius: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-  },
-  statusDotConfirmed: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#16a34a",
-    marginRight: 10,
-  },
-  statusDotPending: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#d97706",
-    marginRight: 10,
-  },
-  statusTextBlock: {
+  txCol: {
     flex: 1,
   },
-  statusHeadingConfirmed: {
-    fontSize: 10,
-    fontFamily: "Helvetica-Bold",
-    color: "#15803d",
-    letterSpacing: 0.5,
-  },
-  statusHeadingPending: {
-    fontSize: 10,
-    fontFamily: "Helvetica-Bold",
-    color: "#b45309",
-    letterSpacing: 0.5,
-  },
-  statusSubtext: {
+  txFieldLabel: {
     fontSize: 8,
-    color: "#6b7280",
-    marginTop: 2,
+    color: "#888888",
+    marginBottom: 3,
   },
-  statusBadgeConfirmed: {
-    backgroundColor: "#16a34a",
-    borderRadius: 4,
-    paddingVertical: 3,
-    paddingHorizontal: 8,
+  txFieldValue: {
+    fontSize: 9,
+    color: "#0a0a0a",
+    marginBottom: 10,
+    wordBreak: "break-all",
   },
-  statusBadgePending: {
-    backgroundColor: "#d97706",
-    borderRadius: 4,
-    paddingVertical: 3,
-    paddingHorizontal: 8,
+  txFieldValuePurple: {
+    fontSize: 9,
+    color: "#7c3aed",
+    marginBottom: 10,
   },
-  statusBadgeText: {
-    fontSize: 8,
-    fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
-    letterSpacing: 1,
-  },
+
+  // ── Section 6: Footer ──────────────────────────────────────────
   footer: {
     position: "absolute",
-    bottom: 28,
-    left: 44,
-    right: 44,
-    paddingTop: 10,
+    bottom: 48,
+    left: 48,
+    right: 48,
     borderTopWidth: 1,
-    borderTopColor: "#eeeeee",
+    borderTopColor: "#e5e5e5",
+    paddingTop: 12,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
   },
-  footerLeft: {
+  footerBrand: {
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
+    color: "#0a0a0a",
+    marginBottom: 3,
+  },
+  footerSub: {
     fontSize: 8,
-    color: "#bbbbbb",
+    color: "#888888",
+    marginBottom: 3,
+  },
+  footerENS: {
+    fontSize: 8,
+    color: "#7c3aed",
   },
   footerRight: {
+    alignItems: "flex-end",
+  },
+  footerItalic: {
     fontSize: 8,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: "Helvetica-Oblique",
+    color: "#888888",
+    marginBottom: 2,
+  },
+  footerItalicPurple: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Oblique",
     color: "#7c3aed",
   },
 });
 
 export function InvoicePDF({ data }: { data: InvoiceData }) {
+  const networkShort = data.network.split(" (")[0];
+
   return (
     <Document
-      title={`AgentCart Invoice #INV-${data.invoiceNumber}`}
+      title={`AgentCart ${data.invoiceNumber}`}
       author="AgentCart AI Agent"
     >
       <Page size="A4" style={S.page}>
-        {/* Header */}
-        <View style={S.header}>
+
+        {/* ── Section 1: Header ── */}
+        <View style={S.headerRow}>
           <View>
-            <Text style={S.logoText}>AgentCart</Text>
-            <Text style={S.logoSub}>AI-Powered Web3 Commerce</Text>
+            <Text style={S.invoiceTitle}>INVOICE</Text>
+            <Text style={S.generatedBy}>Generated by AgentCart AI Agent</Text>
+            <View style={S.badgeRow}>
+              <View style={S.badgeDark}>
+                <Text style={S.badgeDarkText}>agentcart.eth</Text>
+              </View>
+              <View style={S.badgeLight}>
+                <Text style={S.badgeLightText}>{networkShort}</Text>
+              </View>
+            </View>
           </View>
-          <View style={S.invoiceRight}>
-            <Text style={S.invoiceLabel}>INVOICE</Text>
-            <Text style={S.invoiceNum}>#INV-{data.invoiceNumber}</Text>
-          </View>
-        </View>
-
-        <View style={S.divider} />
-
-        {/* From / To */}
-        <View style={S.twoCol}>
-          <View style={S.col}>
-            <Text style={S.sectionLabel}>FROM</Text>
-            <Text style={S.primaryText}>{data.agentName}</Text>
-            <Text style={S.secondaryText}>Authorized AI Agent</Text>
-          </View>
-          <View style={S.col}>
-            <Text style={S.sectionLabel}>TO</Text>
-            <Text style={S.primaryText}>{data.userName}</Text>
-            <Text style={S.secondaryText}>Customer</Text>
-          </View>
-        </View>
-
-        {/* Merchant + Date */}
-        <View style={S.infoRow}>
-          <View style={S.col}>
-            <Text style={S.sectionLabel}>MERCHANT</Text>
-            <Text style={S.primaryText}>{data.merchantName}</Text>
-          </View>
-          <View style={S.col}>
-            <Text style={S.sectionLabel}>DATE</Text>
-            <Text style={S.primaryText}>{data.timestamp}</Text>
+          <View style={S.headerRight}>
+            <Text style={S.invoiceNumber}>{data.invoiceNumber}</Text>
+            <Text style={S.issuedDate}>{data.issuedDate}</Text>
+            {data.status === "PAID" ? (
+              <View style={S.statusPaid}>
+                <Text style={S.statusPaidText}>PAID</Text>
+              </View>
+            ) : (
+              <View style={S.statusPending}>
+                <Text style={S.statusPendingText}>PENDING</Text>
+              </View>
+            )}
           </View>
         </View>
+        <View style={S.thickDivider} />
 
-        <View style={S.divider} />
+        {/* ── Section 2: Billing Info ── */}
+        <View style={S.billingRow}>
+          <View style={S.billingCol}>
+            <Text style={S.billingLabel}>BILLED TO</Text>
+            <Text style={S.billingName}>{data.userName}</Text>
+            <Text style={S.billingENS}>{data.userENS}</Text>
+            <Text style={S.billingMono}>{truncateAddress(data.userWallet)}</Text>
+            <Text style={S.billingText}>{data.userLocation}</Text>
+          </View>
+          <View style={S.billingCol}>
+            <Text style={S.billingLabel}>BILLED FROM</Text>
+            <Text style={S.billingName}>{data.merchantName}</Text>
+            <Text style={S.billingText}>{data.merchantWebsite}</Text>
+            <Text style={S.billingMono}>{truncateAddress(data.merchantWallet)}</Text>
+          </View>
+          <View style={S.billingCol}>
+            <Text style={S.billingLabel}>PAYMENT METHOD</Text>
+            <Text style={[S.billingName, { fontSize: 10 }]}>{networkShort}</Text>
+            <Text style={S.billingText}>{data.token}</Text>
+            <Text style={S.billingItalic}>Processed autonomously</Text>
+            <Text style={S.billingItalic}>by AI Agent</Text>
+          </View>
+        </View>
+        <View style={S.thinDivider} />
 
-        {/* Items table */}
+        {/* ── Section 3: Line Items Table ── */}
         <View style={S.tableHeaderRow}>
-          <View style={S.cellDesc}>
-            <Text style={S.tableHeaderCell}>DESCRIPTION</Text>
+          <View style={S.colItem}>
+            <Text style={S.tableHeaderText}>ITEM</Text>
           </View>
-          <View style={S.cellAmount}>
-            <Text style={S.tableHeaderCell}>AMOUNT</Text>
+          <View style={S.colDesc}>
+            <Text style={S.tableHeaderText}>DESCRIPTION</Text>
           </View>
-        </View>
-
-        <View style={S.tableDataRow}>
-          <View style={S.cellDesc}>
-            <Text style={S.itemText}>{data.itemName}</Text>
+          <View style={S.colQty}>
+            <Text style={[S.tableHeaderText, { textAlign: "center" }]}>QTY</Text>
           </View>
-          <View style={S.cellAmount}>
-            <Text style={S.amountText}>
-              {data.amount} {data.token}
-            </Text>
+          <View style={S.colUnitPrice}>
+            <Text style={[S.tableHeaderText, { textAlign: "right" }]}>UNIT PRICE</Text>
+          </View>
+          <View style={S.colTotal}>
+            <Text style={[S.tableHeaderText, { textAlign: "right" }]}>TOTAL</Text>
           </View>
         </View>
 
-        {/* Fees */}
-        <View style={S.feeContainer}>
-          <View style={S.feeRow}>
-            <Text style={S.feeLabel}>Network Fee</Text>
-            <Text style={S.feeValue}>
-              {data.networkFee} {data.token}
-            </Text>
+        {data.items.map((item, i) => (
+          <View
+            key={i}
+            style={[S.tableDataRow, i % 2 !== 0 ? S.tableDataRowAlt : {}]}
+          >
+            <View style={S.colItem}>
+              <Text style={S.itemName}>{item.name}</Text>
+            </View>
+            <View style={S.colDesc}>
+              <Text style={S.itemDesc}>{item.description}</Text>
+            </View>
+            <View style={S.colQty}>
+              <Text style={S.itemCenter}>{item.quantity}</Text>
+            </View>
+            <View style={S.colUnitPrice}>
+              <Text style={S.itemRight}>{item.unitPrice}</Text>
+            </View>
+            <View style={S.colTotal}>
+              <Text style={S.itemRightBold}>{item.total}</Text>
+            </View>
+          </View>
+        ))}
+
+        {/* ── Section 4: Totals ── */}
+        <View style={S.totalsOuter}>
+          <View style={S.totalsBlock}>
+            <View style={S.totalsRow}>
+              <Text style={S.totalsLabel}>Subtotal</Text>
+              <Text style={S.totalsValue}>{data.subtotal}</Text>
+            </View>
+            <View style={S.totalsRow}>
+              <Text style={S.totalsLabel}>Network Fee (Gas)</Text>
+              <Text style={S.totalsValue}>{data.networkFee}</Text>
+            </View>
+            <View style={S.totalsMiniDivider} />
+            <View style={S.totalsRow}>
+              <Text style={S.totalsBoldLabel}>TOTAL</Text>
+              <Text style={S.totalsBoldValue}>{data.total}</Text>
+            </View>
+            <View style={[S.totalsRow, { justifyContent: "flex-end" }]}>
+              <Text style={S.totalsUSD}>{data.totalUSD}</Text>
+            </View>
           </View>
         </View>
 
-        <View style={S.divider} />
-
-        {/* Total */}
-        <View style={S.totalBox}>
-          <Text style={S.totalLabel}>TOTAL</Text>
-          <Text style={S.totalValue}>
-            {data.total} {data.token}
-          </Text>
-        </View>
-
-        {/* Transaction hash */}
-        <View style={S.txContainer}>
-          <Text style={S.sectionLabel}>TRANSACTION HASH</Text>
-          <View style={S.txBox}>
-            <Text style={S.txText}>{data.txHash}</Text>
-          </View>
-        </View>
-
-        {/* Payment status block */}
-        {data.status === "CONFIRMED" ? (
-          <View style={S.statusBlockConfirmed}>
-            <View style={S.statusDotConfirmed} />
-            <View style={S.statusTextBlock}>
-              <Text style={S.statusHeadingConfirmed}>Payment Confirmed</Text>
-              <Text style={S.statusSubtext}>
-                Transaction verified and recorded on-chain
+        {/* ── Section 5: Transaction Details ── */}
+        <View style={S.txBox}>
+          <Text style={S.txBoxTitle}>BLOCKCHAIN TRANSACTION DETAILS</Text>
+          <View style={S.txTwoCol}>
+            <View style={S.txCol}>
+              <Text style={S.txFieldLabel}>Transaction Hash</Text>
+              <Text style={S.txFieldValue}>
+                {data.txHash.slice(0, Math.ceil(data.txHash.length / 2))}
               </Text>
-            </View>
-          </View>
-        ) : (
-          <View style={S.statusBlockPending}>
-            <View style={S.statusDotPending} />
-            <View style={S.statusTextBlock}>
-              <Text style={S.statusHeadingPending}>Payment Pending</Text>
-              <Text style={S.statusSubtext}>
-                Awaiting on-chain confirmation
+              <Text style={[S.txFieldValue, { marginTop: -6 }]}>
+                {data.txHash.slice(Math.ceil(data.txHash.length / 2))}
               </Text>
+              <Text style={S.txFieldLabel}>Block Number</Text>
+              <Text style={S.txFieldValue}>{data.blockNumber}</Text>
             </View>
-            <View style={S.statusBadgePending}>
-              <Text style={S.statusBadgeText}>PENDING</Text>
+            <View style={S.txCol}>
+              <Text style={S.txFieldLabel}>Network</Text>
+              <Text style={S.txFieldValue}>{data.network}</Text>
+              <Text style={S.txFieldLabel}>Agent Identity</Text>
+              <Text style={S.txFieldValuePurple}>{data.agentName}</Text>
             </View>
           </View>
-        )}
+        </View>
 
-        {/* Footer */}
+        {/* ── Section 6: Footer ── */}
         <View style={S.footer}>
-          <Text style={S.footerLeft}>
-            Generated autonomously by AgentCart AI Agent
-          </Text>
-          <Text style={S.footerRight}>agentcart.eth</Text>
+          <View>
+            <Text style={S.footerBrand}>AgentCart</Text>
+            <Text style={S.footerSub}>AI-Powered Autonomous Shopping</Text>
+            <Text style={S.footerENS}>agentcart.eth</Text>
+          </View>
+          <View style={S.footerRight}>
+            <Text style={S.footerItalic}>This invoice was generated autonomously</Text>
+            <Text style={S.footerItalic}>by an AI agent on behalf of the user.</Text>
+            <Text style={S.footerItalicPurple}>No human interaction required.</Text>
+          </View>
         </View>
+
       </Page>
     </Document>
   );
-}
-
-export async function downloadInvoice(
-  data: InvoiceData,
-  txId: string
-): Promise<void> {
-  const { pdf } = await import("@react-pdf/renderer");
-  const blob = await pdf(<InvoicePDF data={data} />).toBlob();
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  const sanitize = (s: string) =>
-    s.replace(/[^a-zA-Z0-9]/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, "");
-  a.download = `${sanitize(data.itemName)}_${sanitize(data.timestamp)}.pdf`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
 }
