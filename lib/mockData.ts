@@ -42,7 +42,7 @@ export const mockProducts: Product[] = [
     tier: "S",
     acceptedCrypto: ["ETH", "AVAX", "USDC"],
     merchantName: "TechVault Store",
-    imageUrl: "https://via.placeholder.com/400x300/1a1a2e/7c3aed?text=Neural+Pro+Keyboard",
+    imageUrl: "https://computerlounge.co.nz/cdn/shop/files/36f4ee3af51c83819f19ccfda709acc27354cc79_Wooting_60HE__1_grande.jpg?v=1729656519",
     aiReasons: [
       "Lowest total cost when accounting for gas fees on Avalanche",
       "Merchant has 99.2% trust score based on 3,400+ transactions",
@@ -59,7 +59,7 @@ export const mockProducts: Product[] = [
     tier: "S",
     acceptedCrypto: ["ETH", "USDC"],
     merchantName: "PixelForge",
-    imageUrl: "https://via.placeholder.com/400x300/1a1a2e/7c3aed?text=HoloDisplay+4K",
+    imageUrl: "https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/dell-client-products/peripherals/monitors/aw-series/aw3225qf/pdp/monitor-alienware-aw3225qf-hero.psd?fmt=jpg&wid=756&hei=525",
     aiReasons: [
       "Best-in-class display specs for the price point",
       "Merchant consistently ships within 24 hours",
@@ -76,7 +76,7 @@ export const mockProducts: Product[] = [
     tier: "S",
     acceptedCrypto: ["AVAX", "USDC"],
     merchantName: "SoundSphere",
-    imageUrl: "https://via.placeholder.com/400x300/1a1a2e/7c3aed?text=AuraSound+ANC",
+    imageUrl: "https://www.magnumsound.nz/cdn/shop/files/sennheiser-hd-800s-audiophile-headphones-1900_grande.png?v=1691636446",
     aiReasons: [
       "AVAX gas fees are 94% lower than Ethereum for this transaction",
       "Highest user satisfaction rating in the audio category",
@@ -93,7 +93,7 @@ export const mockProducts: Product[] = [
     tier: "A",
     acceptedCrypto: ["ETH", "AVAX", "USDC"],
     merchantName: "DataStream Co.",
-    imageUrl: "https://via.placeholder.com/400x300/1e1b4b/4f46e5?text=Quantum+SSD+2TB",
+    imageUrl: "https://www.pbtech.co.nz/imgprod/H/D/HDDSAM993110__7.jpg",
     aiReasons: [
       "Excellent performance-to-price ratio for NVMe Gen5",
       "Merchant verified on-chain with 2-year escrow history",
@@ -109,7 +109,7 @@ export const mockProducts: Product[] = [
     tier: "A",
     acceptedCrypto: ["ETH", "USDC"],
     merchantName: "GearForge",
-    imageUrl: "https://via.placeholder.com/400x300/1e1b4b/4f46e5?text=CryptoMouse+Pro",
+    imageUrl: "https://resource.logitechg.com/c_fill,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/gaming/en/products/pro-x2-superstrike-pdp/2026/pro-x2-superstrike-top-angle-lifestyle-gallery-2.png",
     aiReasons: [
       "Unique Web3-native feature set not found in competing products",
       "Price competitive with traditional retail despite crypto-only payment",
@@ -125,7 +125,7 @@ export const mockProducts: Product[] = [
     tier: "A",
     acceptedCrypto: ["ETH", "AVAX"],
     merchantName: "NodeNest",
-    imageUrl: "https://via.placeholder.com/400x300/1e1b4b/4f46e5?text=EdgeServer+Mini",
+    imageUrl: "https://images.prismic.io/frameworkmarketplace/Z7foP57c43Q3gCiV_fwdesktop_family_overview_panel_translucent.jpg?auto=format,compress",
     aiReasons: [
       "Best option for on-premises AI inference at this price",
       "AVAX payment recommended to minimize total cost",
@@ -141,7 +141,7 @@ export const mockProducts: Product[] = [
     tier: "A",
     acceptedCrypto: ["USDC"],
     merchantName: "HomeChain",
-    imageUrl: "https://via.placeholder.com/400x300/1e1b4b/4f46e5?text=SmartDesk+Hub",
+    imageUrl: "https://images.svc.ui.com/?u=https%3A%2F%2Fui.com%2Fmicrosite%2Fstatic%2Fefg-img-NfeWmma7.jpg&q=75&w=1152",
     aiReasons: [
       "USDC-only merchant offers 5% loyalty discount on repeat purchases",
       "Broad device compatibility reduces future upgrade costs",
@@ -157,7 +157,7 @@ export const mockProducts: Product[] = [
     tier: "A",
     acceptedCrypto: ["ETH", "AVAX", "USDC"],
     merchantName: "VisionTech",
-    imageUrl: "https://via.placeholder.com/400x300/1e1b4b/4f46e5?text=NeuraLink+Webcam",
+    imageUrl: "https://resource.logitech.com/c_fill,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/products/logitech/webcams/c270-hd-webcam/gallery/c270-hd-webcam-1-0224.png",
     aiReasons: [
       "Hardware AI processing eliminates privacy concerns of cloud-based alternatives",
       "All three tokens accepted for maximum payment flexibility",
@@ -173,7 +173,7 @@ export const mockProducts: Product[] = [
     tier: "B",
     acceptedCrypto: ["ETH", "USDC"],
     merchantName: "CreativeChain",
-    imageUrl: "https://via.placeholder.com/400x300/042f2e/0d9488?text=BlockPad+Tablet",
+    imageUrl: "https://cdn-media.wacom.com/-/media/images/products/pen-tablets/wacom-intuos/media-gallery/wacom-intuos-g7.jpg?h=640&iar=0&w=960&rev=b1aa3facbf3d4e2dae7215ea65c8b264&hash=21A48C38D7C6AB00E88407D5033F771D",
     aiReasons: [
       "Niche product with solid specs for the target use case",
     ],
@@ -188,7 +188,7 @@ export const mockProducts: Product[] = [
     tier: "B",
     acceptedCrypto: ["AVAX", "USDC"],
     merchantName: "HubWorld",
-    imageUrl: "https://via.placeholder.com/400x300/042f2e/0d9488?text=TokenTracks+Hub",
+    imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDhraB6vM5hqXKCkCFFOsm1CQIASxLtaZBxA&s",
     aiReasons: [
       "Functional and affordable for Web3 desktop setups",
     ],
@@ -203,24 +203,9 @@ export const mockProducts: Product[] = [
     tier: "B",
     acceptedCrypto: ["ETH"],
     merchantName: "ThermalDAO",
-    imageUrl: "https://via.placeholder.com/400x300/042f2e/0d9488?text=ChainCooler+RGB",
+    imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNPDT0Tdq4C2M4OtBgP5aTCaRzfnt9UrEBZA&s",
     aiReasons: [
       "Competitive cooling performance; NFT display is novelty but not essential",
-    ],
-  },
-  {
-    id: "12",
-    name: "Ledger Vault Case",
-    description:
-      "Military-grade aluminum case for hardware wallets. Supports Ledger, Trezor, and Keystone. Water and shock resistant.",
-    price: 45.0,
-    category: "Accessories",
-    tier: "B",
-    acceptedCrypto: ["USDC"],
-    merchantName: "SecureHold",
-    imageUrl: "https://via.placeholder.com/400x300/042f2e/0d9488?text=Ledger+Vault+Case",
-    aiReasons: [
-      "Essential accessory for hardware wallet owners at a reasonable price point",
     ],
   },
 ];
