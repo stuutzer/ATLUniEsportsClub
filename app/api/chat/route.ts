@@ -1,66 +1,107 @@
+// app/api/chat/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
-const PRODUCT_IMAGES: Record<string, string[]> = {
-    AUDIO: [
-        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1572536147248-ac59a8abfa4b?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600&h=450&fit=crop",
-    ],
-    COMPUTING: [
-        "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&h=450&fit=crop",
-    ],
-    PERIPHERALS: [
-        "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1615750173599-31e85782a7a8?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1527814050087-3793815479db?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1563297007-0686b7003af7?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1601445638532-3b6313b9b6c5?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1625723044792-44de16ccb4e9?w=600&h=450&fit=crop",
-    ],
-    DISPLAYS: [
-        "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1586210579191-33b45e38fa2c?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1593640408182-31c228b29976?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1547119957-637f8679db1e?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1616763355548-1b606f439f86?w=600&h=450&fit=crop",
-    ],
-    STORAGE: [
-        "https://images.unsplash.com/photo-1531492746076-161ca9bcad58?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1618410320928-25228d811631?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1600348712270-0a8f39541b1c?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1640955014216-75201056c829?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?w=600&h=450&fit=crop",
-    ],
-    ACCESSORIES: [
-        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1625772452888-01ede7b3ba7f?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&h=450&fit=crop",
-        "https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=450&fit=crop",
-    ],
-};
+async function searchRealProducts(query: string): Promise<Product[]> {
+    const response = await fetch(
+        `https://real-time-product-search.p.rapidapi.com/search?q=${encodeURIComponent(query)}&country=us&language=en&limit=6`,
+        {
+            headers: {
+                "X-RapidAPI-Key": process.env.RAPIDAPI_KEY!,
+                "X-RapidAPI-Host": "real-time-product-search.p.rapidapi.com",
+            },
+        }
+    );
 
-function getImage(category: string, index: number): string {
-    const images = PRODUCT_IMAGES[category] ?? PRODUCT_IMAGES["ACCESSORIES"];
-    return images[index % images.length];
+    if (!response.ok) throw new Error("Product search failed");
+    const data = await response.json();
+
+    // Merchants known to accept crypto
+    const CRYPTO_MERCHANTS: Record<string, string[]> = {
+        "newegg": ["ETH", "AVAX", "USDC"],
+        "overstock": ["ETH", "USDC"],
+        "shopify": ["ETH", "USDC"],
+        "rakuten": ["USDC"],
+        "microsoft": ["ETH"],
+        "at&t": ["ETH", "USDC"],
+        "whole foods": ["ETH"],
+        "amazon": ["USDC"],
+        "best buy": ["USDC"],
+        "walmart": ["USDC"],
+        "ebay": ["ETH", "USDC"],
+    };
+
+    function getCrypto(merchantName: string): string[] {
+        const lower = merchantName.toLowerCase();
+        for (const [key, tokens] of Object.entries(CRYPTO_MERCHANTS)) {
+            if (lower.includes(key)) return tokens;
+        }
+        // Default — everyone "accepts" USDC for demo
+        return ["USDC"];
+    }
+
+    function getTier(price: number): "S" | "A" | "B" {
+        if (price > 500) return "S";
+        if (price > 100) return "A";
+        return "B";
+    }
+
+    function getCategory(title: string): string {
+        const t = title.toLowerCase();
+        if (t.match(/headphone|speaker|earbud|audio|microphone|soundbar/)) return "AUDIO";
+        if (t.match(/laptop|pc|computer|desktop|processor|cpu|gpu/)) return "COMPUTING";
+        if (t.match(/monitor|display|screen|tv/)) return "DISPLAYS";
+        if (t.match(/keyboard|mouse|webcam|controller|gamepad/)) return "PERIPHERALS";
+        if (t.match(/ssd|hard drive|storage|usb|memory|ram/)) return "STORAGE";
+        if (t.match(/phone|tablet|ipad|iphone|samsung/)) return "MOBILE";
+        if (t.match(/shoe|shirt|jacket|clothing|fashion|wear/)) return "FASHION";
+        if (t.match(/chair|desk|furniture|lamp|home/)) return "HOME";
+        if (t.match(/watch|ring|necklace|jewel/)) return "ACCESSORIES";
+        return "ACCESSORIES";
+    }
+
+    return (data.data ?? []).slice(0, 6).map((item: RapidProduct, i: number) => {
+        const price = parseFloat(item.typical_price_range?.[0]?.replace(/[^0-9.]/g, "") ?? "0") || parseFloat(item.offer?.price?.replace(/[^0-9.]/g, "") ?? "99");
+        const merchant = item.offer?.store_name ?? item.sellers?.[0]?.name ?? "Amazon";
+
+        return {
+            id: `prod-${i}`,
+            name: item.product_title ?? item.product_description ?? "Product",
+            category: getCategory(item.product_title ?? ""),
+            merchantName: merchant,
+            price: isNaN(price) ? 99 : price,
+            imageUrl: item.product_photos?.[0] ?? `https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=450&fit=crop`,
+            tier: getTier(price),
+            acceptedCrypto: getCrypto(merchant),
+        };
+    });
+}
+
+interface RapidProduct {
+    product_title?: string;
+    product_description?: string;
+    product_photos?: string[];
+    typical_price_range?: string[];
+    offer?: { price?: string; store_name?: string };
+    sellers?: { name?: string }[];
+}
+
+interface Product {
+    id: string;
+    name: string;
+    category: string;
+    merchantName: string;
+    price: number;
+    imageUrl: string;
+    tier: "S" | "A" | "B";
+    acceptedCrypto: string[];
 }
 
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
 
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        // Step 1 — ask GPT what the user wants to search for
+        const intentResponse = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -68,69 +109,78 @@ export async function POST(req: NextRequest) {
             },
             body: JSON.stringify({
                 model: "gpt-4o-mini",
-                max_tokens: 1000,
+                max_tokens: 200,
                 messages: [
                     {
                         role: "system",
-                        content: `You are a friendly AI shopping agent. You help users find products to buy.
-
-When the user asks for specific products or shopping recommendations, respond with ONLY a raw JSON object (no markdown, no backticks):
+                        content: `You are a shopping assistant. Given the user's message, respond with a JSON object:
 {
-  "message": "your conversational reply here",
-  "products": [
-    {
-      "id": "prod-1",
-      "name": "Product Name",
-      "category": "AUDIO",
-      "merchantName": "Store Name",
-      "price": 199.99,
-      "tier": "S",
-      "acceptedCrypto": ["ETH", "USDC"]
-    }
-  ]
+  "isProductRequest": true/false,
+  "searchQuery": "concise product search query for Google Shopping",
+  "replyIfNotProduct": "friendly response if not a product request"
 }
 
-Do NOT include imageUrl — images are handled server-side.
-Return exactly 6 products. Tier must be "S", "A", or "B".
-Category must be one of: COMPUTING, PERIPHERALS, DISPLAYS, AUDIO, STORAGE, ACCESSORIES.
-acceptedCrypto must be from: ETH, AVAX, USDC.
-
-For general chat (greetings, questions not about products), respond with plain text only — no JSON.`,
+If the user is asking for products, set isProductRequest to true and provide a good search query.
+If it's general chat, set isProductRequest to false and provide a friendly reply.
+Respond ONLY with raw JSON.`,
                     },
                     ...body.messages,
                 ],
             }),
         });
 
-        if (!response.ok) {
-            const err = await response.text();
-            console.error("OpenAI error:", err);
-            return NextResponse.json({ error: err }, { status: response.status });
+        const intentData = await intentResponse.json();
+        const intentRaw = intentData.choices?.[0]?.message?.content ?? "{}";
+        const intent = JSON.parse(intentRaw.replace(/```json|```/g, "").trim());
+
+        // Step 2 — if not a product request, just return the chat reply
+        if (!intent.isProductRequest) {
+            return NextResponse.json({
+                content: [{ type: "text", text: intent.replyIfNotProduct ?? "How can I help you shop today?" }],
+            });
         }
 
-        const data = await response.json();
-        const raw = data.choices?.[0]?.message?.content ?? "";
-
-        let text = raw;
+        // Step 3 — fetch real products from RapidAPI
+        let products: Product[] = [];
         try {
-            const clean = raw.replace(/```json/g, "").replace(/```/g, "").trim();
-            const parsed = JSON.parse(clean);
-            if (parsed.products) {
-                parsed.products = parsed.products.map(
-                    (p: { category: string }, i: number) => ({
-                        ...p,
-                        imageUrl: getImage(p.category, i),
-                    })
-                );
-            }
-            text = JSON.stringify(parsed);
-        } catch {
-            // plain text, pass through
+            products = await searchRealProducts(intent.searchQuery);
+        } catch (err) {
+            console.error("Product search failed:", err);
         }
+
+        // Step 4 — ask GPT to write a nice message about the results
+        const summaryResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                max_tokens: 100,
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are a friendly shopping agent. Write a single short sentence (max 15 words) introducing the product results. No markdown.",
+                    },
+                    {
+                        role: "user",
+                        content: `User asked for: "${intent.searchQuery}". Found ${products.length} products from merchants like ${[...new Set(products.map(p => p.merchantName))].slice(0, 3).join(", ")}.`,
+                    },
+                ],
+            }),
+        });
+
+        const summaryData = await summaryResponse.json();
+        const message = summaryData.choices?.[0]?.message?.content ?? "Here's what I found:";
 
         return NextResponse.json({
-            content: [{ type: "text", text }],
+            content: [{
+                type: "text",
+                text: JSON.stringify({ message, products }),
+            }],
         });
+
     } catch (err) {
         console.error("Route error:", err);
         return NextResponse.json({ error: String(err) }, { status: 500 });
