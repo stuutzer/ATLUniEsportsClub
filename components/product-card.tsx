@@ -7,6 +7,7 @@ import { PurchaseModal } from "@/components/purchase-modal";
 import type { Product } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { Bot } from "lucide-react";
+import { BuyItemButton } from "@/components/buy-item-button";
 
 const cryptoColors: Record<string, string> = {
   ETH: "bg-blue-500/15 text-blue-300 border border-blue-500/20",
@@ -94,6 +95,9 @@ export function ProductCard({ product }: ProductCardProps) {
             <Bot className="w-3.5 h-3.5" />
             Let Agent Purchase
           </button>
+          <div className="mt-auto">
+            <BuyItemButton product={product} />
+          </div>
         </div>
       </div>
 

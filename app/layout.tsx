@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import dynamic from "next/dynamic";
 import { Sidebar } from "@/components/sidebar";
+import { AgentProvider } from "@/context/AgentContext";
 
 const Web3Provider = dynamic(
   () => import("@/providers/web3-provider").then((m) => m.Web3Provider),
@@ -22,8 +23,10 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="min-h-screen bg-[#0a0a0a] text-white antialiased">
         <Web3Provider>
-          <Sidebar />
-          <main className="ml-[300px] min-h-screen">{children}</main>
+          <AgentProvider>
+            <Sidebar />
+            <main className="ml-[300px] min-h-screen">{children}</main>
+          </AgentProvider>
         </Web3Provider>
       </body>
     </html>

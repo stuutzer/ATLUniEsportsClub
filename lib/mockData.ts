@@ -208,6 +208,21 @@ export const mockProducts: Product[] = [
       "Competitive cooling performance; NFT display is novelty but not essential",
     ],
   },
+  {
+    id: "12",
+    name: "Test Item",
+    description:
+      "240mm liquid CPU cooler with NFT-animated RGB display on the pump head. Quiet and efficient.",
+    price: 0.01,
+    category: "Cooling",
+    tier: "B",
+    acceptedCrypto: ["ETH", "dNZD"],
+    merchantName: "ThermalDAO",
+    imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNPDT0Tdq4C2M4OtBgP5aTCaRzfnt9UrEBZA&s",
+    aiReasons: [
+      "Competitive cooling performance; NFT display is novelty but not essential",
+    ],
+  },
 ];
 
 // TODO: Replace with real wallet purchase history
