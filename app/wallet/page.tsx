@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useAccount, useConnect, useDisconnect, useBalance } from "wagmi";
 import { injected } from "wagmi/connectors";
-import { baseSepolia } from "wagmi/chains";
-import { Wallet, LogOut, CheckCircle, Clock, ExternalLink, Bot, AlertCircle, Download, Loader2 } from "lucide-react";
+import { avalancheFuji } from "wagmi/chains";
+import { Wallet, LogOut, CheckCircle, Clock, ExternalLink, Bot, AlertCircle, Download, Loader2, Beaker } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { pdf } from "@react-pdf/renderer";
 import { useAgent } from "@/context/AgentContext";
@@ -12,13 +12,10 @@ import { useIdentity } from "@/context/IdentityContext";
 import { InvoicePDF } from "@/components/invoice-pdf";
 import { generateInvoiceData, buildFilename } from "@/lib/invoiceData";
 
-// The dNZD contract address on Base Sepolia
-const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
-
 // Hackathon MVP only: Local mock price oracle for USD value calculation
 const MOCK_TOKEN_PRICES: Record<string, number> = {
   AVAX: 35.50,
-  dNZD: 0.60, // Approximate mock price for NZD to USD
+  dNZD: 0.60,
   ETH: 3000.00,
 };
 
@@ -57,20 +54,32 @@ export default function WalletPage() {
   const { connect, isPending: isConnecting } = useConnect();
   const { disconnect } = useDisconnect();
 
-  const { transactions } = useAgent();
+  const { transactions, executeAgentPurchase } = useAgent();
 
-  // Read native balance (ETH on Base Sepolia)
-  const { data: nativeBalance } = useBalance({ 
+  // Native AVAX balance on Fuji (Avalanche C-Chain testnet)
+  const { data: nativeBalance } = useBalance({
     address,
-    chainId: baseSepolia.id 
+    chainId: avalancheFuji.id,
   });
-  
-  // Read specific ERC20 token balance (dNZD)
-  const { data: tokenBalance } = useBalance({ 
-    address, 
-    token: DNZD_CONTRACT_ADDRESS,
-    chainId: baseSepolia.id 
-  });
+
+  // Hackathon-only: synthesize a transaction so the invoice flow can be tested
+  // without a wallet, faucet, or on-chain send. Generates a random 32-byte hash.
+  function simulatePurchase() {
+    const fakeHash =
+      "0x" +
+      Array.from({ length: 64 }, () =>
+        Math.floor(Math.random() * 16).toString(16)
+      ).join("");
+    const sampleItems = [
+      "Neural Pro Keyboard",
+      "Aurora Wireless Headphones",
+      "Quantum Coffee Subscription",
+      "Helios Smart Lamp",
+    ];
+    const item = sampleItems[Math.floor(Math.random() * sampleItems.length)];
+    const price = +(Math.random() * 200 + 10).toFixed(2);
+    executeAgentPurchase(item, price, "AVAX", fakeHash);
+  }
 
   // Dynamically renders the balance card using on-chain symbol data
   const renderBalanceCard = (fallbackSymbol: string, balanceData?: { formatted: string, symbol: string }) => {
@@ -174,10 +183,12 @@ export default function WalletPage() {
       {/* Asset cards layout */}
       {isConnected ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-          {renderBalanceCard("ETH", nativeBalance)}
-          {renderBalanceCard("dNZD", tokenBalance)}
-          
+          {renderBalanceCard("AVAX", nativeBalance)}
+
           {/* Empty placeholder card for balanced layout design */}
+          <div className="rounded-xl bg-[#1c1c1c]/50 border border-white/5 border-dashed p-5 flex flex-col items-center justify-center text-white/20 hover:border-white/20 transition-colors cursor-pointer">
+            <span className="text-xs uppercase tracking-widest">+ Add Token</span>
+          </div>
           <div className="rounded-xl bg-[#1c1c1c]/50 border border-white/5 border-dashed p-5 flex flex-col items-center justify-center text-white/20 hover:border-white/20 transition-colors cursor-pointer">
             <span className="text-xs uppercase tracking-widest">+ Add Token</span>
           </div>
@@ -205,7 +216,14 @@ export default function WalletPage() {
         <div className="px-6 py-5 border-b border-white/5 flex justify-between items-center bg-[#141414]">
           <h2 className="text-white font-medium">Transaction History</h2>
           <div className="flex items-center gap-2">
-             {/* Visual indicator highlighting Agent autonomy */}
+            <button
+              onClick={simulatePurchase}
+              className="flex items-center gap-1.5 text-xs text-yellow-300/80 bg-yellow-400/8 hover:bg-yellow-400/15 px-2.5 py-1 rounded-md border border-yellow-400/20 transition-colors"
+              title="Add a synthetic transaction (no wallet needed) to test invoice generation"
+            >
+              <Beaker className="w-3.5 h-3.5" />
+              Simulate purchase (dev)
+            </button>
             <span className="flex items-center gap-1.5 text-xs text-purple-400 bg-purple-400/10 px-2.5 py-1 rounded-md border border-purple-400/20">
               <Bot className="w-3.5 h-3.5" />
               100% Agent Managed
