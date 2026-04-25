@@ -35,9 +35,11 @@ function buildAgentInstructions() {
     "You are AgentCart's shopping agent.",
     "Help users shop online by using the available shopping tools whenever pricing, merchant trust, crypto conversion, or quote data is needed.",
     "Prefer tool-backed answers over guesses.",
-    "When recommending an option, explain the decision in plain language and include merchant, total estimated cost, token, and chain when available.",
+    "When recommending products, keep the chat response short: one or two concise sentences only.",
+    "Do not dump detailed pricing, shipping, accepted-token, or chain lists in the chat response because those details are rendered in product cards.",
+    "Mention the best pick and the main reason in plain language.",
     "If the user asks for a purchase recommendation, compare multiple options before deciding.",
-    "If the user asks for a direct quote, produce a concise answer with the quote details and why that path is reasonable.",
+    "If the user asks for a direct quote, produce a concise answer and let the recommendation card carry the quote details.",
     "Do not claim to complete wallet signing or checkout yourself.",
   ].join(" ");
 }
@@ -147,6 +149,28 @@ function isKeyboardRecommendationRequest(input: string) {
 function buildKeyboardRecommendations(): AgentRecommendation[] {
   const keyboardProducts = [
     {
+      id: "1",
+      name: "Neural Pro Keyboard",
+      description:
+        "Mechanical keyboard with AI-optimized key mapping and haptic feedback.",
+      price: 249.99,
+      category: "Peripherals",
+      tier: "S" as const,
+      acceptedCrypto: ["ETH", "AVAX", "USDC", "dNZD"] as CryptoToken[],
+      merchantName: "TechVault Store",
+      imageUrl:
+        "https://computerlounge.co.nz/cdn/shop/files/36f4ee3af51c83819f19ccfda709acc27354cc79_Wooting_60HE__1_grande.jpg?v=1729656519",
+      aiReasons: [
+        "Best overall pick because TechVault has the lowest landed cost and supports the agent credential flow.",
+        "Broad token support keeps checkout flexible across Base, Avalanche, and Ethereum.",
+      ],
+      shippingUsd: 12,
+      totalUsd: 261.99,
+      chain: "base",
+      token: "dNZD",
+      trustScore: 99,
+    },
+    {
       id: "kb-1",
       name: "Wooting 80HE",
       description:
@@ -162,6 +186,11 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
         "Fastest response profile for competitive gaming and low-latency typing.",
         "Strong firmware support and broad community tuning presets.",
       ],
+      shippingUsd: 6.99,
+      totalUsd: 206.79,
+      chain: "avalanche",
+      token: "USDC",
+      trustScore: 94,
     },
     {
       id: "kb-2",
@@ -179,6 +208,11 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
         "Excellent build quality out of the box with balanced acoustics.",
         "Great long-term value due to easy switch and keycap customization.",
       ],
+      shippingUsd: 6.99,
+      totalUsd: 226.79,
+      chain: "base",
+      token: "USDC",
+      trustScore: 93,
     },
     {
       id: "kb-3",
@@ -196,6 +230,11 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
         "Strong price-to-performance with premium feel in a smaller footprint.",
         "Reliable multi-device Bluetooth behavior for mixed workflows.",
       ],
+      shippingUsd: 6.99,
+      totalUsd: 166.79,
+      chain: "avalanche",
+      token: "USDC",
+      trustScore: 92,
     },
     {
       id: "kb-4",
@@ -213,6 +252,11 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
         "Hall-effect precision without flagship pricing.",
         "Useful software controls for per-key actuation and rapid-trigger tuning.",
       ],
+      shippingUsd: 6.99,
+      totalUsd: 176.79,
+      chain: "base",
+      token: "USDC",
+      trustScore: 91,
     },
     {
       id: "kb-5",
@@ -230,23 +274,11 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
         "Competitive-ready switch behavior and dependable polling stability.",
         "Excellent choice when prioritizing esports-style performance.",
       ],
-    },
-    {
-      id: "kb-6",
-      name: "Logitech G PRO X TKL Lightspeed",
-      description:
-        "Wireless TKL esports keyboard with low-latency connection and durable keycaps.",
-      price: 199.0,
-      category: "Peripherals",
-      tier: "A" as const,
-      acceptedCrypto: ["USDC", "ETH"] as CryptoToken[],
-      merchantName: "Logitech G",
-      imageUrl:
-        "https://resource.logitechg.com/content/dam/gaming/en/products/pro-x-tkl/pro-x-tkl-gallery-1-black.png",
-      aiReasons: [
-        "Clean professional design with proven tournament-grade wireless stack.",
-        "Strong battery life and reliable software profiles for travel setups.",
-      ],
+      shippingUsd: 6.99,
+      totalUsd: 236.79,
+      chain: "avalanche",
+      token: "USDC",
+      trustScore: 90,
     },
   ];
 
@@ -257,13 +289,13 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
       ...(fallbackProduct ?? product),
       ...product,
     },
-    token: product.acceptedCrypto[0] ?? "USDC",
-    chain: index % 2 === 0 ? "Avalanche C-Chain" : "Base Sepolia",
-    totalUsd: Number((product.price + 6.99 + 0.8).toFixed(2)),
+    token: product.token,
+    chain: product.chain,
+    totalUsd: product.totalUsd,
     subtotalUsd: product.price,
-    shippingUsd: 6.99,
-    gasUsd: 0.8,
-    trustScore: 94 - index,
+    shippingUsd: product.shippingUsd,
+    gasUsd: Number((product.totalUsd - product.price - product.shippingUsd).toFixed(2)),
+    trustScore: product.trustScore,
     score: 99 - index,
     reasoning: product.aiReasons,
   }));
@@ -321,6 +353,23 @@ function buildRecommendations(input: string): AgentRecommendation[] {
     .filter((recommendation): recommendation is AgentRecommendation => Boolean(recommendation));
 }
 
+function buildRecommendationSummary(
+  recommendations: AgentRecommendation[],
+  fallbackOutput: string
+) {
+  const topRecommendation = recommendations[0];
+
+  if (!topRecommendation) {
+    return fallbackOutput;
+  }
+
+  const reason =
+    topRecommendation.reasoning[0]?.replace(/\.$/, "") ??
+    "it has the best mix of cost, trust, and checkout flexibility";
+
+  return `Best pick: ${topRecommendation.product.name} from ${topRecommendation.product.merchantName}. ${reason}. I put the quote, merchant, token, and chain details in the cards below.`;
+}
+
 export async function runShoppingAgent(input: string) {
   const apiKey = process.env.OPENAI_API_KEY;
 
@@ -336,10 +385,11 @@ export async function runShoppingAgent(input: string) {
     tools: shoppingTools,
     stopWhen: stepCountIs(6),
   });
+  const recommendations = buildRecommendations(input);
 
   return {
     model,
-    output: result.text,
-    recommendations: buildRecommendations(input),
+    output: buildRecommendationSummary(recommendations, result.text),
+    recommendations,
   };
 }

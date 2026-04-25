@@ -273,7 +273,10 @@ export function AgentConsole() {
                       key={recommendation.product.id}
                       className="w-full max-w-[320px] space-y-2"
                     >
-                      <ProductCard product={recommendation.product} />
+                      <ProductCard
+                        product={recommendation.product}
+                        recommendation={recommendation}
+                      />
                     </div>
                   ))}
                 </div>
