@@ -25,7 +25,7 @@ Default route: `/` redirects to `/agent`.
 | Identity status pill on `/agent` | `components/identity-banner.tsx` |
 | Sidebar identity row + nav | `components/sidebar.tsx` |
 | Profile page (credential + permissions) | `app/profile/page.tsx` |
-| Local OpenAI Agents SDK server | `lib/openai-shopping-agent.ts`, `mcp-server/` |
+| Local AI SDK shopping agent | `lib/openai-shopping-agent.ts`, `mcp-server/` |
 
 ---
 

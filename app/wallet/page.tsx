@@ -8,6 +8,7 @@ import { Wallet, LogOut, CheckCircle, Clock, ExternalLink, Bot, AlertCircle, Dow
 import { cn } from "@/lib/utils";
 import { useAgent } from "@/context/AgentContext";
 import { useIdentity } from "@/context/IdentityContext";
+import { generateInvoiceData, buildFilename } from "@/lib/invoiceData";
 
 // Hackathon MVP only: Local mock price oracle for USD value calculation
 const MOCK_TOKEN_PRICES: Record<string, number> = {
@@ -18,34 +19,33 @@ const MOCK_TOKEN_PRICES: Record<string, number> = {
 
 
 export default function WalletPage() {
-  const { displayName } = useIdentity();
+  const { displayName, credential } = useIdentity();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [downloadingTx, setDownloadingTx] = useState<string | null>(null);
 
   async function handleDownloadInvoice(tx: ReturnType<typeof useAgent>["transactions"][0]) {
     setDownloadingTx(tx.id);
     try {
-      const cleanAmount = tx.amount.replace(/[+\-,\s]/g, "");
-      const amountNum = parseFloat(cleanAmount) || 0;
-      const fee = 0.001;
-      const { downloadInvoice } = await import("@/components/invoice-pdf");
-      await downloadInvoice(
-        {
-          invoiceNumber: tx.id.replace(/[^a-zA-Z0-9]/g, "").toUpperCase(),
-          agentName: "agentcart.eth",
-          userName: displayName ?? "Unknown",
-          merchantName: "AgentCart Marketplace",
-          itemName: tx.item,
-          amount: cleanAmount,
-          token: tx.token,
-          networkFee: fee.toFixed(3),
-          total: (amountNum + fee).toFixed(3),
-          txHash: tx.hash,
-          timestamp: tx.date,
-          status: tx.status === "Completed" ? "CONFIRMED" : "PENDING",
-        },
-        tx.id
-      );
+      const invoiceData = generateInvoiceData({
+        item: tx.item,
+        hash: tx.hash,
+        date: tx.date,
+        amount: tx.amount,
+        token: tx.token,
+        status: tx.status,
+        userName: displayName ?? undefined,
+      });
+      const [{ pdf }, { InvoicePDF }] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("@/components/invoice-pdf"),
+      ]);
+      const blob = await pdf(<InvoicePDF data={invoiceData} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = buildFilename(invoiceData);
+      link.click();
+      URL.revokeObjectURL(url);
     } finally {
       setDownloadingTx(null);
     }
@@ -260,7 +260,7 @@ export default function WalletPage() {
               </tr>
             </thead>
             <tbody>
-              {isConnected ? (
+              {transactions.length > 0 ? (
                 transactions.map((tx) => (
                   <tr
                     key={tx.id}
@@ -330,7 +330,7 @@ export default function WalletPage() {
                     <div className="inline-flex flex-col items-center justify-center opacity-40">
                       <Bot className="w-8 h-8 mb-3" />
                       <p className="text-white text-sm">
-                        Connect wallet to sync Agent transaction history
+                        No transactions yet - buy with Agent or use Simulate purchase to add one
                       </p>
                     </div>
                   </td>

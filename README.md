@@ -92,7 +92,7 @@ context/
 lib/
   identity.ts            — AgentCredential type; generate / save / load / revoke
   wagmiConfig.ts         — wagmi chain + connector config (Base Sepolia)
-  openai-shopping-agent  — server-side OpenAI Agents SDK wrapper
+  openai-shopping-agent  — server-side AI SDK shopping agent
   shopping-backend.mjs   — local shopping data backend used by the MCP server
   mockData.ts            — product fixtures
 
@@ -147,7 +147,7 @@ Add this to `.env`:
 OPENAI_API_KEY=sk-...
 ```
 
-Then open `/agent` and submit a shopping prompt. The agent uses `gpt-5.4-mini` plus the local shopping MCP tools.
+Then open `/agent` and submit a shopping prompt. The agent uses `gpt-5.4-mini` through the AI SDK plus local shopping tools.
 
 ### Build for production
 

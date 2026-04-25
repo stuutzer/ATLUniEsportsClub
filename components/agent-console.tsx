@@ -2,14 +2,121 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Bot, Loader2 } from "lucide-react";
+import { Bot, Loader2, Sparkles } from "lucide-react";
 import { SearchBar } from "@/components/search-bar";
 import { ShoppingCategories } from "@/components/shopping-categories";
+import { ProductCard } from "@/components/product-card";
+import type { AgentRecommendation } from "@/lib/agent-types";
 import { cn } from "@/lib/utils";
 
 interface AgentRunResponse {
   model: string;
   output: string;
+  recommendations: AgentRecommendation[];
+}
+
+function RecommendationSkeleton() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <div
+          key={index}
+          className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#141414] animate-pulse"
+        >
+          <div className="aspect-[4/3] bg-white/5" />
+          <div className="space-y-3 p-4">
+            <div className="h-2 w-20 rounded bg-white/5" />
+            <div className="h-4 w-3/4 rounded bg-white/10" />
+            <div className="h-3 w-1/2 rounded bg-white/5" />
+            <div className="h-9 rounded-lg bg-white/5" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function renderInlineMarkdown(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={index} className="font-semibold text-white">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+
+    return part;
+  });
+}
+
+function AgentMarkdown({ content }: { content: string }) {
+  const blocks: React.ReactNode[] = [];
+  const lines = content.split(/\r?\n/);
+  let listItems: { text: string; indent: number }[] = [];
+
+  function flushList() {
+    if (listItems.length === 0) return;
+
+    blocks.push(
+      <ul key={`list-${blocks.length}`} className="my-3 space-y-1.5">
+        {listItems.map((item, index) => (
+          <li
+            key={`${item.text}-${index}`}
+            className="flex gap-2 text-sm leading-7 text-white/75"
+            style={{ marginLeft: item.indent * 14 }}
+          >
+            <span className="mt-[0.8em] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-purple-300/70" />
+            <span>{renderInlineMarkdown(item.text)}</span>
+          </li>
+        ))}
+      </ul>
+    );
+
+    listItems = [];
+  }
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      flushList();
+      return;
+    }
+
+    const bulletMatch = line.match(/^(\s*)-\s+(.+)$/);
+    if (bulletMatch) {
+      listItems.push({
+        text: bulletMatch[2],
+        indent: Math.floor(bulletMatch[1].length / 2),
+      });
+      return;
+    }
+
+    flushList();
+
+    if (trimmed.startsWith("### ")) {
+      blocks.push(
+        <h3
+          key={`heading-${blocks.length}`}
+          className="mb-2 mt-4 text-base font-semibold text-white first:mt-0"
+        >
+          {renderInlineMarkdown(trimmed.slice(4))}
+        </h3>
+      );
+      return;
+    }
+
+    blocks.push(
+      <p key={`paragraph-${blocks.length}`} className="my-2 text-sm leading-7 text-white/75">
+        {renderInlineMarkdown(trimmed)}
+      </p>
+    );
+  });
+
+  flushList();
+
+  return <div>{blocks}</div>;
 }
 
 export function AgentConsole() {
@@ -23,7 +130,7 @@ export function AgentConsole() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setQuery(q);
+    if (!q) setQuery("");
   }, [q]);
 
   useEffect(() => {
@@ -87,6 +194,7 @@ export function AgentConsole() {
     }
 
     router.push(`/agent?q=${encodeURIComponent(trimmed)}`);
+    setQuery("");
   }
 
   const showEmptyState = !q && !loading && !result && !error;
@@ -104,8 +212,8 @@ export function AgentConsole() {
         {showEmptyState ? (
           <ShoppingCategories />
         ) : (
-          <div className="mx-auto w-full max-w-3xl">
-            <div className="rounded-2xl border border-white/[0.06] bg-[#161616] p-6">
+          <div className="mx-auto w-full max-w-6xl space-y-5">
+            <div className="max-w-3xl rounded-2xl border border-white/[0.06] bg-[#161616] p-6">
               <div className="mb-5 flex items-center gap-3">
                 <div
                   className={cn(
@@ -123,7 +231,7 @@ export function AgentConsole() {
                   <p className="truncate text-sm font-medium text-white">{q}</p>
                   <p className="text-xs text-white/35">
                     {loading
-                      ? "Running agent with MCP tools"
+                      ? "Running agent with AI SDK tools"
                       : result
                       ? `Model: ${result.model}`
                       : "Request failed"}
@@ -143,11 +251,43 @@ export function AgentConsole() {
               )}
 
               {result && (
-                <div className="whitespace-pre-wrap text-sm leading-7 text-white/75">
-                  {result.output}
-                </div>
+                <AgentMarkdown content={result.output} />
               )}
             </div>
+
+            {result && result.recommendations.length > 0 && (
+              <div className="max-w-5xl space-y-4 pt-1">
+                <div className="flex items-center justify-between gap-3 text-sm text-white/70">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-purple-300" />
+                    <span>Recommended products</span>
+                  </div>
+                  <span className="rounded-full border border-purple-400/30 bg-purple-500/10 px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-purple-200">
+                    {result.recommendations.length} picks
+                  </span>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {result.recommendations.map((recommendation) => (
+                    <div
+                      key={recommendation.product.id}
+                      className="w-full max-w-[320px] space-y-2"
+                    >
+                      <ProductCard
+                        product={recommendation.product}
+                        recommendation={recommendation}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {loading && (
+              <div className="mt-5">
+                <RecommendationSkeleton />
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -5,6 +5,7 @@ import { X, Check, Download, Loader2 } from "lucide-react";
 import type { Transaction, TransactionStatus } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { useIdentity } from "@/context/IdentityContext";
+import { generateInvoiceData, buildFilename } from "@/lib/invoiceData";
 
 interface OrderTrackingModalProps {
   transaction: Transaction;
@@ -35,26 +36,26 @@ export function OrderTrackingModal({ transaction, onClose }: OrderTrackingModalP
   async function handleDownloadInvoice() {
     setDownloading(true);
     try {
-      const amountNum = parseFloat(transaction.amount) || 0;
-      const fee = 0.001;
-      const { downloadInvoice } = await import("@/components/invoice-pdf");
-      await downloadInvoice(
-        {
-          invoiceNumber: transaction.id.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8).toUpperCase(),
-          agentName: "agentcart.eth",
-          userName: displayName ?? "Unknown",
-          merchantName: transaction.vendor,
-          itemName: transaction.productName,
-          amount: transaction.amount,
-          token: transaction.token,
-          networkFee: fee.toFixed(4),
-          total: (amountNum + fee).toFixed(4),
-          txHash: transaction.id,
-          timestamp: new Date().toLocaleString(),
-          status: "CONFIRMED",
-        },
-        transaction.id
-      );
+      const invoiceData = generateInvoiceData({
+        productName: transaction.productName,
+        vendor: transaction.vendor,
+        amount: transaction.amount,
+        token: transaction.token,
+        status: transaction.status,
+        hash: transaction.id,
+        userName: displayName ?? undefined,
+      });
+      const [{ pdf }, { InvoicePDF }] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("@/components/invoice-pdf"),
+      ]);
+      const blob = await pdf(<InvoicePDF data={invoiceData} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = buildFilename(invoiceData);
+      link.click();
+      URL.revokeObjectURL(url);
     } finally {
       setDownloading(false);
     }
@@ -192,7 +193,7 @@ export function OrderTrackingModal({ transaction, onClose }: OrderTrackingModalP
                 ) : (
                   <Download className="w-3.5 h-3.5" />
                 )}
-                Download Invoice
+                Download Invoice ↓
               </button>
             )}
             <button className="text-white/25 hover:text-white/50 text-xs transition-colors">

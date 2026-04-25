@@ -8,19 +8,65 @@ export interface AgentCredential {
   issuedAt: string;
   expiresAt: string;
   signature: string;
+  signatureType: "eip-712" | "mock";
 }
 
-export function generateCredential(
+const EIP712_DOMAIN = {
+  name: "AgentCart",
+  version: "1",
+  chainId: 43113, // Avalanche Fuji
+} as const;
+
+const EIP712_TYPES = {
+  AgentCredential: [
+    { name: "id", type: "string" },
+    { name: "agent", type: "string" },
+    { name: "actingFor", type: "string" },
+    { name: "permissions", type: "string" },
+    { name: "spendingLimit", type: "uint256" },
+    { name: "allowedCategories", type: "string" },
+    { name: "issuedAt", type: "uint256" },
+    { name: "expiresAt", type: "uint256" },
+  ],
+} as const;
+
+export interface CredentialTypedData {
+  domain: typeof EIP712_DOMAIN;
+  types: typeof EIP712_TYPES;
+  primaryType: "AgentCredential";
+  message: {
+    id: string;
+    agent: string;
+    actingFor: string;
+    permissions: string;
+    spendingLimit: bigint;
+    allowedCategories: string;
+    issuedAt: bigint;
+    expiresAt: bigint;
+  };
+}
+
+export interface CredentialDraft {
+  id: string;
+  agentName: string;
+  actingFor: string;
+  permissions: string[];
+  spendingLimit: number;
+  allowedCategories: string[];
+  issuedAt: string;
+  expiresAt: string;
+}
+
+export function buildCredentialDraft(
   walletAddress: string,
   ensName: string | null,
   permissions: string[],
   spendingLimit: number,
   allowedCategories: string[]
-): AgentCredential {
+): CredentialDraft {
   const now = new Date();
   const expires = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-
-  const credential: AgentCredential = {
+  return {
     id: crypto.randomUUID(),
     agentName: "agentcart.eth",
     actingFor: ensName || walletAddress,
@@ -29,26 +75,62 @@ export function generateCredential(
     allowedCategories,
     issuedAt: now.toISOString(),
     expiresAt: expires.toISOString(),
-    signature: "",
   };
+}
 
+export function buildTypedData(draft: CredentialDraft): CredentialTypedData {
+  return {
+    domain: EIP712_DOMAIN,
+    types: EIP712_TYPES,
+    primaryType: "AgentCredential",
+    message: {
+      id: draft.id,
+      agent: draft.agentName,
+      actingFor: draft.actingFor,
+      permissions: draft.permissions.join(","),
+      spendingLimit: BigInt(Math.round(draft.spendingLimit)),
+      allowedCategories: draft.allowedCategories.join(","),
+      issuedAt: BigInt(Math.floor(new Date(draft.issuedAt).getTime() / 1000)),
+      expiresAt: BigInt(Math.floor(new Date(draft.expiresAt).getTime() / 1000)),
+    },
+  };
+}
+
+function mockSignature(draft: CredentialDraft): string {
   const payload = JSON.stringify({
-    agent: credential.agentName,
-    for: credential.actingFor,
-    permissions: credential.permissions,
-    limit: credential.spendingLimit,
-    issued: credential.issuedAt,
+    agent: draft.agentName,
+    for: draft.actingFor,
+    permissions: draft.permissions,
+    limit: draft.spendingLimit,
+    issued: draft.issuedAt,
   });
-
-  // TODO: replace with real EIP-712 wallet signature via eth_signTypedData
   const hash = Array.from(payload).reduce(
     (h, char) => ((h << 5) - h + char.charCodeAt(0)) | 0,
     0
   );
   const hex = (hash >>> 0).toString(16).padStart(8, "0");
-  credential.signature = "0x" + (hex + credential.id.replace(/-/g, "")).slice(0, 64);
+  return "0x" + (hex + draft.id.replace(/-/g, "")).slice(0, 64);
+}
 
-  return credential;
+export function finalizeCredential(
+  draft: CredentialDraft,
+  signature: string,
+  signatureType: "eip-712" | "mock"
+): AgentCredential {
+  return { ...draft, signature, signatureType };
+}
+
+// Convenience: build draft + mock signature in one call. Used as the offline
+// fallback when no wallet is connected or the user rejects the EIP-712 prompt.
+export function generateMockCredential(
+  walletAddress: string,
+  ensName: string | null,
+  permissions: string[],
+  spendingLimit: number,
+  allowedCategories: string[]
+): AgentCredential {
+  const draft = buildCredentialDraft(walletAddress, ensName, permissions, spendingLimit, allowedCategories);
+  return finalizeCredential(draft, mockSignature(draft), "mock");
 }
 
 export function saveCredential(credential: AgentCredential): void {
@@ -64,6 +146,8 @@ export function loadCredential(): AgentCredential | null {
       localStorage.removeItem("agentcart_credential");
       return null;
     }
+    // Backfill signatureType for credentials issued before the field existed.
+    if (!cred.signatureType) cred.signatureType = "mock";
     return cred;
   } catch {
     return null;
