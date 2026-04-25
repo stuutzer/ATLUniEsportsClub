@@ -10,8 +10,8 @@ const Web3Provider = dynamic(
 );
 
 export const metadata: Metadata = {
-  title: "AgentCart — Your AI Agent. Your Wallet. Every Purchase.",
-  description: "Web3 AI Marketplace powered by autonomous shopping agents",
+  title: "Quarter — Your AI Shopping Agent",
+  description: "Quarter is your personal AI shopping agent. Tell it what you want; it finds, compares, and checks out for you.",
 };
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ export default function RootLayout({
         <Web3Provider>
           <AgentProvider>
             <Sidebar />
-            <main className="ml-[300px] min-h-screen">{children}</main>
+            <main className="ml-[260px] min-h-screen">{children}</main>
           </AgentProvider>
         </Web3Provider>
       </body>

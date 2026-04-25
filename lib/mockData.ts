@@ -1,5 +1,5 @@
 export type Tier = "S" | "A" | "B";
-export type CryptoToken = "ETH" | "AVAX" | "USDC";
+export type CryptoToken = "ETH" | "AVAX" | "USDC" | "dNZD";
 
 export interface Product {
   id: string;

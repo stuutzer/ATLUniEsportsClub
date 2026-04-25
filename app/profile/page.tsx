@@ -192,7 +192,7 @@ export default function ProfilePage() {
             <div>
               <p className="text-white/70 font-medium mb-1">No Agent Credential Generated</p>
               <p className="text-white/30 text-sm max-w-xs">
-                Generate a credential to allow AgentCart to act on your behalf
+                Generate a credential to allow Quarter to act on your behalf
                 with merchants
               </p>
             </div>
