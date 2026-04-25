@@ -1,68 +1,53 @@
-"use client";
+import { SearchBar } from "@/components/search-bar";
+import { Zap } from "lucide-react";
 
-import { AgentFeed } from "@/components/agent-feed";
-import { ProductCard } from "@/components/product-card";
-import { mockProducts } from "@/lib/mockData";
-import { Zap, RefreshCw } from "lucide-react";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
-
-// Show only S and A tier products in agent results
-const agentResults = mockProducts.filter((p) => p.tier === "S" || p.tier === "A").slice(0, 6);
+// TODO: populate with AI agent search results
+const EMPTY_CARDS = Array.from({ length: 6 });
 
 export default function AgentPage() {
-  const [key, setKey] = useState(0);
-
-  function rerun() {
-    setKey((k) => k + 1);
-  }
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-green-400 text-xs font-medium uppercase tracking-widest">Agent Active</span>
-          </div>
-          <h1 className="text-2xl font-bold text-white">Agent Activity</h1>
-        </div>
-        <button
-          onClick={rerun}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium",
-            "bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white",
-            "transition-all duration-200"
-          )}
-        >
-          <RefreshCw className="w-4 h-4" />
-          Re-run Agent
-        </button>
-      </div>
+    <div className="flex flex-col min-h-screen pb-36">
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Live feed */}
-        <div className="rounded-xl bg-[#141414] border border-white/10 overflow-hidden" style={{ minHeight: 480 }}>
-          <AgentFeed key={key} />
+      {/* Hero */}
+      <div className="flex flex-col items-center text-center pt-20 pb-14 px-8">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-600/10 border border-purple-500/20 text-purple-400 text-xs font-medium mb-7 tracking-wide">
+          <Zap className="w-3 h-3" />
+          AI-Powered Web3 Shopping
         </div>
 
-        {/* Results summary */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <Zap className="w-4 h-4 text-purple-400" />
-            <p className="text-xs text-white/40 uppercase tracking-widest">
-              {/* TODO: Replace with Claude API ranking */}
-              Top Ranked Results
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {agentResults.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+        <h1 className="text-5xl font-bold text-white leading-tight mb-5 max-w-2xl">
+          Your AI Agent.{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">
+            Your Wallet.
+          </span>
+          <br />
+          Every Purchase.
+        </h1>
+
+        <p className="text-white/40 text-base max-w-md leading-relaxed">
+          Let your autonomous agent find, rank, and buy the best products —
+          paying in crypto with the lowest fees.
+        </p>
+      </div>
+
+      {/* Results grid */}
+      <div className="px-10">
+        <p className="text-xs text-white/25 uppercase tracking-widest mb-4 pl-1">
+          Agent Results
+        </p>
+        <div className="grid grid-cols-3 gap-3 max-w-[960px] mx-auto">
+          {/* TODO: populate with AI agent search results */}
+          {EMPTY_CARDS.map((_, i) => (
+            <div
+              key={i}
+              className="rounded-xl bg-[#141414] border border-white/[0.06] h-[140px]"
+            />
+          ))}
         </div>
       </div>
+
+      {/* Search bar fixed to bottom */}
+      <SearchBar />
     </div>
   );
 }

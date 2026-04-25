@@ -9,7 +9,11 @@ function truncateAddress(address: string) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-export function WalletButton() {
+interface WalletButtonProps {
+  className?: string;
+}
+
+export function WalletButton({ className }: WalletButtonProps = {}) {
   const { address, isConnected } = useAccount();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
@@ -23,7 +27,8 @@ export function WalletButton() {
           className={cn(
             "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium",
             "bg-white/10 hover:bg-white/15 border border-white/10",
-            "text-white transition-all duration-200"
+            "text-white transition-all duration-200",
+            className
           )}
         >
           <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
@@ -54,7 +59,8 @@ export function WalletButton() {
       className={cn(
         "px-5 py-2 rounded-full text-sm font-semibold",
         "bg-purple-600 hover:bg-purple-700 text-white",
-        "transition-all duration-200 hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]"
+        "transition-all duration-200 hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]",
+        className
       )}
     >
       Connect Wallet

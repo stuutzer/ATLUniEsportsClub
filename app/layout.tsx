@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import dynamic from "next/dynamic";
-import { Navbar } from "@/components/navbar";
+import { Sidebar } from "@/components/sidebar";
 
-// Load the heavy Web3 bundle only on the client, after the shell paints
 const Web3Provider = dynamic(
   () => import("@/providers/web3-provider").then((m) => m.Web3Provider),
   { ssr: false }
@@ -23,8 +22,8 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="min-h-screen bg-[#0a0a0a] text-white antialiased">
         <Web3Provider>
-          <Navbar />
-          <main>{children}</main>
+          <Sidebar />
+          <main className="ml-[220px] min-h-screen">{children}</main>
         </Web3Provider>
       </body>
     </html>
