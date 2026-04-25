@@ -158,8 +158,7 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
       tier: "S" as const,
       acceptedCrypto: ["ETH", "AVAX", "USDC", "dNZD"] as CryptoToken[],
       merchantName: "TechVault Store",
-      imageUrl:
-        "https://computerlounge.co.nz/cdn/shop/files/36f4ee3af51c83819f19ccfda709acc27354cc79_Wooting_60HE__1_grande.jpg?v=1729656519",
+      imageUrl: "/products/keyboards/neural-pro-keyboard.webp",
       aiReasons: [
         "Best overall pick because TechVault has the lowest landed cost and supports the agent credential flow.",
         "Broad token support keeps checkout flexible across Base, Avalanche, and Ethereum.",
@@ -180,8 +179,7 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
       tier: "S" as const,
       acceptedCrypto: ["USDC", "AVAX", "ETH"] as CryptoToken[],
       merchantName: "Wooting Official",
-      imageUrl:
-        "https://computerlounge.co.nz/cdn/shop/files/36f4ee3af51c83819f19ccfda709acc27354cc79_Wooting_60HE__1_grande.jpg?v=1729656519",
+      imageUrl: "/products/keyboards/wooting-80he.webp",
       aiReasons: [
         "Fastest response profile for competitive gaming and low-latency typing.",
         "Strong firmware support and broad community tuning presets.",
@@ -202,8 +200,7 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
       tier: "S" as const,
       acceptedCrypto: ["USDC", "ETH"] as CryptoToken[],
       merchantName: "Keychron Store",
-      imageUrl:
-        "https://www.keychron.com/cdn/shop/files/Keychron-Q1-Max-QMK-VIA-Wireless-Custom-Mechanical-Keyboard.jpg?v=1693279088",
+      imageUrl: "/products/keyboards/keychron-q1-max.jpg",
       aiReasons: [
         "Excellent build quality out of the box with balanced acoustics.",
         "Great long-term value due to easy switch and keycap customization.",
@@ -224,8 +221,7 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
       tier: "A" as const,
       acceptedCrypto: ["USDC", "AVAX"] as CryptoToken[],
       merchantName: "NuPhy",
-      imageUrl:
-        "https://nuphy.com/cdn/shop/files/NuPhy-Halo75-v2-wireless-mechanical-keyboard-black_1200x.jpg?v=1715934201",
+      imageUrl: "/products/keyboards/nuphy-halo75-v2.png",
       aiReasons: [
         "Strong price-to-performance with premium feel in a smaller footprint.",
         "Reliable multi-device Bluetooth behavior for mixed workflows.",
@@ -246,8 +242,7 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
       tier: "A" as const,
       acceptedCrypto: ["USDC", "ETH"] as CryptoToken[],
       merchantName: "Akko Global",
-      imageUrl:
-        "https://en.akkogear.com/wp-content/uploads/2024/01/MOD007BHE.jpg",
+      imageUrl: "/products/keyboards/akko-mod-007b-he.png",
       aiReasons: [
         "Hall-effect precision without flagship pricing.",
         "Useful software controls for per-key actuation and rapid-trigger tuning.",
@@ -268,8 +263,7 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
       tier: "A" as const,
       acceptedCrypto: ["USDC", "AVAX", "ETH"] as CryptoToken[],
       merchantName: "Razer",
-      imageUrl:
-        "https://assets3.razerzone.com/5qf51Y4WYPk0UiHEU7mQadGG7N8=/1500x1000/https%3A%2F%2Fmedias-p1.phoenix.razer.com%2Fsys-master-phoenix-images-container%2Fh53%2Fh4f%2F9594098774046%2F230912-huntsman-v3-pro-tkl-500x500-1.jpg",
+      imageUrl: "/products/keyboards/razer-huntsman-v3-pro-tkl.webp",
       aiReasons: [
         "Competitive-ready switch behavior and dependable polling stability.",
         "Excellent choice when prioritizing esports-style performance.",

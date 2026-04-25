@@ -65,7 +65,7 @@ export const mockProducts: Product[] = [
     tier: "S",
     acceptedCrypto: ["ETH", "AVAX", "USDC"],
     merchantName: "TechVault Store",
-    imageUrl: "https://computerlounge.co.nz/cdn/shop/files/36f4ee3af51c83819f19ccfda709acc27354cc79_Wooting_60HE__1_grande.jpg?v=1729656519",
+    imageUrl: "/products/keyboards/neural-pro-keyboard.webp",
     aiReasons: [
       "Lowest total cost when accounting for gas fees on Avalanche",
       "Merchant has 99.2% trust score based on 3,400+ transactions",

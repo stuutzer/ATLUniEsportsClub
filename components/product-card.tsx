@@ -16,7 +16,7 @@ import {
   useChainId,
 } from "wagmi";
 import { parseEther } from "viem";
-import { avalancheFuji } from "wagmi/chains";
+import { avalanche } from "wagmi/chains";
 
 const tokenStyles: Record<
   string,
@@ -165,11 +165,11 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
   const handleConfirmPayment = async () => {
     setModalOpen(false);
 
-    if (chainId !== avalancheFuji.id) {
+    if (chainId !== avalanche.id) {
       try {
-        await switchChainAsync({ chainId: avalancheFuji.id });
+        await switchChainAsync({ chainId: avalanche.id });
       } catch (err) {
-        console.error("Failed to switch to Fuji", err);
+        console.error("Failed to switch to Avalanche C-Chain", err);
         return;
       }
     }
@@ -177,13 +177,13 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
     sendTransaction({
       to: DUMMY_MERCHANT_ADDRESS,
       value: FLAT_AVAX_VALUE,
-      chainId: avalancheFuji.id,
+      chainId: avalanche.id,
     });
   };
 
   let buttonText = "Let Agent Purchase";
   if (isWalletPending) buttonText = "Confirm in Wallet...";
-  if (isConfirming) buttonText = "Processing on Fuji...";
+  if (isConfirming) buttonText = "Processing on C-Chain...";
   if (isConfirmed) buttonText = "Purchase Complete!";
 
   const merchantName = recommendation?.product.merchantName ?? product.merchantName;

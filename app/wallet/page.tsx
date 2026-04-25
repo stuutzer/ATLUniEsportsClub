@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAccount, useConnect, useDisconnect, useBalance } from "wagmi";
 import { injected } from "wagmi/connectors";
-import { avalancheFuji } from "wagmi/chains";
+import { avalanche } from "wagmi/chains";
 import { Wallet, LogOut, CheckCircle, Clock, ExternalLink, Bot, AlertCircle, Download, Loader2, Beaker } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAgent } from "@/context/AgentContext";
@@ -59,7 +59,7 @@ export default function WalletPage() {
 
   const { data: nativeBalance } = useBalance({
     address,
-    chainId: avalancheFuji.id,
+    chainId: avalanche.id,
   });
 
   function simulatePurchase() {

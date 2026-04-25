@@ -6,11 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "mcp:shopping": "node ./mcp-server/server.mjs"
+    "mcp:shopping": "node ./mcp-server/server.mjs",
+    "mcp:payments": "tsx ./mcp-server/payment-gateway/server.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.53",
     "@ai-sdk/react": "^3.0.170",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-dropdown-menu": "^2.1.1",
@@ -31,6 +33,7 @@
     "react-dom": "^18",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.21.0",
     "viem": "^2.21.19",
     "wagmi": "^2.12.7",
     "zod": "^4.3.6"
