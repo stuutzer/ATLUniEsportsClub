@@ -19,11 +19,12 @@ interface PurchaseModalProps {
   product: Product;
   onClose: () => void;
   onConfirm?: () => void;
+  policyError?: string | null;
 }
 
 const STEP_DELAYS = [800, 1000, 1200, 800];
 
-export function PurchaseModal({ product, onClose, onConfirm }: PurchaseModalProps) {
+export function PurchaseModal({ product, onClose, onConfirm, policyError }: PurchaseModalProps) {
   const { credential } = useIdentity();
   const [step, setStep] = useState(1);
   const [cardVisible, setCardVisible] = useState(false);
@@ -39,9 +40,10 @@ export function PurchaseModal({ product, onClose, onConfirm }: PurchaseModalProp
   useEffect(() => {
     if (step >= 5) return;
     if (step === 4 && !credential) return; // stop — no credential
+    if (step === 4 && policyError) return; // stop — credential exists but policy blocks
     const t = setTimeout(() => setStep((s) => s + 1), STEP_DELAYS[step - 1]);
     return () => clearTimeout(t);
-  }, [step, credential]);
+  }, [step, credential, policyError]);
 
   const preferredToken = product.acceptedCrypto.includes("AVAX")
     ? "AVAX"
@@ -95,7 +97,13 @@ export function PurchaseModal({ product, onClose, onConfirm }: PurchaseModalProp
           {step === 3 && (
             <StepPresenting product={product} credential={credential} visible={cardVisible} />
           )}
-          {step === 4 && <StepVerification credential={credential} onClose={onClose} />}
+          {step === 4 && (
+            <StepVerification
+              credential={credential}
+              policyError={policyError ?? null}
+              onClose={onClose}
+            />
+          )}
           {step === 5 && (
             <StepPayment
               product={product}
@@ -216,9 +224,11 @@ function StepPresenting({
 // ─── Step 4: Verification result ──────────────────────────────────────────────
 function StepVerification({
   credential,
+  policyError,
   onClose,
 }: {
   credential: AgentCredential | null;
+  policyError: string | null;
   onClose: () => void;
 }) {
   if (!credential) {
@@ -239,6 +249,30 @@ function StepVerification({
           className="px-6 py-2.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-colors"
         >
           Go to Profile
+        </Link>
+      </div>
+    );
+  }
+
+  if (policyError) {
+    return (
+      <div className="flex flex-col items-center text-center gap-5 flex-1 justify-center">
+        <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+          <XCircle className="w-7 h-7 text-red-400" />
+        </div>
+        <div>
+          <p className="text-white font-semibold text-lg mb-2">Blocked by policy</p>
+          <p className="text-white/55 text-sm max-w-xs mb-1">{policyError}</p>
+          <p className="text-white/35 text-xs max-w-xs">
+            The merchant accepted the credential, but your spending policy refused this purchase.
+          </p>
+        </div>
+        <Link
+          href="/profile"
+          onClick={onClose}
+          className="px-6 py-2.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-colors"
+        >
+          Adjust limit in Profile
         </Link>
       </div>
     );
