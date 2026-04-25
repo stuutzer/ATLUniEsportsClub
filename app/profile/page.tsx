@@ -112,7 +112,7 @@ export default function ProfilePage() {
     : "?";
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-8 max-w-full">
       <h1 className="text-xl font-semibold text-white mb-7">Profile</h1>
 
       {/* ── Identity Card ─────────────────────────────────────────────────── */}
@@ -154,7 +154,7 @@ export default function ProfilePage() {
             </div>
           )}
           {!walletAddress && (
-            <p className="text-white/30 text-sm">Connect your wallet to get started</p>
+            <p className="text-white/30 text-sm">Login by connecting your wallet</p>
           )}
         </div>
       </div>

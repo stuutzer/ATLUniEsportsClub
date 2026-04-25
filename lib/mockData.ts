@@ -30,6 +30,29 @@ export interface AgentLog {
   type: "search" | "compare" | "rank" | "info";
 }
 
+export type TransactionStatus =
+  | "placed"
+  | "confirmed"
+  | "processing"
+  | "shipped"
+  | "delivered";
+
+export interface TransactionStep {
+  label: string;
+  time?: string;
+  done: boolean;
+}
+
+export interface Transaction {
+  id: string;
+  productName: string;
+  vendor: string;
+  amount: string;
+  token: string;
+  status: TransactionStatus;
+  steps: TransactionStep[];
+}
+
 // TODO: Replace with Serper API search results
 export const mockProducts: Product[] = [
   {
