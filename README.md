@@ -15,7 +15,7 @@ AgentCart connects your Ethereum wallet and issues a signed **Agent Credential**
 ### Digital Identity System
 - Resolves your **ENS name** on connect (falls back to truncated address `0x1234...5678`)
 - Issues a signed **Agent Credential** scoped with permissions, a spending limit, and an expiry (24 h)
-- Mock signature derived from credential fields — annotated `TODO` for real EIP-712 (`eth_signTypedData`) in production
+- **Real EIP-712 signature** via `eth_signTypedData` (domain `AgentCart`, chainId `43114`); falls back to a deterministic mock signature when no wallet is connected or the user rejects the prompt. The credential carries a `signatureType: "eip-712" | "mock"` discriminator.
 - Credential stored in `localStorage` under key `agentcart_credential`; auto-invalidated on expiry
 
 ### Profile Page (`/profile`)
@@ -39,7 +39,14 @@ Triggered by the "Buy with Agent" button on any product card:
 
 - Progress indicator (5 dots, active dot purple)
 - If no credential: flow halts at step 4 with a "Go to Profile" link
-- Step 5 "Confirm Payment" triggers the actual on-chain dNZD transfer via wagmi `writeContract` (Base Sepolia)
+- Step 5 "Confirm Payment" triggers a real on-chain **AVAX** transfer on **Avalanche C-Chain** via wagmi `useSendTransaction` (auto-switches chain if needed)
+- **Spending-limit policy enforcement:** if the product price exceeds the credential's per-tx `spendingLimit` (USD), the modal halts at step 4 with a "Blocked by policy" state and the transaction is never broadcast
+
+### Invoice PDF Generation
+- Every settled purchase can be exported as a professional PDF invoice via `@react-pdf/renderer`
+- Data shape and mock-filling helper live in `lib/invoiceData.ts`; the document component is `components/invoice-pdf.tsx`
+- Download buttons are wired into the order-tracking modal and per-row on the profile page
+- Invoice surfaces the EIP-712 credential signature, agent identity, merchant identity, line items, totals, and the on-chain tx hash / block number — usable as a compliance artifact for agent-initiated purchases
 
 ### Agent Page (`/agent`)
 - Identity status banner — green pill when credential is active, yellow warning when missing
@@ -60,7 +67,10 @@ Triggered by the "Buy with Agent" button on any product card:
 | Styling | Tailwind CSS + tailwindcss-animate |
 | UI components | Radix UI primitives (Dialog, Switch, Tooltip, etc.) |
 | Web3 | wagmi v2 + viem |
+| Chains | Avalanche C-Chain (settlement), Avalanche Fuji, Base Sepolia, mainnet, sepolia |
 | ENS resolution | wagmi `useEnsName` hook (mainnet) |
+| AI agent | Vercel AI SDK + `@ai-sdk/openai` (`gpt-5.4-mini`) over local MCP tools |
+| PDF | `@react-pdf/renderer` (client-only) |
 | State | React Context (`IdentityContext`, `AgentContext`) |
 | Data fetching | TanStack Query v5 |
 
@@ -77,24 +87,34 @@ app/
   settings/       — app settings
 
 components/
-  purchase-modal  — 5-step merchant verification flow
-  credential-card — styled digital ID card
-  identity-banner — agent page status bar
-  sidebar         — navigation + identity display
-  buy-item-button — opens purchase modal, then fires wagmi writeContract on confirm
-  agent-console   — chat-style agent interface
+  purchase-modal       — 5-step merchant verification flow (with policy-block state)
+  credential-card      — styled digital ID card
+  identity-banner      — agent page status bar
+  sidebar              — navigation + identity display
+  buy-item-button      — opens purchase modal, fires AVAX send on Avalanche C-Chain
+  order-tracking-modal — post-purchase status + invoice download
+  invoice-pdf          — @react-pdf/renderer invoice document
+  agent-console        — chat-style agent interface
   ...
 
 context/
   IdentityContext — wallet address, ENS name, credential state
-  AgentContext    — agent feed / activity
+  AgentContext    — agent feed / activity / transaction history
 
 lib/
-  identity.ts            — AgentCredential type; generate / save / load / revoke
-  wagmiConfig.ts         — wagmi chain + connector config (Base Sepolia)
-  openai-shopping-agent  — server-side AI SDK shopping agent
+  identity.ts            — AgentCredential + EIP-712 typed-data builder + mock fallback
+  wagmiConfig.ts         — wagmi chain + connector config (Avalanche, Fuji, Base Sepolia, mainnet, sepolia)
+  openai-shopping-agent  — server-side AI SDK shopping agent (gpt-5.4-mini + local MCP tools)
   shopping-backend.mjs   — local shopping data backend used by the MCP server
+  invoiceData.ts         — invoice data shape + generator from a Transaction
   mockData.ts            — product fixtures
+
+contracts/
+  AvalanchePaymentEscrowRouter.sol — escrow + router for cross-chain USDC settlement
+
+mcp-server/
+  server.mjs            — shopping MCP server (stdio)
+  payment-gateway/      — cross-chain crypto-to-fiat MCP server (Avalanche + off-ramp)
 
 mcp-server/         — local MCP server exposing shopping tools to the agent
 
@@ -139,6 +159,14 @@ npm run mcp:shopping
 
 This is only needed if you want to run the MCP server directly for local testing or connect an external MCP client. The Next.js app can also spawn it on demand through the OpenAI agent route.
 
+### Start the payment-gateway MCP server (optional)
+
+```bash
+npm run mcp:payments
+```
+
+Cross-chain crypto-to-fiat orchestrator (BTC/ETH → Avalanche USDC → Circle/Stripe off-ramp). Requires `AVALANCHE_ESCROW_ADDRESS`, `AVALANCHE_USDC_ADDRESS`, and `OFFRAMP_SETTLEMENT_WALLET` in env. See `mcp-server/payment-gateway/README.md` and `docs/payment-gateway-architecture.md`.
+
 ### Enable the OpenAI shopping agent
 
 Add this to `.env`:
@@ -163,7 +191,8 @@ npm start
 1. **Connect wallet** — click the wallet button in the sidebar; ENS name resolves automatically.
 2. **Generate credential** — go to `/profile`, configure permissions and spending limit, click "Generate Credential".
 3. **Shop** — browse categories or use the search bar on the Agent page; the identity banner confirms the credential is active.
-4. **Purchase** — click "Buy with Agent" on any product card. The 5-step verification flow runs, and confirming step 5 sends the dNZD transfer through MetaMask.
+4. **Purchase** — click "Purchase with Agent" on any product card. The 5-step verification flow runs; if the price is within your spending limit, confirming step 5 sends an AVAX transfer on Avalanche C-Chain through MetaMask. Otherwise the modal blocks at step 4.
+5. **Invoice** — open a settled order (profile or order-tracking modal) and click "Download Invoice ↓" to export the PDF compliance artifact.
 
 ---
 
@@ -175,20 +204,22 @@ interface AgentCredential {
   agentName: string       // "agentcart.eth"
   actingFor: string       // ENS name or wallet address
   permissions: string[]   // ["search", "compare", "purchase"]
-  spendingLimit: number   // USD
+  spendingLimit: number   // USD, enforced as a hard per-tx cap by the buy button
   allowedCategories: string[]
   issuedAt: string        // ISO 8601
   expiresAt: string       // ISO 8601 — 24 h after issuedAt
-  signature: string       // mock hash; TODO: replace with EIP-712
+  signature: string       // EIP-712 signature (or mock fallback)
+  signatureType: "eip-712" | "mock"
 }
 ```
 
-Credentials are stored client-side only (`localStorage`) — no backend required.
+Typed-data domain: `{ name: "AgentCart", version: "1", chainId: 43114 }`. Credentials are stored client-side only (`localStorage`) — no backend required.
 
 ---
 
 ## Notes
 
-- The signature is a **mock** for demo purposes. Production would use `eth_signTypedData` (EIP-712) for a real cryptographic proof.
+- Signing prefers real EIP-712 via `eth_signTypedData`; the deterministic mock signature is only used when no wallet is available or the user rejects the prompt. The `signatureType` field on the stored credential records which path was taken.
 - No backend or database — all state lives in localStorage and React context.
 - The purchase flow is intentionally animated and staged to make the AI identity verification process visible to observers (e.g. judges / demos).
+- The `app/wallet` page exposes a `simulatePurchase` dev affordance for seeding transaction history without burning real AVAX.
