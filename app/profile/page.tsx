@@ -1,9 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSignTypedData } from "wagmi";
 import { useIdentity } from "@/context/IdentityContext";
 import {
-  generateCredential,
+  buildCredentialDraft,
+  buildTypedData,
+  finalizeCredential,
+  generateMockCredential,
   saveCredential,
   revokeCredential,
 } from "@/lib/identity";
@@ -41,8 +45,10 @@ function Toggle({
 export default function ProfilePage() {
   const { walletAddress, ensName, displayName, credential, setCredential } =
     useIdentity();
+  const { signTypedDataAsync } = useSignTypedData();
 
   const [copied, setCopied] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   // Permissions state
   const [allowSearch, setAllowSearch] = useState(true);
@@ -77,17 +83,39 @@ export default function ProfilePage() {
     return perms;
   }
 
-  function handleGenerate() {
-    if (!walletAddress) return;
-    const cred = generateCredential(
+  async function handleGenerate() {
+    if (!walletAddress || generating) return;
+    setGenerating(true);
+    const draft = buildCredentialDraft(
       walletAddress,
       ensName,
       buildPermissions(),
       Number(spendingLimit) || 100,
       categories
     );
-    saveCredential(cred);
-    setCredential(cred);
+    try {
+      const typedData = buildTypedData(draft);
+      const signature = await signTypedDataAsync(typedData);
+      const cred = finalizeCredential(draft, signature, "eip-712");
+      saveCredential(cred);
+      setCredential(cred);
+    } catch (err) {
+      // Wallet rejected the EIP-712 prompt, no wallet provider, or chain
+      // mismatch — fall back to a deterministic mock signature so the demo
+      // still produces a credential the user can iterate against.
+      console.warn("EIP-712 signing failed, falling back to mock signature", err);
+      const cred = generateMockCredential(
+        walletAddress,
+        ensName,
+        buildPermissions(),
+        Number(spendingLimit) || 100,
+        categories
+      );
+      saveCredential(cred);
+      setCredential(cred);
+    } finally {
+      setGenerating(false);
+    }
   }
 
   function handleRevoke() {
@@ -198,16 +226,23 @@ export default function ProfilePage() {
             </div>
             <button
               onClick={handleGenerate}
-              disabled={!walletAddress}
+              disabled={!walletAddress || generating}
               className={cn(
                 "px-5 py-2.5 rounded-full text-sm font-semibold transition-all",
-                walletAddress
+                walletAddress && !generating
                   ? "bg-purple-600 hover:bg-purple-700 text-white hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]"
                   : "bg-white/5 text-white/20 cursor-not-allowed"
               )}
             >
-              {walletAddress ? "Generate Credential" : "Connect wallet first"}
+              {!walletAddress
+                ? "Connect wallet first"
+                : generating
+                ? "Awaiting signature…"
+                : "Generate Credential"}
             </button>
+            <p className="text-white/25 text-xs max-w-xs">
+              Your wallet will prompt you to sign an EIP-712 typed message authorizing the agent.
+            </p>
           </div>
         )}
       </div>

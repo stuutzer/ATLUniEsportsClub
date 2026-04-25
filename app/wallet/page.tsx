@@ -18,7 +18,7 @@ const MOCK_TOKEN_PRICES: Record<string, number> = {
 
 
 export default function WalletPage() {
-  const { displayName } = useIdentity();
+  const { displayName, credential } = useIdentity();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [downloadingTx, setDownloadingTx] = useState<string | null>(null);
 
@@ -43,6 +43,11 @@ export default function WalletPage() {
           txHash: tx.hash,
           timestamp: tx.date,
           status: tx.status === "Completed" ? "CONFIRMED" : "PENDING",
+          credentialId: credential?.id,
+          credentialSignature: credential?.signature,
+          signatureType: credential?.signatureType,
+          policyLimitUsd: credential?.spendingLimit,
+          authorizedFor: credential?.actingFor,
         },
         tx.id
       );

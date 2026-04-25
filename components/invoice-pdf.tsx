@@ -15,6 +15,12 @@ export interface InvoiceData {
   txHash: string;
   timestamp: string;
   status: "CONFIRMED" | "PENDING";
+  // Compliance / authorization metadata. Optional so older callers still work.
+  credentialId?: string;
+  credentialSignature?: string;
+  signatureType?: "eip-712" | "mock";
+  policyLimitUsd?: number;
+  authorizedFor?: string;
 }
 
 const S = StyleSheet.create({
@@ -258,6 +264,70 @@ const S = StyleSheet.create({
     color: "#ffffff",
     letterSpacing: 1,
   },
+  complianceBlock: {
+    marginTop: 18,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderLeftWidth: 3,
+    borderLeftColor: "#7c3aed",
+    borderRadius: 4,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  complianceHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  complianceTitle: {
+    fontSize: 9,
+    fontFamily: "Helvetica-Bold",
+    color: "#6b7280",
+    letterSpacing: 1.2,
+  },
+  complianceBadgeReal: {
+    backgroundColor: "#16a34a",
+    borderRadius: 3,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+  },
+  complianceBadgeDemo: {
+    backgroundColor: "#d97706",
+    borderRadius: 3,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+  },
+  complianceBadgeText: {
+    fontSize: 7,
+    fontFamily: "Helvetica-Bold",
+    color: "#ffffff",
+    letterSpacing: 1,
+  },
+  complianceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 3,
+  },
+  complianceLabel: {
+    fontSize: 8,
+    color: "#9ca3af",
+    width: "35%",
+  },
+  complianceValue: {
+    fontSize: 8,
+    color: "#1f2937",
+    fontFamily: "Helvetica",
+    flex: 1,
+    textAlign: "right",
+  },
+  complianceMono: {
+    fontSize: 8,
+    color: "#1f2937",
+    fontFamily: "Courier",
+    flex: 1,
+    textAlign: "right",
+  },
   footer: {
     position: "absolute",
     bottom: 28,
@@ -402,6 +472,50 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
             <View style={S.statusBadgePending}>
               <Text style={S.statusBadgeText}>PENDING</Text>
             </View>
+          </View>
+        )}
+
+        {/* Compliance / authorization block */}
+        {data.credentialId && (
+          <View style={S.complianceBlock}>
+            <View style={S.complianceHeader}>
+              <Text style={S.complianceTitle}>AGENT AUTHORIZATION</Text>
+              <View
+                style={
+                  data.signatureType === "eip-712"
+                    ? S.complianceBadgeReal
+                    : S.complianceBadgeDemo
+                }
+              >
+                <Text style={S.complianceBadgeText}>
+                  {data.signatureType === "eip-712" ? "EIP-712 SIGNED" : "DEMO SIGNATURE"}
+                </Text>
+              </View>
+            </View>
+            <View style={S.complianceRow}>
+              <Text style={S.complianceLabel}>Credential ID</Text>
+              <Text style={S.complianceMono}>{data.credentialId}</Text>
+            </View>
+            {data.authorizedFor && (
+              <View style={S.complianceRow}>
+                <Text style={S.complianceLabel}>Authorized For</Text>
+                <Text style={S.complianceValue}>{data.authorizedFor}</Text>
+              </View>
+            )}
+            {typeof data.policyLimitUsd === "number" && (
+              <View style={S.complianceRow}>
+                <Text style={S.complianceLabel}>Per-Tx Policy Limit</Text>
+                <Text style={S.complianceValue}>${data.policyLimitUsd.toFixed(2)} USD</Text>
+              </View>
+            )}
+            {data.credentialSignature && (
+              <View style={S.complianceRow}>
+                <Text style={S.complianceLabel}>Signature</Text>
+                <Text style={S.complianceMono}>
+                  {data.credentialSignature.slice(0, 28)}…
+                </Text>
+              </View>
+            )}
           </View>
         )}
 
