@@ -20,11 +20,22 @@ interface PurchaseModalProps {
   onClose: () => void;
   onConfirm?: () => void;
   policyError?: string | null;
+  settlementStatus?: SettlementStatus;
+  settlementError?: string | null;
 }
+
+export type SettlementStatus = "idle" | "minting" | "settled" | "failed";
 
 const STEP_DELAYS = [800, 1000, 1200, 800];
 
-export function PurchaseModal({ product, onClose, onConfirm, policyError }: PurchaseModalProps) {
+export function PurchaseModal({
+  product,
+  onClose,
+  onConfirm,
+  policyError,
+  settlementStatus = "idle",
+  settlementError,
+}: PurchaseModalProps) {
   const { credential } = useIdentity();
   const [step, setStep] = useState(1);
   const [cardVisible, setCardVisible] = useState(false);
@@ -45,14 +56,8 @@ export function PurchaseModal({ product, onClose, onConfirm, policyError }: Purc
     return () => clearTimeout(t);
   }, [step, credential, policyError]);
 
-  const preferredToken = product.acceptedCrypto.includes("AVAX")
-    ? "AVAX"
-    : product.acceptedCrypto[0];
-  const rate = preferredToken === "ETH" ? 3200 : preferredToken === "AVAX" ? 28 : 1;
-  const gasUsd = preferredToken === "AVAX" ? 0.02 : 0.85;
-  const cryptoTotal = ((product.price + gasUsd) / rate).toFixed(
-    preferredToken === "USDC" ? 2 : 4
-  );
+  const preferredToken = "dNZD";
+  const cryptoTotal = product.price.toFixed(2);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
@@ -109,9 +114,10 @@ export function PurchaseModal({ product, onClose, onConfirm, policyError }: Purc
               product={product}
               preferredToken={preferredToken}
               cryptoTotal={cryptoTotal}
-              gasUsd={gasUsd}
               onClose={onClose}
               onConfirm={onConfirm}
+              settlementStatus={settlementStatus}
+              settlementError={settlementError ?? null}
             />
           )}
         </div>
@@ -302,22 +308,28 @@ function StepPayment({
   product,
   preferredToken,
   cryptoTotal,
-  gasUsd,
   onClose,
   onConfirm,
+  settlementStatus,
+  settlementError,
 }: {
   product: Product;
   preferredToken: string;
   cryptoTotal: string;
-  gasUsd: number;
   onClose: () => void;
   onConfirm?: () => void;
+  settlementStatus: SettlementStatus;
+  settlementError: string | null;
 }) {
+  const isMinting = settlementStatus === "minting";
+
   return (
     <div className="flex flex-col gap-5 flex-1">
       <div className="text-center">
         <p className="text-white font-semibold text-lg">Confirm Payment</p>
-        <p className="text-white/35 text-sm mt-0.5">{product.name}</p>
+        <p className="text-white/35 text-sm mt-0.5">
+          Mint dNZD settlement for {product.merchantName}
+        </p>
       </div>
 
       <div className="bg-white/[0.03] border border-white/8 rounded-xl overflow-hidden">
@@ -326,12 +338,12 @@ function StepPayment({
           <span className="text-white">${product.price.toFixed(2)}</span>
         </div>
         <div className="px-4 py-3 flex justify-between text-sm border-b border-white/5">
-          <span className="text-white/40">Network fee</span>
-          <span className="text-white">${gasUsd.toFixed(2)}</span>
+          <span className="text-white/40">NewMoney chain</span>
+          <span className="text-white">Sepolia</span>
         </div>
         <div className="px-4 py-3.5 flex justify-between text-sm bg-purple-600/5">
           <span className="text-white font-medium">
-            Total ({preferredToken})
+            Stablecoin settlement
           </span>
           <span className="text-white font-bold">
             {cryptoTotal} {preferredToken}
@@ -339,18 +351,35 @@ function StepPayment({
         </div>
       </div>
 
+      <div className="rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3">
+        <div className="flex items-center justify-between gap-3 text-xs">
+          <span className="text-white/40">Settlement rail</span>
+          <span className="text-white/70">NewMoney dNZD1 mint API</span>
+        </div>
+        <p className="text-white/30 text-xs mt-2">
+          Quarter requests NZD-backed stablecoin settlement only after the agent credential and spending policy pass.
+        </p>
+        {settlementError && (
+          <p className="mt-3 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            {settlementError}
+          </p>
+        )}
+      </div>
+
       <div className="flex gap-3 mt-auto">
         <button
           onClick={onClose}
+          disabled={isMinting}
           className="flex-1 py-2.5 rounded-full border border-white/10 text-white/50 hover:text-white hover:border-white/20 text-sm transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={() => (onConfirm ? onConfirm() : onClose())}
-          className="flex-1 py-2.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]"
+          disabled={isMinting}
+          className="flex-1 py-2.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all hover:shadow-[0_0_20px_rgba(124,58,237,0.4)] disabled:cursor-wait disabled:opacity-60"
         >
-          Confirm Payment
+          {isMinting ? "Minting dNZD..." : "Confirm Settlement"}
         </button>
       </div>
     </div>

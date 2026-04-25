@@ -1,10 +1,18 @@
-import path from "node:path";
-import { Agent, MCPServerStdio, run, setTracingDisabled } from "@openai/agents";
+import { openai } from "@ai-sdk/openai";
+import { generateText, stepCountIs, tool } from "ai";
+import { z } from "zod";
 import { mockProducts, type CryptoToken } from "@/lib/mockData";
 import type { AgentRecommendation } from "@/lib/agent-types";
-import { rankPurchaseOptions } from "@/lib/shopping-backend.mjs";
-
-setTracingDisabled(true);
+import {
+  comparePrices,
+  convertPrice,
+  createPurchaseQuote,
+  estimateNetworkFee,
+  getCatalogSnapshot,
+  rankPurchaseOptions,
+  searchProducts,
+  verifyMerchant,
+} from "@/lib/shopping-backend.mjs";
 
 interface RankedPurchaseOption {
   score: number;
@@ -25,7 +33,7 @@ interface RankedPurchaseOption {
 function buildAgentInstructions() {
   return [
     "You are AgentCart's shopping agent.",
-    "Help users shop online by using the available shopping tools whenever current pricing, merchant trust, crypto conversion, or quote data is needed.",
+    "Help users shop online by using the available shopping tools whenever pricing, merchant trust, crypto conversion, or quote data is needed.",
     "Prefer tool-backed answers over guesses.",
     "When recommending an option, explain the decision in plain language and include merchant, total estimated cost, token, and chain when available.",
     "If the user asks for a purchase recommendation, compare multiple options before deciding.",
@@ -33,6 +41,83 @@ function buildAgentInstructions() {
     "Do not claim to complete wallet signing or checkout yourself.",
   ].join(" ");
 }
+
+const shoppingTools = {
+  search_products: tool({
+    description: "Search the mocked shopping catalog and return product candidates.",
+    inputSchema: z.object({
+      query: z.string().optional(),
+      category: z.string().optional(),
+      maxResults: z.number().optional(),
+    }),
+    execute: (input) => searchProducts(input),
+  }),
+  compare_prices: tool({
+    description: "Compare merchant offers for a product.",
+    inputSchema: z.object({
+      productId: z.string().optional(),
+      productName: z.string().optional(),
+      region: z.string().optional(),
+      currency: z.string().optional(),
+    }),
+    execute: (input) => comparePrices(input),
+  }),
+  convert_price: tool({
+    description: "Convert between fiat and crypto amounts using mocked rates.",
+    inputSchema: z.object({
+      amount: z.number(),
+      fromCurrency: z.string(),
+      toCurrency: z.string(),
+    }),
+    execute: (input) => convertPrice(input),
+  }),
+  estimate_network_fee: tool({
+    description: "Estimate gas/network fees for a purchase chain and token.",
+    inputSchema: z.object({
+      chain: z.string(),
+      token: z.string().optional(),
+    }),
+    execute: (input) => estimateNetworkFee(input),
+  }),
+  verify_merchant: tool({
+    description: "Return trust and credential support metadata for a merchant.",
+    inputSchema: z.object({
+      merchantId: z.string().optional(),
+      merchantName: z.string().optional(),
+    }),
+    execute: (input) => verifyMerchant(input),
+  }),
+  rank_purchase_options: tool({
+    description: "Rank compatible offers using mocked pricing, token, and chain preferences.",
+    inputSchema: z.object({
+      productQuery: z.string().optional(),
+      category: z.string().optional(),
+      region: z.string().optional(),
+      preferredTokens: z.array(z.string()).optional(),
+      preferredChains: z.array(z.string()).optional(),
+      maxUsd: z.number().optional(),
+      maxResults: z.number().optional(),
+    }),
+    execute: (input) => rankPurchaseOptions(input as any),
+  }),
+  create_purchase_quote: tool({
+    description: "Create a final mocked quote for a product, merchant, token, and chain.",
+    inputSchema: z.object({
+      productId: z.string(),
+      merchantId: z.string().optional(),
+      token: z.string().optional(),
+      chain: z.string().optional(),
+      region: z.string().optional(),
+      credential: z.record(z.string(), z.unknown()).optional(),
+    }),
+    execute: (input) => createPurchaseQuote(input),
+  }),
+  get_catalog_snapshot: tool({
+    description: "Return the current mocked catalog, merchants, offers, chains, and currencies.",
+    inputSchema: z.object({}),
+    execute: () => getCatalogSnapshot(),
+  }),
+};
 
 function isCryptoToken(value: string): value is CryptoToken {
   return ["ETH", "AVAX", "USDC", "dNZD"].includes(value);
@@ -243,36 +328,18 @@ export async function runShoppingAgent(input: string) {
     throw new Error("OPENAI_API_KEY is not set.");
   }
 
-  const mcpServer = new MCPServerStdio({
-    name: "AgentCart Shopping MCP",
-    command: "node",
-    args: [path.join(process.cwd(), "mcp-server/server.mjs")],
-    cwd: process.cwd(),
-    cacheToolsList: true,
+  const model = "gpt-5.4-mini";
+  const result = await generateText({
+    model: openai(model),
+    system: buildAgentInstructions(),
+    prompt: input,
+    tools: shoppingTools,
+    stopWhen: stepCountIs(6),
   });
 
-  await mcpServer.connect();
-
-  try {
-    const agent = new Agent({
-      name: "AgentCart Shopping Agent",
-      model: "gpt-5.4-mini",
-      instructions: buildAgentInstructions(),
-      mcpServers: [mcpServer],
-    });
-
-    const result = await run(agent, input);
-    const output =
-      typeof result.finalOutput === "string"
-        ? result.finalOutput
-        : JSON.stringify(result.finalOutput, null, 2);
-
-    return {
-      model: "gpt-5.4-mini",
-      output,
-      recommendations: buildRecommendations(input),
-    };
-  } finally {
-    await mcpServer.close();
-  }
+  return {
+    model,
+    output: result.text,
+    recommendations: buildRecommendations(input),
+  };
 }

@@ -36,6 +36,89 @@ function RecommendationSkeleton() {
   );
 }
 
+function renderInlineMarkdown(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={index} className="font-semibold text-white">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+
+    return part;
+  });
+}
+
+function AgentMarkdown({ content }: { content: string }) {
+  const blocks: React.ReactNode[] = [];
+  const lines = content.split(/\r?\n/);
+  let listItems: { text: string; indent: number }[] = [];
+
+  function flushList() {
+    if (listItems.length === 0) return;
+
+    blocks.push(
+      <ul key={`list-${blocks.length}`} className="my-3 space-y-1.5">
+        {listItems.map((item, index) => (
+          <li
+            key={`${item.text}-${index}`}
+            className="flex gap-2 text-sm leading-7 text-white/75"
+            style={{ marginLeft: item.indent * 14 }}
+          >
+            <span className="mt-[0.8em] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-purple-300/70" />
+            <span>{renderInlineMarkdown(item.text)}</span>
+          </li>
+        ))}
+      </ul>
+    );
+
+    listItems = [];
+  }
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      flushList();
+      return;
+    }
+
+    const bulletMatch = line.match(/^(\s*)-\s+(.+)$/);
+    if (bulletMatch) {
+      listItems.push({
+        text: bulletMatch[2],
+        indent: Math.floor(bulletMatch[1].length / 2),
+      });
+      return;
+    }
+
+    flushList();
+
+    if (trimmed.startsWith("### ")) {
+      blocks.push(
+        <h3
+          key={`heading-${blocks.length}`}
+          className="mb-2 mt-4 text-base font-semibold text-white first:mt-0"
+        >
+          {renderInlineMarkdown(trimmed.slice(4))}
+        </h3>
+      );
+      return;
+    }
+
+    blocks.push(
+      <p key={`paragraph-${blocks.length}`} className="my-2 text-sm leading-7 text-white/75">
+        {renderInlineMarkdown(trimmed)}
+      </p>
+    );
+  });
+
+  flushList();
+
+  return <div>{blocks}</div>;
+}
+
 export function AgentConsole() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,7 +130,7 @@ export function AgentConsole() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setQuery(q);
+    if (!q) setQuery("");
   }, [q]);
 
   useEffect(() => {
@@ -111,6 +194,7 @@ export function AgentConsole() {
     }
 
     router.push(`/agent?q=${encodeURIComponent(trimmed)}`);
+    setQuery("");
   }
 
   const showEmptyState = !q && !loading && !result && !error;
@@ -147,7 +231,7 @@ export function AgentConsole() {
                   <p className="truncate text-sm font-medium text-white">{q}</p>
                   <p className="text-xs text-white/35">
                     {loading
-                      ? "Running agent with MCP tools"
+                      ? "Running agent with AI SDK tools"
                       : result
                       ? `Model: ${result.model}`
                       : "Request failed"}
@@ -167,9 +251,7 @@ export function AgentConsole() {
               )}
 
               {result && (
-                <div className="whitespace-pre-wrap text-sm leading-7 text-white/75">
-                  {result.output}
-                </div>
+                <AgentMarkdown content={result.output} />
               )}
             </div>
 

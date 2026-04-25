@@ -1,31 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSendTransaction, useWaitForTransactionReceipt, useSwitchChain, useChainId } from "wagmi";
-import { parseEther } from "viem";
-import { avalancheFuji } from "wagmi/chains";
+import { useState } from "react";
 import { Bot } from "lucide-react";
 import { useAgent } from "@/context/AgentContext";
 import { useIdentity } from "@/context/IdentityContext";
-import { PurchaseModal } from "@/components/purchase-modal";
+import { PurchaseModal, type SettlementStatus } from "@/components/purchase-modal";
 import type { Product } from "@/lib/mockData";
 
-const DUMMY_MERCHANT_ADDRESS = "0x000000000000000000000000000000000000dEaD";
-
-// Hackathon: send a flat ~1¢ in native AVAX on Fuji regardless of product price.
-// 0.0003 AVAX ≈ $0.011 at $35.50/AVAX (matches MOCK_TOKEN_PRICES on the wallet page).
-const FLAT_AVAX_VALUE = parseEther("0.0003");
+interface MintSettlementResponse {
+  settlement: {
+    wallet_address: string;
+    amount: number;
+    remaining_balance: number;
+    message: string;
+  };
+}
 
 export function BuyItemButton({ product }: { product: Product }) {
   const { executeAgentPurchase } = useAgent();
   const { credential } = useIdentity();
   const [isPurchased, setIsPurchased] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-
-  const chainId = useChainId();
-  const { switchChainAsync } = useSwitchChain();
-  const { sendTransaction, data: hash, isPending: isWalletPending } = useSendTransaction();
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
+  const [settlementStatus, setSettlementStatus] = useState<SettlementStatus>("idle");
+  const [settlementError, setSettlementError] = useState<string | null>(null);
 
   // Policy enforcement: the credential's spendingLimit is treated as a hard cap
   // per transaction (USD). If the purchase price exceeds it, the modal shows a
@@ -36,44 +33,54 @@ export function BuyItemButton({ product }: { product: Product }) {
       : null;
 
   const handleBuy = () => {
+    setSettlementStatus("idle");
+    setSettlementError(null);
     setModalOpen(true);
   };
 
   const handleConfirmPayment = async () => {
     if (policyError) return;
-    setModalOpen(false);
-    if (chainId !== avalancheFuji.id) {
-      try {
-        await switchChainAsync({ chainId: avalancheFuji.id });
-      } catch (err) {
-        console.error("Failed to switch to Fuji", err);
-        return;
+    setSettlementStatus("minting");
+    setSettlementError(null);
+
+    try {
+      const response = await fetch("/api/newmoney/mint", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: product.price,
+          chain: "sepolia",
+        }),
+      });
+      const data = (await response.json()) as MintSettlementResponse | { error?: string };
+
+      if (!response.ok || !("settlement" in data)) {
+        const errorMessage = "error" in data ? data.error : null;
+        throw new Error(errorMessage || "NewMoney settlement failed");
       }
+
+      const settlementRef = `newmoney:${data.settlement.wallet_address}:${Date.now()}`;
+      executeAgentPurchase(product.name, data.settlement.amount, "dNZD", settlementRef);
+      setIsPurchased(true);
+      setSettlementStatus("settled");
+      setModalOpen(false);
+    } catch (err) {
+      setSettlementStatus("failed");
+      setSettlementError(err instanceof Error ? err.message : "NewMoney settlement failed");
     }
-    sendTransaction({
-      to: DUMMY_MERCHANT_ADDRESS,
-      value: FLAT_AVAX_VALUE,
-      chainId: avalancheFuji.id,
-    });
   };
 
-  useEffect(() => {
-    if (isConfirmed && hash && !isPurchased) {
-      executeAgentPurchase(product.name, product.price, "AVAX", hash);
-      setIsPurchased(true);
-    }
-  }, [isConfirmed, hash, isPurchased, executeAgentPurchase, product]);
-
   let buttonText = "Buy with Agent";
-  if (isWalletPending) buttonText = "Confirm in Wallet...";
-  if (isConfirming) buttonText = "Processing on Fuji...";
-  if (isConfirmed) buttonText = "Purchase Complete!";
+  if (settlementStatus === "minting") buttonText = "Minting dNZD...";
+  if (isPurchased) buttonText = "Purchase Complete!";
 
   return (
     <>
       <button
         onClick={handleBuy}
-        disabled={isWalletPending || isConfirming || isConfirmed}
+        disabled={settlementStatus === "minting" || isPurchased}
         className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-xl disabled:opacity-50 transition-all text-sm font-medium mt-4 shadow-lg shadow-purple-900/20"
       >
         <Bot className="w-4 h-4" />
@@ -85,6 +92,8 @@ export function BuyItemButton({ product }: { product: Product }) {
           onClose={() => setModalOpen(false)}
           onConfirm={handleConfirmPayment}
           policyError={policyError}
+          settlementStatus={settlementStatus}
+          settlementError={settlementError}
         />
       )}
     </>
