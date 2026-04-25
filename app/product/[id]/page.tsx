@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { mockProducts, type Product } from "@/lib/mockData";
-import { TierBadge } from "@/components/tier-badge";
 import { PriceBreakdown } from "@/components/price-breakdown";
 import { PurchaseModal } from "@/components/purchase-modal";
 import { notFound } from "next/navigation";
@@ -32,7 +31,6 @@ const hardcodedKeyboardProducts: Product[] = [
       "Hall-effect magnetic switches with rapid trigger and premium aluminum build.",
     price: 199.0,
     category: "Peripherals",
-    tier: "S",
     acceptedCrypto: ["USDC", "AVAX", "ETH"],
     merchantName: "Wooting Official",
     imageUrl: "/products/keyboards/wooting-80he.webp",
@@ -48,7 +46,6 @@ const hardcodedKeyboardProducts: Product[] = [
       "CNC aluminum 75% keyboard with gasket mount, tri-mode wireless, and hot-swap.",
     price: 219.0,
     category: "Peripherals",
-    tier: "S",
     acceptedCrypto: ["USDC", "ETH"],
     merchantName: "Keychron Store",
     imageUrl: "/products/keyboards/keychron-q1-max.jpg",
@@ -64,7 +61,6 @@ const hardcodedKeyboardProducts: Product[] = [
       "Compact wireless mechanical keyboard tuned for smooth typing and everyday portability.",
     price: 159.0,
     category: "Peripherals",
-    tier: "A",
     acceptedCrypto: ["USDC", "AVAX"],
     merchantName: "NuPhy",
     imageUrl: "/products/keyboards/nuphy-halo75-v2.png",
@@ -80,7 +76,6 @@ const hardcodedKeyboardProducts: Product[] = [
       "Magnetic-switch enthusiast board with customizable actuation for gaming and coding.",
     price: 169.0,
     category: "Peripherals",
-    tier: "A",
     acceptedCrypto: ["USDC", "ETH"],
     merchantName: "Akko Global",
     imageUrl: "/products/keyboards/akko-mod-007b-he.png",
@@ -96,7 +91,6 @@ const hardcodedKeyboardProducts: Product[] = [
       "Tournament-focused TKL board with optical analog switches and sturdy frame.",
     price: 229.0,
     category: "Peripherals",
-    tier: "A",
     acceptedCrypto: ["USDC", "AVAX", "ETH"],
     merchantName: "Razer",
     imageUrl: "/products/keyboards/razer-huntsman-v3-pro-tkl.webp",
@@ -112,7 +106,6 @@ const hardcodedKeyboardProducts: Product[] = [
       "Wireless TKL esports keyboard with low-latency connection and durable keycaps.",
     price: 199.0,
     category: "Peripherals",
-    tier: "A",
     acceptedCrypto: ["USDC", "ETH"],
     merchantName: "Logitech G",
     imageUrl: "/products/keyboards/logitech-g-pro-x-tkl.png",
@@ -172,7 +165,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                   by {product.merchantName}
                 </p>
               </div>
-              <TierBadge tier={product.tier} size="lg" />
             </div>
 
             <p className="text-white/60 leading-relaxed">
@@ -242,7 +234,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <p className="text-purple-300 font-semibold text-sm">
                 AI Recommendation
               </p>
-              <TierBadge tier={product.tier} size="sm" className="ml-auto" />
             </div>
             {/* TODO: Replace with Claude API ranking */}
             <ul className="space-y-3">

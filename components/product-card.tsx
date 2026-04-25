@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { TierBadge } from "@/components/tier-badge";
 import { PurchaseModal } from "@/components/purchase-modal";
 import type { Product } from "@/lib/mockData";
 import type { AgentRecommendation } from "@/lib/agent-types";
@@ -36,11 +35,6 @@ const tokenStyles: Record<
     mark: "$",
     markClass: "bg-emerald-400/10 text-emerald-200 ring-emerald-300/25",
     textClass: "text-emerald-100",
-  },
-  dNZD: {
-    mark: "NZ",
-    markClass: "bg-amber-300/10 text-amber-100 ring-amber-200/25",
-    textClass: "text-amber-100",
   },
 };
 
@@ -197,7 +191,7 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
       : recommendation?.totalUsd ?? subtotalUsd + shippingUsd;
   const acceptedTokens =
     product.name === "Neural Pro Keyboard"
-      ? (["ETH", "AVAX", "USDC", "dNZD"] as const)
+      ? (["ETH", "AVAX", "USDC"] as const)
       : product.acceptedCrypto;
   const supportedChains = getSupportedChains(product, recommendation);
   const agentNote =
@@ -214,11 +208,6 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
           "hover:border-amber-200/20 hover:shadow-[0_18px_44px_rgba(0,0,0,0.32)]"
         )}
       >
-        {/* Tier badge */}
-        <div className="absolute top-3 right-3 z-10">
-          <TierBadge tier={product.tier} size="sm" />
-        </div>
-
         {/* Product image — links to detail */}
         <Link href={`/product/${product.id}`} className="block cursor-pointer">
           <div className="aspect-[4/3] bg-[#1a1a1a] overflow-hidden">

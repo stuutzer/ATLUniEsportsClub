@@ -57,7 +57,6 @@ const MOCK_PRICES: Record<string, number> = {
   ETH: 3000,
   AVAX: 28,
   USDC: 1,
-  dNZD: 0.6,
 };
 
 export function generateInvoiceData(txn: TxnInput): InvoiceData {

@@ -13,7 +13,6 @@ import { generateInvoiceData, buildFilename } from "@/lib/invoiceData";
 // Hackathon MVP only: Local mock price oracle for USD value calculation
 const MOCK_TOKEN_PRICES: Record<string, number> = {
   AVAX: 35.50,
-  dNZD: 0.60,
   ETH: 3000.00,
 };
 
