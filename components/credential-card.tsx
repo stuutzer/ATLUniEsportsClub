@@ -45,12 +45,24 @@ export function CredentialCard({ credential, className }: CredentialCardProps) {
         <Field label="Permissions" value={permissionsLabel} />
         <Field label="Spending Limit" value={`$${credential.spendingLimit}`} />
         <Field label="Valid Until" value={validUntil} />
-        <Field
-          label="Signature"
-          value={`${credential.signature.slice(0, 22)}...`}
-          mono
-          dim
-        />
+        <div className="flex items-start justify-between gap-6">
+          <span className="text-white/30 text-xs flex-shrink-0 pt-px">Signature</span>
+          <div className="flex items-center gap-2 flex-shrink min-w-0">
+            <span
+              className={cn(
+                "text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border flex-shrink-0",
+                credential.signatureType === "eip-712"
+                  ? "text-green-400 bg-green-400/10 border-green-400/20"
+                  : "text-yellow-300/80 bg-yellow-400/10 border-yellow-400/20"
+              )}
+            >
+              {credential.signatureType === "eip-712" ? "EIP-712" : "Demo"}
+            </span>
+            <span className="text-xs text-white/40 font-mono truncate">
+              {credential.signature.slice(0, 14)}…
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );

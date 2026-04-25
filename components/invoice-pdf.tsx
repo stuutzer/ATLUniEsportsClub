@@ -283,7 +283,6 @@ const S = StyleSheet.create({
     color: "#7c3aed",
     marginBottom: 10,
   },
-
   // ── Section 6: Footer ──────────────────────────────────────────
   footer: {
     position: "absolute",
@@ -481,6 +480,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
           </View>
         </View>
 
+        {/* ── Section 6: Footer ── */}
         {/* ── Section 6: Footer ── */}
         <View style={S.footer}>
           <View>

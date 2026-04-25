@@ -19,7 +19,7 @@ const MOCK_TOKEN_PRICES: Record<string, number> = {
 
 
 export default function WalletPage() {
-  const { displayName } = useIdentity();
+  const { displayName, credential } = useIdentity();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [downloadingTx, setDownloadingTx] = useState<string | null>(null);
 
