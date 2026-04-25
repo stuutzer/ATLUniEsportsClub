@@ -81,6 +81,9 @@ export function ProductCard({ product }: ProductCardProps) {
       <Bot className="w-3.5 h-3.5" />
       Let Agent Purchase
     </button>
+    <div className="mt-auto">
+      <BuyItemButton product={product} />
+    </div>
   </div>
 </div>
 

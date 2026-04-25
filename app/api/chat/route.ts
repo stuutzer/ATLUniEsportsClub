@@ -165,7 +165,7 @@ Respond ONLY with raw JSON.`,
                     },
                     {
                         role: "user",
-                        content: `User asked for: "${intent.searchQuery}". Found ${products.length} products from merchants like ${[...new Set(products.map(p => p.merchantName))].slice(0, 3).join(", ")}.`,
+                        content: `User asked for: "${intent.searchQuery}". Found ${products.length} products from merchants like ${Array.from(new Set(products.map(p => p.merchantName))).slice(0, 3).join(", ")}.`,
                     },
                 ],
             }),

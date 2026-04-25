@@ -1,5 +1,5 @@
 export type Tier = "S" | "A" | "B";
-export type CryptoToken = "ETH" | "AVAX" | "USDC";
+export type CryptoToken = "ETH" | "AVAX" | "USDC" | "dNZD";
 
 export interface Product {
   id: string;
@@ -28,6 +28,29 @@ export interface AgentLog {
   timestamp: string;
   message: string;
   type: "search" | "compare" | "rank" | "info";
+}
+
+export type TransactionStatus =
+  | "placed"
+  | "confirmed"
+  | "processing"
+  | "shipped"
+  | "delivered";
+
+export interface TransactionStep {
+  label: string;
+  time?: string;
+  done: boolean;
+}
+
+export interface Transaction {
+  id: string;
+  productName: string;
+  vendor: string;
+  amount: string;
+  token: string;
+  status: TransactionStatus;
+  steps: TransactionStep[];
 }
 
 // TODO: Replace with Serper API search results

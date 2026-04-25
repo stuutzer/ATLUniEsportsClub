@@ -6,6 +6,7 @@ import { ProductCard } from "@/components/product-card";
 import { TierBadge } from "@/components/tier-badge";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BuyItemButton } from "@/components/buy-item-button"
 
 const CATEGORIES = ["All", "Peripherals", "Displays", "Audio", "Storage", "Computing", "Accessories", "Smart Home", "Creative", "Cooling"];
 const TIERS: Tier[] = ["S", "A", "B"];

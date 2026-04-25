@@ -34,7 +34,7 @@ const initialTransactions: Transaction[] = [
     amount: "-1,850.00",
     token: "dNZD",
     status: "Completed",
-    hash: "0x8f...3a1c",
+    hash: "0x8f4a2d1e9b3c7f06a5d8e2b4c9f1a3d7e8b2c5f9a4d1e6b3c8f2a5d9e1b4c7f3",
     isAgent: true,
   },
   {
@@ -45,7 +45,7 @@ const initialTransactions: Transaction[] = [
     amount: "-124.50",
     token: "dNZD",
     status: "Completed",
-    hash: "0x2b...9c4e",
+    hash: "0x2b7e9f3a1d4c8b5e2f6a9d3c7e1b4f8a2d5c9e3b6f1a4d7c2e5b8f3a6d1c4e9b",
     isAgent: true,
   },
 ];
@@ -68,7 +68,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
       amount: `-${amount.toFixed(2)}`,
       token: token,
       status: "Completed", // We set it to completed because the blockchain transaction is already mined
-      hash: realHash || "0x" + Math.random().toString(16).substring(2, 10) + "...", // Use real hash if provided
+      hash: realHash || "0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join(""),
       isAgent: true,
     };
 
