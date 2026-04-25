@@ -6,6 +6,7 @@ import { injected } from "wagmi/connectors";
 import { baseSepolia } from "wagmi/chains";
 import { Wallet, LogOut, CheckCircle, Clock, ExternalLink, Bot, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAgent } from "@/context/AgentContext";
 
 // The dNZD contract address on Base Sepolia
 const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
@@ -73,6 +74,8 @@ export default function WalletPage() {
   const { address, isConnected } = useAccount();
   const { connect, isPending: isConnecting } = useConnect();
   const { disconnect } = useDisconnect();
+
+  const { transactions } = useAgent();
 
   // Read native balance (ETH on Base Sepolia)
   const { data: nativeBalance } = useBalance({ 
@@ -241,7 +244,7 @@ export default function WalletPage() {
             </thead>
             <tbody>
               {isConnected ? (
-                mockTransactions.map((tx) => (
+                transactions.map((tx) => (
                   <tr key={tx.id} className="border-b border-white/5 last:border-0 hover:bg-white/3 transition-colors group">
                     <td className="px-6 py-4 text-white/40">{tx.date}</td>
                     <td className="px-6 py-4">
