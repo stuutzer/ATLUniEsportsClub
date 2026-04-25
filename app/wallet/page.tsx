@@ -246,7 +246,7 @@ export default function WalletPage() {
               </tr>
             </thead>
             <tbody>
-              {isConnected ? (
+              {transactions.length > 0 ? (
                 transactions.map((tx) => (
                   <tr key={tx.id} className="border-b border-white/5 last:border-0 hover:bg-white/3 transition-colors group">
                     <td className="px-6 py-4 text-white/40">{tx.date}</td>
@@ -305,7 +305,7 @@ export default function WalletPage() {
                   <td colSpan={6} className="px-6 py-16 text-center">
                     <div className="inline-flex flex-col items-center justify-center opacity-40">
                       <Bot className="w-8 h-8 mb-3" />
-                      <p className="text-white text-sm">Connect wallet to sync Agent transaction history</p>
+                      <p className="text-white text-sm">No transactions yet — buy with Agent or use Simulate purchase to add one</p>
                     </div>
                   </td>
                 </tr>

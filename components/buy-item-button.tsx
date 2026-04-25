@@ -6,6 +6,7 @@ import { parseEther } from "viem";
 import { avalancheFuji } from "wagmi/chains";
 import { Bot } from "lucide-react";
 import { useAgent } from "@/context/AgentContext";
+import { useIdentity } from "@/context/IdentityContext";
 import { PurchaseModal } from "@/components/purchase-modal";
 import type { Product } from "@/lib/mockData";
 
@@ -17,6 +18,7 @@ const FLAT_AVAX_VALUE = parseEther("0.0003");
 
 export function BuyItemButton({ product }: { product: Product }) {
   const { executeAgentPurchase } = useAgent();
+  const { credential } = useIdentity();
   const [isPurchased, setIsPurchased] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -25,11 +27,20 @@ export function BuyItemButton({ product }: { product: Product }) {
   const { sendTransaction, data: hash, isPending: isWalletPending } = useSendTransaction();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
+  // Policy enforcement: the credential's spendingLimit is treated as a hard cap
+  // per transaction (USD). If the purchase price exceeds it, the modal shows a
+  // "Blocked by policy" state at step 4 and we refuse to broadcast the tx.
+  const policyError =
+    credential && product.price > credential.spendingLimit
+      ? `Purchase price $${product.price.toFixed(2)} exceeds your per-transaction limit of $${credential.spendingLimit}.`
+      : null;
+
   const handleBuy = () => {
     setModalOpen(true);
   };
 
   const handleConfirmPayment = async () => {
+    if (policyError) return;
     setModalOpen(false);
     if (chainId !== avalancheFuji.id) {
       try {
@@ -73,6 +84,7 @@ export function BuyItemButton({ product }: { product: Product }) {
           product={product}
           onClose={() => setModalOpen(false)}
           onConfirm={handleConfirmPayment}
+          policyError={policyError}
         />
       )}
     </>
