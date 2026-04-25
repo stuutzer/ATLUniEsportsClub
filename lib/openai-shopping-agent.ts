@@ -122,7 +122,7 @@ const shoppingTools = {
 };
 
 function isCryptoToken(value: string): value is CryptoToken {
-  return ["ETH", "AVAX", "USDC", "dNZD"].includes(value);
+  return ["ETH", "AVAX", "USDC"].includes(value);
 }
 
 function findMockProduct(productName: string) {
@@ -155,11 +155,9 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
         "Mechanical keyboard with AI-optimized key mapping and haptic feedback.",
       price: 249.99,
       category: "Peripherals",
-      tier: "S" as const,
-      acceptedCrypto: ["ETH", "AVAX", "USDC", "dNZD"] as CryptoToken[],
+      acceptedCrypto: ["ETH", "AVAX", "USDC"] as CryptoToken[],
       merchantName: "TechVault Store",
-      imageUrl:
-        "https://computerlounge.co.nz/cdn/shop/files/36f4ee3af51c83819f19ccfda709acc27354cc79_Wooting_60HE__1_grande.jpg?v=1729656519",
+      imageUrl: "/products/keyboards/neural-pro-keyboard.webp",
       aiReasons: [
         "Best overall pick because TechVault has the lowest landed cost and supports the agent credential flow.",
         "Broad token support keeps checkout flexible across Base, Avalanche, and Ethereum.",
@@ -167,7 +165,7 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
       shippingUsd: 12,
       totalUsd: 261.99,
       chain: "base",
-      token: "dNZD",
+      token: "USDC",
       trustScore: 99,
     },
     {
@@ -177,11 +175,9 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
         "Hall-effect magnetic switches with rapid trigger and premium aluminum build.",
       price: 199.0,
       category: "Peripherals",
-      tier: "S" as const,
       acceptedCrypto: ["USDC", "AVAX", "ETH"] as CryptoToken[],
       merchantName: "Wooting Official",
-      imageUrl:
-        "https://computerlounge.co.nz/cdn/shop/files/36f4ee3af51c83819f19ccfda709acc27354cc79_Wooting_60HE__1_grande.jpg?v=1729656519",
+      imageUrl: "/products/keyboards/wooting-80he.webp",
       aiReasons: [
         "Fastest response profile for competitive gaming and low-latency typing.",
         "Strong firmware support and broad community tuning presets.",
@@ -199,11 +195,9 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
         "CNC aluminum 75% keyboard with gasket mount, tri-mode wireless, and hot-swap.",
       price: 219.0,
       category: "Peripherals",
-      tier: "S" as const,
       acceptedCrypto: ["USDC", "ETH"] as CryptoToken[],
       merchantName: "Keychron Store",
-      imageUrl:
-        "https://www.keychron.com/cdn/shop/files/Keychron-Q1-Max-QMK-VIA-Wireless-Custom-Mechanical-Keyboard.jpg?v=1693279088",
+      imageUrl: "/products/keyboards/keychron-q1-max.jpg",
       aiReasons: [
         "Excellent build quality out of the box with balanced acoustics.",
         "Great long-term value due to easy switch and keycap customization.",
@@ -221,11 +215,9 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
         "Compact wireless mechanical keyboard tuned for smooth typing and everyday portability.",
       price: 159.0,
       category: "Peripherals",
-      tier: "A" as const,
       acceptedCrypto: ["USDC", "AVAX"] as CryptoToken[],
       merchantName: "NuPhy",
-      imageUrl:
-        "https://nuphy.com/cdn/shop/files/NuPhy-Halo75-v2-wireless-mechanical-keyboard-black_1200x.jpg?v=1715934201",
+      imageUrl: "/products/keyboards/nuphy-halo75-v2.png",
       aiReasons: [
         "Strong price-to-performance with premium feel in a smaller footprint.",
         "Reliable multi-device Bluetooth behavior for mixed workflows.",
@@ -243,11 +235,9 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
         "Magnetic-switch enthusiast board with customizable actuation for gaming and coding.",
       price: 169.0,
       category: "Peripherals",
-      tier: "A" as const,
       acceptedCrypto: ["USDC", "ETH"] as CryptoToken[],
       merchantName: "Akko Global",
-      imageUrl:
-        "https://en.akkogear.com/wp-content/uploads/2024/01/MOD007BHE.jpg",
+      imageUrl: "/products/keyboards/akko-mod-007b-he.png",
       aiReasons: [
         "Hall-effect precision without flagship pricing.",
         "Useful software controls for per-key actuation and rapid-trigger tuning.",
@@ -265,11 +255,9 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
         "Tournament-focused TKL board with optical analog switches and sturdy frame.",
       price: 229.0,
       category: "Peripherals",
-      tier: "A" as const,
       acceptedCrypto: ["USDC", "AVAX", "ETH"] as CryptoToken[],
       merchantName: "Razer",
-      imageUrl:
-        "https://assets3.razerzone.com/5qf51Y4WYPk0UiHEU7mQadGG7N8=/1500x1000/https%3A%2F%2Fmedias-p1.phoenix.razer.com%2Fsys-master-phoenix-images-container%2Fh53%2Fh4f%2F9594098774046%2F230912-huntsman-v3-pro-tkl-500x500-1.jpg",
+      imageUrl: "/products/keyboards/razer-huntsman-v3-pro-tkl.webp",
       aiReasons: [
         "Competitive-ready switch behavior and dependable polling stability.",
         "Excellent choice when prioritizing esports-style performance.",
@@ -310,7 +298,7 @@ function buildRecommendations(input: string): AgentRecommendation[] {
     {
       productQuery: input,
       region: "US",
-      preferredTokens: ["USDC", "AVAX", "ETH", "dNZD"],
+      preferredTokens: ["USDC", "AVAX", "ETH"],
       preferredChains: ["base", "avalanche", "ethereum"],
       maxResults: 3,
     } as any

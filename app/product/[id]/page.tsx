@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { mockProducts, type Product } from "@/lib/mockData";
-import { TierBadge } from "@/components/tier-badge";
 import { PriceBreakdown } from "@/components/price-breakdown";
 import { PurchaseModal } from "@/components/purchase-modal";
 import { notFound } from "next/navigation";
@@ -32,11 +31,9 @@ const hardcodedKeyboardProducts: Product[] = [
       "Hall-effect magnetic switches with rapid trigger and premium aluminum build.",
     price: 199.0,
     category: "Peripherals",
-    tier: "S",
     acceptedCrypto: ["USDC", "AVAX", "ETH"],
     merchantName: "Wooting Official",
-    imageUrl:
-      "https://computerlounge.co.nz/cdn/shop/files/36f4ee3af51c83819f19ccfda709acc27354cc79_Wooting_60HE__1_grande.jpg?v=1729656519",
+    imageUrl: "/products/keyboards/wooting-80he.webp",
     aiReasons: [
       "Fastest response profile for competitive gaming and low-latency typing.",
       "Strong firmware support and broad community tuning presets.",
@@ -49,11 +46,9 @@ const hardcodedKeyboardProducts: Product[] = [
       "CNC aluminum 75% keyboard with gasket mount, tri-mode wireless, and hot-swap.",
     price: 219.0,
     category: "Peripherals",
-    tier: "S",
     acceptedCrypto: ["USDC", "ETH"],
     merchantName: "Keychron Store",
-    imageUrl:
-      "https://www.keychron.com/cdn/shop/files/Keychron-Q1-Max-QMK-VIA-Wireless-Custom-Mechanical-Keyboard.jpg?v=1693279088",
+    imageUrl: "/products/keyboards/keychron-q1-max.jpg",
     aiReasons: [
       "Excellent build quality out of the box with balanced acoustics.",
       "Great long-term value due to easy switch and keycap customization.",
@@ -66,11 +61,9 @@ const hardcodedKeyboardProducts: Product[] = [
       "Compact wireless mechanical keyboard tuned for smooth typing and everyday portability.",
     price: 159.0,
     category: "Peripherals",
-    tier: "A",
     acceptedCrypto: ["USDC", "AVAX"],
     merchantName: "NuPhy",
-    imageUrl:
-      "https://nuphy.com/cdn/shop/files/NuPhy-Halo75-v2-wireless-mechanical-keyboard-black_1200x.jpg?v=1715934201",
+    imageUrl: "/products/keyboards/nuphy-halo75-v2.png",
     aiReasons: [
       "Strong price-to-performance with premium feel in a smaller footprint.",
       "Reliable multi-device Bluetooth behavior for mixed workflows.",
@@ -83,10 +76,9 @@ const hardcodedKeyboardProducts: Product[] = [
       "Magnetic-switch enthusiast board with customizable actuation for gaming and coding.",
     price: 169.0,
     category: "Peripherals",
-    tier: "A",
     acceptedCrypto: ["USDC", "ETH"],
     merchantName: "Akko Global",
-    imageUrl: "https://en.akkogear.com/wp-content/uploads/2024/01/MOD007BHE.jpg",
+    imageUrl: "/products/keyboards/akko-mod-007b-he.png",
     aiReasons: [
       "Hall-effect precision without flagship pricing.",
       "Useful software controls for per-key actuation and rapid-trigger tuning.",
@@ -99,11 +91,9 @@ const hardcodedKeyboardProducts: Product[] = [
       "Tournament-focused TKL board with optical analog switches and sturdy frame.",
     price: 229.0,
     category: "Peripherals",
-    tier: "A",
     acceptedCrypto: ["USDC", "AVAX", "ETH"],
     merchantName: "Razer",
-    imageUrl:
-      "https://assets3.razerzone.com/5qf51Y4WYPk0UiHEU7mQadGG7N8=/1500x1000/https%3A%2F%2Fmedias-p1.phoenix.razer.com%2Fsys-master-phoenix-images-container%2Fh53%2Fh4f%2F9594098774046%2F230912-huntsman-v3-pro-tkl-500x500-1.jpg",
+    imageUrl: "/products/keyboards/razer-huntsman-v3-pro-tkl.webp",
     aiReasons: [
       "Competitive-ready switch behavior and dependable polling stability.",
       "Excellent choice when prioritizing esports-style performance.",
@@ -116,11 +106,9 @@ const hardcodedKeyboardProducts: Product[] = [
       "Wireless TKL esports keyboard with low-latency connection and durable keycaps.",
     price: 199.0,
     category: "Peripherals",
-    tier: "A",
     acceptedCrypto: ["USDC", "ETH"],
     merchantName: "Logitech G",
-    imageUrl:
-      "https://resource.logitechg.com/content/dam/gaming/en/products/pro-x-tkl/pro-x-tkl-gallery-1-black.png",
+    imageUrl: "/products/keyboards/logitech-g-pro-x-tkl.png",
     aiReasons: [
       "Clean professional design with proven tournament-grade wireless stack.",
       "Strong battery life and reliable software profiles for travel setups.",
@@ -177,7 +165,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                   by {product.merchantName}
                 </p>
               </div>
-              <TierBadge tier={product.tier} size="lg" />
             </div>
 
             <p className="text-white/60 leading-relaxed">
@@ -247,7 +234,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <p className="text-sky-200 font-semibold text-sm">
                 AI Recommendation
               </p>
-              <TierBadge tier={product.tier} size="sm" className="ml-auto" />
             </div>
             {/* TODO: Replace with Claude API ranking */}
             <ul className="space-y-3">

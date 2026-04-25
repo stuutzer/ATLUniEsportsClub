@@ -14,7 +14,7 @@ export interface AgentCredential {
 const EIP712_DOMAIN = {
   name: "AgentCart",
   version: "1",
-  chainId: 43113, // Avalanche Fuji
+  chainId: 43114, // Avalanche C-Chain
 } as const;
 
 const EIP712_TYPES = {

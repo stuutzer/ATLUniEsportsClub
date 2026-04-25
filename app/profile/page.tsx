@@ -568,7 +568,7 @@ export default function ProfilePage() {
     stockx: false,
   });
   const [currency, setCurrency] = useState("USD");
-  const [network, setNetwork] = useState("Avalanche (Fuji)");
+  const [network, setNetwork] = useState("Avalanche (Mainnet)");
   const [notifications, setNotifications] = useState({
     purchases: true,
     priceAlerts: false,
@@ -768,7 +768,7 @@ export default function ProfilePage() {
           <PreferenceSelect
             label="Preferred Network"
             description="Default chain for payments and transactions"
-            options={["Avalanche (Fuji)", "Avalanche (Mainnet)", "Ethereum", "Polygon"]}
+            options={["Avalanche (Mainnet)", "Avalanche (Fuji)", "Ethereum", "Polygon"]}
             value={network}
             onChange={setNetwork}
           />

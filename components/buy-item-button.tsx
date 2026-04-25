@@ -1,20 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bot } from "lucide-react";
 import { useAgent } from "@/context/AgentContext";
 import { useIdentity } from "@/context/IdentityContext";
 import { PurchaseModal, type SettlementStatus } from "@/components/purchase-modal";
 import type { Product } from "@/lib/mockData";
+import {
+  useChainId,
+  useSendTransaction,
+  useSwitchChain,
+  useWaitForTransactionReceipt,
+} from "wagmi";
+import { parseEther } from "viem";
+import { avalanche } from "wagmi/chains";
 
-interface MintSettlementResponse {
-  settlement: {
-    wallet_address: string;
-    amount: number;
-    remaining_balance: number;
-    message: string;
-  };
-}
+const DUMMY_MERCHANT_ADDRESS = "0x000000000000000000000000000000000000dEaD";
+const FLAT_AVAX_VALUE = parseEther("0.0003");
 
 export function BuyItemButton({ product }: { product: Product }) {
   const { executeAgentPurchase } = useAgent();
@@ -23,6 +25,19 @@ export function BuyItemButton({ product }: { product: Product }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [settlementStatus, setSettlementStatus] = useState<SettlementStatus>("idle");
   const [settlementError, setSettlementError] = useState<string | null>(null);
+  const chainId = useChainId();
+  const { switchChainAsync } = useSwitchChain();
+  const { sendTransaction, data: hash, isPending: isWalletPending } = useSendTransaction();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({ hash });
+
+  useEffect(() => {
+    if (!isConfirmed || !hash || isPurchased) return;
+    executeAgentPurchase(product.name, product.price, "AVAX", hash);
+    setIsPurchased(true);
+    setSettlementStatus("settled");
+    setModalOpen(false);
+  }, [isConfirmed, hash, isPurchased, executeAgentPurchase, product.name, product.price]);
 
   // Policy enforcement: the credential's spendingLimit is treated as a hard cap
   // per transaction (USD). If the purchase price exceeds it, the modal shows a
@@ -40,48 +55,38 @@ export function BuyItemButton({ product }: { product: Product }) {
 
   const handleConfirmPayment = async () => {
     if (policyError) return;
-    setSettlementStatus("minting");
+    setSettlementStatus("settling");
     setSettlementError(null);
 
     try {
-      const response = await fetch("/api/newmoney/mint", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: product.price,
-          chain: "sepolia",
-        }),
-      });
-      const data = (await response.json()) as MintSettlementResponse | { error?: string };
-
-      if (!response.ok || !("settlement" in data)) {
-        const errorMessage = "error" in data ? data.error : null;
-        throw new Error(errorMessage || "NewMoney settlement failed");
+      if (chainId !== avalanche.id) {
+        await switchChainAsync({ chainId: avalanche.id });
       }
 
-      const settlementRef = `newmoney:${data.settlement.wallet_address}:${Date.now()}`;
-      executeAgentPurchase(product.name, data.settlement.amount, "dNZD", settlementRef);
-      setIsPurchased(true);
-      setSettlementStatus("settled");
-      setModalOpen(false);
+      sendTransaction({
+        to: DUMMY_MERCHANT_ADDRESS,
+        value: FLAT_AVAX_VALUE,
+        chainId: avalanche.id,
+      });
     } catch (err) {
       setSettlementStatus("failed");
-      setSettlementError(err instanceof Error ? err.message : "NewMoney settlement failed");
+      setSettlementError(
+        err instanceof Error ? err.message : "Avalanche C-Chain settlement failed"
+      );
     }
   };
 
   let buttonText = "Buy with Agent";
-  if (settlementStatus === "minting") buttonText = "Minting dNZD...";
+  if (settlementStatus === "settling" || isWalletPending) buttonText = "Confirm in Wallet...";
+  if (isConfirming) buttonText = "Processing on C-Chain...";
   if (isPurchased) buttonText = "Purchase Complete!";
 
   return (
     <>
       <button
         onClick={handleBuy}
-        disabled={settlementStatus === "minting" || isPurchased}
-        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.15] bg-sky-200 py-2.5 px-4 text-sm font-semibold text-[#06131d] shadow-lg shadow-black/25 transition-all hover:bg-sky-100 disabled:opacity-50"
+        disabled={settlementStatus === "settling" || isPurchased}
+        className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-xl disabled:opacity-50 transition-all text-sm font-medium mt-4 shadow-lg shadow-purple-900/20"
       >
         <Bot className="w-4 h-4" />
         {buttonText}

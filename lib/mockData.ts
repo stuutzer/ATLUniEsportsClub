@@ -1,5 +1,4 @@
-export type Tier = "S" | "A" | "B";
-export type CryptoToken = "ETH" | "AVAX" | "USDC" | "dNZD";
+export type CryptoToken = "ETH" | "AVAX" | "USDC";
 
 export interface Product {
   id: string;
@@ -7,7 +6,6 @@ export interface Product {
   description: string;
   price: number;
   category: string;
-  tier: Tier;
   acceptedCrypto: CryptoToken[];
   merchantName: string;
   imageUrl: string;
@@ -62,10 +60,9 @@ export const mockProducts: Product[] = [
       "Mechanical keyboard with AI-optimized key mapping and haptic feedback. Perfect for power users and developers who demand precision.",
     price: 249.99,
     category: "Peripherals",
-    tier: "S",
     acceptedCrypto: ["ETH", "AVAX", "USDC"],
     merchantName: "TechVault Store",
-    imageUrl: "https://computerlounge.co.nz/cdn/shop/files/36f4ee3af51c83819f19ccfda709acc27354cc79_Wooting_60HE__1_grande.jpg?v=1729656519",
+    imageUrl: "/products/keyboards/neural-pro-keyboard.webp",
     aiReasons: [
       "Lowest total cost when accounting for gas fees on Avalanche",
       "Merchant has 99.2% trust score based on 3,400+ transactions",
@@ -79,7 +76,6 @@ export const mockProducts: Product[] = [
       "27-inch 4K OLED display with 144Hz refresh rate. Engineered for creative professionals and competitive gamers.",
     price: 899.0,
     category: "Displays",
-    tier: "S",
     acceptedCrypto: ["ETH", "USDC"],
     merchantName: "PixelForge",
     imageUrl: "https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/dell-client-products/peripherals/monitors/aw-series/aw3225qf/pdp/monitor-alienware-aw3225qf-hero.psd?fmt=jpg&wid=756&hei=525",
@@ -96,7 +92,6 @@ export const mockProducts: Product[] = [
       "Studio-grade wireless headset with active noise cancellation and spatial audio. 40-hour battery life.",
     price: 329.5,
     category: "Audio",
-    tier: "S",
     acceptedCrypto: ["AVAX", "USDC"],
     merchantName: "SoundSphere",
     imageUrl: "https://www.magnumsound.nz/cdn/shop/files/sennheiser-hd-800s-audiophile-headphones-1900_grande.png?v=1691636446",
@@ -113,7 +108,6 @@ export const mockProducts: Product[] = [
       "NVMe Gen5 SSD with 12,000 MB/s read speeds. Built for AI workloads and high-frequency data processing.",
     price: 189.99,
     category: "Storage",
-    tier: "A",
     acceptedCrypto: ["ETH", "AVAX", "USDC"],
     merchantName: "DataStream Co.",
     imageUrl: "https://www.pbtech.co.nz/imgprod/H/D/HDDSAM993110__7.jpg",
@@ -129,7 +123,6 @@ export const mockProducts: Product[] = [
       "High-precision gaming mouse with 32,000 DPI sensor and onboard AI gesture recognition. Connects to Web3 wallets natively.",
     price: 119.0,
     category: "Peripherals",
-    tier: "A",
     acceptedCrypto: ["ETH", "USDC"],
     merchantName: "GearForge",
     imageUrl: "https://resource.logitechg.com/c_fill,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/gaming/en/products/pro-x2-superstrike-pdp/2026/pro-x2-superstrike-top-angle-lifestyle-gallery-2.png",
@@ -145,7 +138,6 @@ export const mockProducts: Product[] = [
       "Compact home server with 16-core ARM processor. Run AI models and dApps locally with zero cloud dependency.",
     price: 549.0,
     category: "Computing",
-    tier: "A",
     acceptedCrypto: ["ETH", "AVAX"],
     merchantName: "NodeNest",
     imageUrl: "https://images.prismic.io/frameworkmarketplace/Z7foP57c43Q3gCiV_fwdesktop_family_overview_panel_translucent.jpg?auto=format,compress",
@@ -161,7 +153,6 @@ export const mockProducts: Product[] = [
       "IoT hub for smart desk setups. Integrates with 200+ devices and supports blockchain-verified automation scripts.",
     price: 79.99,
     category: "Smart Home",
-    tier: "A",
     acceptedCrypto: ["USDC"],
     merchantName: "HomeChain",
     imageUrl: "https://images.svc.ui.com/?u=https%3A%2F%2Fui.com%2Fmicrosite%2Fstatic%2Fefg-img-NfeWmma7.jpg&q=75&w=1152",
@@ -177,7 +168,6 @@ export const mockProducts: Product[] = [
       "4K webcam with built-in AI background removal and face tracking. No software installation required.",
     price: 149.0,
     category: "Peripherals",
-    tier: "A",
     acceptedCrypto: ["ETH", "AVAX", "USDC"],
     merchantName: "VisionTech",
     imageUrl: "https://resource.logitech.com/c_fill,q_auto,f_auto,dpr_1.0/d_transparent.gif/content/dam/products/logitech/webcams/c270-hd-webcam/gallery/c270-hd-webcam-1-0224.png",
@@ -193,7 +183,6 @@ export const mockProducts: Product[] = [
       "Digital drawing tablet with blockchain-based artwork provenance tracking. 8192 pressure levels, tilt support.",
     price: 219.0,
     category: "Creative",
-    tier: "B",
     acceptedCrypto: ["ETH", "USDC"],
     merchantName: "CreativeChain",
     imageUrl: "https://cdn-media.wacom.com/-/media/images/products/pen-tablets/wacom-intuos/media-gallery/wacom-intuos-g7.jpg?h=640&iar=0&w=960&rev=b1aa3facbf3d4e2dae7215ea65c8b264&hash=21A48C38D7C6AB00E88407D5033F771D",
@@ -208,7 +197,6 @@ export const mockProducts: Product[] = [
       "7-port USB-C hub with hardware wallet passthrough and real-time transaction verification LED indicators.",
     price: 59.99,
     category: "Accessories",
-    tier: "B",
     acceptedCrypto: ["AVAX", "USDC"],
     merchantName: "HubWorld",
     imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDhraB6vM5hqXKCkCFFOsm1CQIASxLtaZBxA&s",
@@ -223,7 +211,6 @@ export const mockProducts: Product[] = [
       "240mm liquid CPU cooler with NFT-animated RGB display on the pump head. Quiet and efficient.",
     price: 139.0,
     category: "Cooling",
-    tier: "B",
     acceptedCrypto: ["ETH"],
     merchantName: "ThermalDAO",
     imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNPDT0Tdq4C2M4OtBgP5aTCaRzfnt9UrEBZA&s",
@@ -238,8 +225,7 @@ export const mockProducts: Product[] = [
       "240mm liquid CPU cooler with NFT-animated RGB display on the pump head. Quiet and efficient.",
     price: 0.01,
     category: "Cooling",
-    tier: "B",
-    acceptedCrypto: ["ETH", "dNZD"],
+    acceptedCrypto: ["ETH", "USDC"],
     merchantName: "ThermalDAO",
     imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNPDT0Tdq4C2M4OtBgP5aTCaRzfnt9UrEBZA&s",
     aiReasons: [
@@ -339,13 +325,13 @@ export const mockAgentLog: AgentLog[] = [
   {
     id: "log8",
     timestamp: "14:23:13",
-    message: "Ranked 12 results S → A → B based on price, fees, and merchant trust.",
+    message: "Ranked 12 results based on price, fees, and merchant trust.",
     type: "rank",
   },
   {
     id: "log9",
     timestamp: "14:23:14",
-    message: "Top pick: Neural Pro Keyboard (S-tier) from TechVault Store.",
+    message: "Top pick: Neural Pro Keyboard from TechVault Store.",
     type: "rank",
   },
   {

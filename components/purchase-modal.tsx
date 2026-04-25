@@ -24,7 +24,7 @@ interface PurchaseModalProps {
   settlementError?: string | null;
 }
 
-export type SettlementStatus = "idle" | "minting" | "settled" | "failed";
+export type SettlementStatus = "idle" | "settling" | "settled" | "failed";
 
 const STEP_DELAYS = [800, 1000, 1200, 800];
 
@@ -56,7 +56,7 @@ export function PurchaseModal({
     return () => clearTimeout(t);
   }, [step, credential, policyError]);
 
-  const preferredToken = "dNZD";
+  const preferredToken = "USDC";
   const cryptoTotal = product.price.toFixed(2);
 
   return (
@@ -321,14 +321,14 @@ function StepPayment({
   settlementStatus: SettlementStatus;
   settlementError: string | null;
 }) {
-  const isMinting = settlementStatus === "minting";
+  const isSettling = settlementStatus === "settling";
 
   return (
     <div className="flex flex-col gap-5 flex-1">
       <div className="text-center">
         <p className="text-white font-semibold text-lg">Confirm Payment</p>
         <p className="text-white/35 text-sm mt-0.5">
-          Mint dNZD settlement for {product.merchantName}
+          Settle on Avalanche C-Chain for {product.merchantName}
         </p>
       </div>
 
@@ -338,8 +338,8 @@ function StepPayment({
           <span className="text-white">${product.price.toFixed(2)}</span>
         </div>
         <div className="px-4 py-3 flex justify-between text-sm border-b border-white/5">
-          <span className="text-white/40">NewMoney chain</span>
-          <span className="text-white">Sepolia</span>
+          <span className="text-white/40">Network</span>
+          <span className="text-white">Avalanche C-Chain</span>
         </div>
         <div className="px-4 py-3.5 flex justify-between text-sm bg-white/[0.04]">
           <span className="text-white font-medium">
@@ -353,11 +353,11 @@ function StepPayment({
 
       <div className="rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3">
         <div className="flex items-center justify-between gap-3 text-xs">
-          <span className="text-white/40">Settlement rail</span>
-          <span className="text-white/70">NewMoney dNZD1 mint API</span>
+          <span className="text-white/40">Payment network</span>
+          <span className="text-white/70">Avalanche C-Chain transaction</span>
         </div>
         <p className="text-white/30 text-xs mt-2">
-          Quarter requests NZD-backed stablecoin settlement only after the agent credential and spending policy pass.
+          Quarter broadcasts payment on Avalanche C-Chain only after the agent credential and spending policy pass.
         </p>
         {settlementError && (
           <p className="mt-3 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
@@ -369,17 +369,17 @@ function StepPayment({
       <div className="flex gap-3 mt-auto">
         <button
           onClick={onClose}
-          disabled={isMinting}
+          disabled={isSettling}
           className="flex-1 py-2.5 rounded-full border border-white/10 text-white/50 hover:text-white hover:border-white/20 text-sm transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={() => (onConfirm ? onConfirm() : onClose())}
-          disabled={isMinting}
-          className="flex-1 rounded-full border border-white/[0.15] bg-sky-200 py-2.5 text-sm font-semibold text-[#06131d] shadow-[0_10px_28px_rgba(0,0,0,0.28)] transition-all hover:bg-sky-100 disabled:cursor-wait disabled:opacity-60"
+          disabled={isSettling}
+          className="flex-1 py-2.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all hover:shadow-[0_0_20px_rgba(124,58,237,0.4)] disabled:cursor-wait disabled:opacity-60"
         >
-          {isMinting ? "Minting dNZD..." : "Confirm Settlement"}
+          {isSettling ? "Settling on C-Chain..." : "Confirm Settlement"}
         </button>
       </div>
     </div>

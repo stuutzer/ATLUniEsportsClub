@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { TierBadge } from "@/components/tier-badge";
 import { PurchaseModal } from "@/components/purchase-modal";
 import type { Product } from "@/lib/mockData";
 import type { AgentRecommendation } from "@/lib/agent-types";
@@ -16,7 +15,7 @@ import {
   useChainId,
 } from "wagmi";
 import { parseEther } from "viem";
-import { avalancheFuji } from "wagmi/chains";
+import { avalanche } from "wagmi/chains";
 
 const tokenStyles: Record<
   string,
@@ -36,11 +35,6 @@ const tokenStyles: Record<
     mark: "$",
     markClass: "bg-emerald-400/10 text-emerald-200 ring-emerald-300/25",
     textClass: "text-emerald-100",
-  },
-  dNZD: {
-    mark: "NZ",
-    markClass: "bg-sky-300/10 text-sky-200 ring-sky-300/25",
-    textClass: "text-sky-200",
   },
 };
 
@@ -165,11 +159,11 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
   const handleConfirmPayment = async () => {
     setModalOpen(false);
 
-    if (chainId !== avalancheFuji.id) {
+    if (chainId !== avalanche.id) {
       try {
-        await switchChainAsync({ chainId: avalancheFuji.id });
+        await switchChainAsync({ chainId: avalanche.id });
       } catch (err) {
-        console.error("Failed to switch to Fuji", err);
+        console.error("Failed to switch to Avalanche C-Chain", err);
         return;
       }
     }
@@ -177,13 +171,13 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
     sendTransaction({
       to: DUMMY_MERCHANT_ADDRESS,
       value: FLAT_AVAX_VALUE,
-      chainId: avalancheFuji.id,
+      chainId: avalanche.id,
     });
   };
 
   let buttonText = "Let Agent Purchase";
   if (isWalletPending) buttonText = "Confirm in Wallet...";
-  if (isConfirming) buttonText = "Processing on Fuji...";
+  if (isConfirming) buttonText = "Processing on C-Chain...";
   if (isConfirmed) buttonText = "Purchase Complete!";
 
   const merchantName = recommendation?.product.merchantName ?? product.merchantName;
@@ -197,7 +191,7 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
       : recommendation?.totalUsd ?? subtotalUsd + shippingUsd;
   const acceptedTokens =
     product.name === "Neural Pro Keyboard"
-      ? (["ETH", "AVAX", "USDC", "dNZD"] as const)
+      ? (["ETH", "AVAX", "USDC"] as const)
       : product.acceptedCrypto;
   const supportedChains = getSupportedChains(product, recommendation);
   const agentNote =
@@ -214,11 +208,6 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
           "hover:border-sky-300/20 hover:shadow-[0_18px_44px_rgba(0,0,0,0.32)]"
         )}
       >
-        {/* Tier badge */}
-        <div className="absolute top-3 right-3 z-10">
-          <TierBadge tier={product.tier} size="sm" />
-        </div>
-
         {/* Product image — links to detail */}
         <Link href={`/product/${product.id}`} className="block cursor-pointer">
           <div className="aspect-[4/3] bg-[#1a1a1a] overflow-hidden">
