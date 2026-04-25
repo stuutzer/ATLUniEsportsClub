@@ -21,14 +21,14 @@ export function CredentialCard({ credential, className }: CredentialCardProps) {
   return (
     <div
       className={cn(
-        "rounded-xl overflow-hidden border border-white/10 border-l-[3px] border-l-purple-600",
+        "rounded-xl overflow-hidden border border-white/10 border-l-[3px] border-l-sky-300/70",
         "bg-[#1a1a1a]",
         className
       )}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.06] bg-purple-600/5">
-        <ShieldCheck className="w-4 h-4 text-purple-400 flex-shrink-0" />
+      <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.06] bg-sky-300/[0.04]">
+        <ShieldCheck className="w-4 h-4 text-sky-200 flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-white text-sm font-semibold">Agent Credential</p>
           <p className="text-white/35 text-xs">Digital identity authorization</p>
@@ -53,7 +53,7 @@ export function CredentialCard({ credential, className }: CredentialCardProps) {
                 "text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border flex-shrink-0",
                 credential.signatureType === "eip-712"
                   ? "text-green-400 bg-green-400/10 border-green-400/20"
-                  : "text-yellow-300/80 bg-yellow-400/10 border-yellow-400/20"
+                  : "text-sky-200/80 bg-sky-300/10 border-sky-300/20"
               )}
             >
               {credential.signatureType === "eip-712" ? "EIP-712" : "Demo"}

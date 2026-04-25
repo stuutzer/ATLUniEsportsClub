@@ -83,7 +83,7 @@ const S = StyleSheet.create({
     color: "#16a34a",
   },
   statusPending: {
-    backgroundColor: "#fef9c3",
+    backgroundColor: "#e0f2fe",
     borderRadius: 4,
     paddingVertical: 4,
     paddingHorizontal: 10,
@@ -91,7 +91,7 @@ const S = StyleSheet.create({
   statusPendingText: {
     fontSize: 9,
     fontFamily: "Helvetica-Bold",
-    color: "#ca8a04",
+    color: "#0284c7",
   },
   thickDivider: {
     height: 2,
@@ -122,7 +122,7 @@ const S = StyleSheet.create({
   },
   billingENS: {
     fontSize: 10,
-    color: "#7c3aed",
+    color: "#0369a1",
     marginBottom: 3,
   },
   billingMono: {
@@ -249,7 +249,7 @@ const S = StyleSheet.create({
   txBox: {
     backgroundColor: "#f8f8f8",
     borderLeftWidth: 3,
-    borderLeftColor: "#7c3aed",
+    borderLeftColor: "#0369a1",
     borderRadius: 4,
     padding: 16,
     marginBottom: 28,
@@ -278,9 +278,9 @@ const S = StyleSheet.create({
     marginBottom: 10,
     wordBreak: "break-all",
   },
-  txFieldValuePurple: {
+  txFieldValueAccent: {
     fontSize: 9,
-    color: "#7c3aed",
+    color: "#0369a1",
     marginBottom: 10,
   },
   // ── Section 6: Footer ──────────────────────────────────────────
@@ -309,7 +309,7 @@ const S = StyleSheet.create({
   },
   footerENS: {
     fontSize: 8,
-    color: "#7c3aed",
+    color: "#0369a1",
   },
   footerRight: {
     alignItems: "flex-end",
@@ -320,10 +320,10 @@ const S = StyleSheet.create({
     color: "#888888",
     marginBottom: 2,
   },
-  footerItalicPurple: {
+  footerItalicAccent: {
     fontSize: 8,
     fontFamily: "Helvetica-Oblique",
-    color: "#7c3aed",
+    color: "#0369a1",
   },
 });
 
@@ -475,7 +475,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
               <Text style={S.txFieldLabel}>Network</Text>
               <Text style={S.txFieldValue}>{data.network}</Text>
               <Text style={S.txFieldLabel}>Agent Identity</Text>
-              <Text style={S.txFieldValuePurple}>{data.agentName}</Text>
+              <Text style={S.txFieldValueAccent}>{data.agentName}</Text>
             </View>
           </View>
         </View>
@@ -491,7 +491,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
           <View style={S.footerRight}>
             <Text style={S.footerItalic}>This invoice was generated autonomously</Text>
             <Text style={S.footerItalic}>by an AI agent on behalf of the user.</Text>
-            <Text style={S.footerItalicPurple}>No human interaction required.</Text>
+            <Text style={S.footerItalicAccent}>No human interaction required.</Text>
           </View>
         </View>
 

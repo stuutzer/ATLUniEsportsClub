@@ -39,8 +39,8 @@ const tokenStyles: Record<
   },
   dNZD: {
     mark: "NZ",
-    markClass: "bg-amber-300/10 text-amber-100 ring-amber-200/25",
-    textClass: "text-amber-100",
+    markClass: "bg-sky-300/10 text-sky-200 ring-sky-300/25",
+    textClass: "text-sky-200",
   },
 };
 
@@ -56,7 +56,7 @@ const merchantMarks: Record<string, { initials: string; className: string }> = {
   },
   "Wooting Official": {
     initials: "WO",
-    className: "from-orange-300 to-red-600 text-white shadow-red-950/30",
+    className: "from-sky-300 to-blue-600 text-white shadow-blue-950/30",
   },
   "Keychron Store": {
     initials: "KC",
@@ -211,7 +211,7 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
           "relative flex h-full flex-col overflow-hidden rounded-2xl group",
           "bg-[#121212] border border-white/[0.08]",
           "transition-all duration-300",
-          "hover:border-amber-200/20 hover:shadow-[0_18px_44px_rgba(0,0,0,0.32)]"
+          "hover:border-sky-300/20 hover:shadow-[0_18px_44px_rgba(0,0,0,0.32)]"
         )}
       >
         {/* Tier badge */}
@@ -250,7 +250,7 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-medium text-white/80">{merchantName}</p>
-              <div className="mt-0.5 flex items-center gap-1 text-[10px] text-amber-100/70">
+              <div className="mt-0.5 flex items-center gap-1 text-[10px] text-sky-200/70">
                 <ShieldCheck className="h-3 w-3" />
                 <span>{recommendation?.trustScore ?? 99}/100 merchant trust</span>
               </div>
@@ -260,7 +260,7 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
           <div className="mb-4 rounded-xl border border-white/[0.07] bg-black/20 p-3">
             <div className="mb-2 flex items-start justify-between gap-3">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.14em] text-amber-100/45">
+                <p className="text-[10px] uppercase tracking-[0.14em] text-sky-200/45">
                   Landed total
                 </p>
                 <p className="mt-1 text-lg font-bold text-white">
@@ -309,8 +309,8 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
               </div>
             )}
 
-            <div className="rounded-xl border border-amber-200/[0.09] bg-amber-200/[0.035] px-3 py-2.5">
-              <p className="text-[10px] uppercase tracking-[0.14em] text-amber-100/45">
+            <div className="rounded-xl border border-sky-300/[0.09] bg-sky-300/[0.035] px-3 py-2.5">
+              <p className="text-[10px] uppercase tracking-[0.14em] text-sky-200/45">
                 Agent note
               </p>
               <p className="mt-1 line-clamp-2 text-xs leading-5 text-white/55">
@@ -325,8 +325,8 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
             disabled={isWalletPending || isConfirming || isConfirmed}
             className={cn(
               "mt-auto w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium",
-              "bg-purple-500/10 border border-purple-300/15 text-purple-200 cursor-pointer",
-              "hover:bg-purple-500/15 hover:border-purple-200/30 hover:text-white",
+              "border border-white/[0.10] bg-white/[0.06] text-white/75 cursor-pointer",
+              "hover:bg-white/[0.11] hover:border-sky-200/25 hover:text-white",
               "transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50"
             )}
           >

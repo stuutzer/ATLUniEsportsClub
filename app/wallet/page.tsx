@@ -91,7 +91,7 @@ export default function WalletPage() {
     return (
       <div
         key={fallbackSymbol}
-        className="rounded-xl bg-[#141414] border border-white/[0.07] p-6 relative overflow-hidden group hover:border-purple-500/30 transition-colors"
+        className="rounded-xl bg-[#141414] border border-white/[0.07] p-6 relative overflow-hidden group hover:border-sky-200/20 transition-colors"
       >
         <p className="text-xs text-white/30 uppercase tracking-widest mb-4">
           {actualSymbol}
@@ -101,7 +101,7 @@ export default function WalletPage() {
           <span className="text-lg text-white/40 font-normal">{actualSymbol}</span>
         </p>
         <p className="text-white/40 text-sm">${usdValue.toFixed(2)}</p>
-        <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-purple-600/10 rounded-full blur-2xl group-hover:bg-purple-600/20 transition-all" />
+        <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-sky-300/[0.08] rounded-full blur-2xl group-hover:bg-sky-300/[0.12] transition-all" />
       </div>
     );
   };
@@ -121,8 +121,8 @@ export default function WalletPage() {
       {showInstallModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-[#141414] border border-white/[0.07] rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
-            <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
-              <AlertCircle className="w-8 h-8 text-purple-400" />
+            <div className="w-16 h-16 bg-sky-300/10 rounded-full flex items-center justify-center mx-auto mb-5">
+              <AlertCircle className="w-8 h-8 text-sky-200" />
             </div>
             <h3 className="text-xl font-bold text-white mb-2">Wallet Not Detected</h3>
             <p className="text-white/50 text-sm mb-8 leading-relaxed">
@@ -133,7 +133,7 @@ export default function WalletPage() {
                 href="https://metamask.io/download/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 rounded-xl transition-colors"
+                className="rounded-xl border border-white/[0.15] bg-sky-200 py-3 font-semibold text-[#06131d] transition-colors hover:bg-sky-100"
                 onClick={() => setShowInstallModal(false)}
               >
                 Install MetaMask
@@ -154,8 +154,8 @@ export default function WalletPage() {
 
       {/* ── Identity / Connection Card ───────────────────────────────────── */}
       <div className="rounded-xl bg-[#141414] border border-white/[0.07] p-6 mb-4 flex items-center gap-5">
-        <div className="w-16 h-16 rounded-full bg-purple-900/40 border border-purple-600/30 flex items-center justify-center flex-shrink-0">
-          <Wallet className="w-6 h-6 text-purple-300" />
+        <div className="w-16 h-16 rounded-full bg-sky-300/10 border border-sky-200/20 flex items-center justify-center flex-shrink-0">
+          <Wallet className="w-6 h-6 text-sky-200" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-white font-semibold text-lg mb-1">
@@ -179,7 +179,7 @@ export default function WalletPage() {
           <button
             onClick={handleConnect}
             disabled={isConnecting}
-            className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold py-2.5 px-5 rounded-full transition-all hover:shadow-[0_0_20px_rgba(124,58,237,0.4)] disabled:opacity-50 flex-shrink-0"
+            className="flex-shrink-0 rounded-full border border-white/[0.15] bg-sky-200 px-5 py-2.5 text-sm font-semibold text-[#06131d] shadow-[0_10px_28px_rgba(0,0,0,0.25)] transition-all hover:bg-sky-100 disabled:opacity-50"
           >
             {isConnecting ? "Connecting…" : "Connect MetaMask"}
           </button>
@@ -216,7 +216,7 @@ export default function WalletPage() {
             </div>
             <button
               onClick={handleConnect}
-              className="px-5 py-2.5 rounded-full text-sm font-semibold bg-purple-600 hover:bg-purple-700 text-white transition-all hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]"
+              className="rounded-full border border-white/[0.15] bg-sky-200 px-5 py-2.5 text-sm font-semibold text-[#06131d] shadow-[0_10px_28px_rgba(0,0,0,0.25)] transition-all hover:bg-sky-100"
             >
               Connect Wallet
             </button>
@@ -234,13 +234,13 @@ export default function WalletPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={simulatePurchase}
-              className="flex items-center gap-1.5 text-xs text-yellow-300/80 bg-yellow-400/8 hover:bg-yellow-400/15 px-2.5 py-1 rounded-md border border-yellow-400/20 transition-colors"
+              className="flex items-center gap-1.5 text-xs text-sky-200/80 bg-sky-300/10 hover:bg-sky-300/15 px-2.5 py-1 rounded-md border border-sky-300/20 transition-colors"
               title="Add a synthetic transaction (no wallet needed) to test invoice generation"
             >
               <Beaker className="w-3.5 h-3.5" />
               Simulate purchase (dev)
             </button>
-            <span className="flex items-center gap-1.5 text-xs text-purple-400 bg-purple-400/10 px-2.5 py-1 rounded-md border border-purple-400/20">
+            <span className="flex items-center gap-1.5 text-xs text-sky-200 bg-sky-300/10 px-2.5 py-1 rounded-md border border-sky-200/20">
               <Bot className="w-3.5 h-3.5" />
               100% Agent Managed
             </span>
@@ -270,7 +270,7 @@ export default function WalletPage() {
                     <td className="px-6 py-4">
                       <p className="text-white/90 font-medium flex items-center gap-2">
                         {tx.item}
-                        {tx.isAgent && <Bot className="w-3.5 h-3.5 text-purple-400" />}
+                        {tx.isAgent && <Bot className="w-3.5 h-3.5 text-sky-200" />}
                       </p>
                       <p className="text-white/40 text-xs mt-0.5">{tx.type}</p>
                     </td>
@@ -288,14 +288,14 @@ export default function WalletPage() {
                         {tx.status === "Completed" ? (
                           <CheckCircle className="w-4 h-4 text-green-500/70" />
                         ) : (
-                          <Clock className="w-4 h-4 text-yellow-500/70 animate-pulse" />
+                          <Clock className="w-4 h-4 text-sky-400/70 animate-pulse" />
                         )}
                         <span
                           className={cn(
                             "text-xs",
                             tx.status === "Completed"
                               ? "text-white/50"
-                              : "text-yellow-500/70"
+                              : "text-sky-400/70"
                           )}
                         >
                           {tx.status}
@@ -303,7 +303,7 @@ export default function WalletPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="text-white/20 hover:text-purple-400 transition-colors inline-flex items-center gap-1">
+                      <button className="text-white/20 hover:text-sky-200 transition-colors inline-flex items-center gap-1">
                         <span className="font-mono text-xs">{tx.hash.slice(0, 6)}</span>
                         <ExternalLink className="w-3 h-3" />
                       </button>
@@ -313,7 +313,7 @@ export default function WalletPage() {
                         onClick={() => handleDownloadInvoice(tx)}
                         disabled={downloadingTx === tx.id}
                         title="Download Invoice"
-                        className="text-white/20 hover:text-purple-400 transition-colors inline-flex items-center justify-center disabled:opacity-40"
+                        className="text-white/20 hover:text-sky-200 transition-colors inline-flex items-center justify-center disabled:opacity-40"
                       >
                         {downloadingTx === tx.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />

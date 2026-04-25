@@ -81,7 +81,7 @@ export function BuyItemButton({ product }: { product: Product }) {
       <button
         onClick={handleBuy}
         disabled={settlementStatus === "minting" || isPurchased}
-        className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-xl disabled:opacity-50 transition-all text-sm font-medium mt-4 shadow-lg shadow-purple-900/20"
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.15] bg-sky-200 py-2.5 px-4 text-sm font-semibold text-[#06131d] shadow-lg shadow-black/25 transition-all hover:bg-sky-100 disabled:opacity-50"
       >
         <Bot className="w-4 h-4" />
         {buttonText}

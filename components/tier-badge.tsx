@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import type { Tier } from "@/lib/mockData";
 
 const tierStyles: Record<Tier, string> = {
-  S: "bg-purple-600 text-white shadow-[0_0_12px_rgba(124,58,237,0.6)]",
+  S: "bg-sky-300 text-black shadow-[0_0_12px_rgba(125,211,252,0.3)]",
   A: "bg-indigo-600 text-white shadow-[0_0_12px_rgba(79,70,229,0.5)]",
   B: "bg-teal-600 text-white shadow-[0_0_12px_rgba(13,148,136,0.4)]",
 };

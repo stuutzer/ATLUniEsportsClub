@@ -86,9 +86,9 @@ export function PurchaseModal({
               className={cn(
                 "rounded-full transition-all duration-300",
                 s === step
-                  ? "w-6 h-1.5 bg-purple-500"
+                  ? "w-6 h-1.5 bg-sky-300"
                   : s < step
-                  ? "w-1.5 h-1.5 bg-purple-500/40"
+                  ? "w-1.5 h-1.5 bg-sky-300/40"
                   : "w-1.5 h-1.5 bg-white/10"
               )}
             />
@@ -136,8 +136,8 @@ function StepLoading({
 }) {
   return (
     <div className="flex flex-col items-center text-center gap-5 flex-1 justify-center">
-      <div className="w-12 h-12 rounded-xl bg-purple-600/15 border border-purple-500/20 flex items-center justify-center">
-        <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
+      <div className="w-12 h-12 rounded-xl bg-sky-300/10 border border-sky-200/[0.15] flex items-center justify-center">
+        <Loader2 className="w-5 h-5 text-sky-200 animate-spin" />
       </div>
       <div>
         <p className="text-white font-semibold mb-1">Loading agent credential…</p>
@@ -207,7 +207,7 @@ function StepPresenting({
         )}
       >
         {credential ? (
-          <div className="bg-[#1a1a1a] border border-white/8 border-l-[3px] border-l-purple-600 rounded-xl px-4 py-3.5 space-y-2.5">
+          <div className="bg-[#1a1a1a] border border-white/8 border-l-[3px] border-l-sky-300/70 rounded-xl px-4 py-3.5 space-y-2.5">
             <Row label="Agent" value={credential.agentName} mono />
             <Row label="Authorized For" value={credential.actingFor} mono />
             <Row
@@ -252,7 +252,7 @@ function StepVerification({
         <Link
           href="/profile"
           onClick={onClose}
-          className="px-6 py-2.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-colors"
+          className="rounded-full border border-white/[0.15] bg-sky-200 px-6 py-2.5 text-sm font-semibold text-[#06131d] transition-colors hover:bg-sky-100"
         >
           Go to Profile
         </Link>
@@ -276,7 +276,7 @@ function StepVerification({
         <Link
           href="/profile"
           onClick={onClose}
-          className="px-6 py-2.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-colors"
+          className="rounded-full border border-white/[0.15] bg-sky-200 px-6 py-2.5 text-sm font-semibold text-[#06131d] transition-colors hover:bg-sky-100"
         >
           Adjust limit in Profile
         </Link>
@@ -341,7 +341,7 @@ function StepPayment({
           <span className="text-white/40">NewMoney chain</span>
           <span className="text-white">Sepolia</span>
         </div>
-        <div className="px-4 py-3.5 flex justify-between text-sm bg-purple-600/5">
+        <div className="px-4 py-3.5 flex justify-between text-sm bg-white/[0.04]">
           <span className="text-white font-medium">
             Stablecoin settlement
           </span>
@@ -377,7 +377,7 @@ function StepPayment({
         <button
           onClick={() => (onConfirm ? onConfirm() : onClose())}
           disabled={isMinting}
-          className="flex-1 py-2.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all hover:shadow-[0_0_20px_rgba(124,58,237,0.4)] disabled:cursor-wait disabled:opacity-60"
+          className="flex-1 rounded-full border border-white/[0.15] bg-sky-200 py-2.5 text-sm font-semibold text-[#06131d] shadow-[0_10px_28px_rgba(0,0,0,0.28)] transition-all hover:bg-sky-100 disabled:cursor-wait disabled:opacity-60"
         >
           {isMinting ? "Minting dNZD..." : "Confirm Settlement"}
         </button>

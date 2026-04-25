@@ -16,17 +16,13 @@ const navItems = [
 
 function QuarterLogo() {
   return (
-    <svg
-      viewBox="0 0 32 32"
-      className="w-7 h-7"
-      fill="none"
-      aria-hidden
+    <Link
+      href="/agent"
+      aria-label="Go to Agent"
+      className="inline-flex rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1a1a]"
     >
-      <path
-        d="M4 28 C4 14, 14 4, 28 4 L28 11 C18 11, 11 18, 11 28 Z"
-        fill="#f5f5f5"
-      />
-    </svg>
+      <img src="quarter.png" alt="Quarter" className="h-5" />
+    </Link>
   );
 }
 
@@ -43,11 +39,8 @@ export function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 h-screen w-[260px] bg-[#1a1a1a] border-r border-white/[0.04] flex flex-col z-50">
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-6 pt-7 pb-10">
+      <div className="flex items-center gap-1 px-6 pt-10 pb-5">
         <QuarterLogo />
-        <span className="text-white text-[22px] font-semibold tracking-tight">
-          Quarter
-        </span>
       </div>
 
       {/* Nav items */}

@@ -77,18 +77,20 @@ export function ShoppingCategories() {
             <button
               key={cat.id}
               onClick={() => handleCategory(cat.prompt)}
-              className="group relative overflow-hidden rounded-2xl bg-[#262626] border border-white/[0.04] py-9 px-6 flex items-center justify-center gap-3 text-center hover:bg-[#2c2c2c] hover:border-white/10 active:scale-[0.985] transition-[background,border-color,transform] duration-200"
+              className="group relative overflow-hidden rounded-xl bg-[#262626] border border-white/[0.04] py-9 px-6 flex items-center justify-center gap-3 text-center text-white/55 hover:text-white hover:bg-white/[0.04] transition-colors duration-200"
               style={{
                 opacity: visible ? 1 : 0,
                 transform: visible ? "translateY(0) scale(1)" : "translateY(22px) scale(0.96)",
-                transitionProperty: "opacity, transform, background-color, border-color",
-                transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
-                transitionDuration: "0.55s",
-                transitionDelay: `${200 + i * 70}ms`,
+                transition: [
+                  `opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1) ${200 + i * 70}ms`,
+                  `transform 0.55s cubic-bezier(0.22, 1, 0.36, 1) ${200 + i * 70}ms`,
+                  "background-color 0.2s ease",
+                  "color 0.2s ease",
+                ].join(", "),
               }}
             >
-              <Icon className="w-[18px] h-[18px] text-white/85 flex-shrink-0" />
-              <span className="text-white/90 text-[15px] font-medium">
+              <Icon className="w-[18px] h-[18px] flex-shrink-0" />
+              <span className="text-[15px] font-medium">
                 {cat.label}
               </span>
             </button>

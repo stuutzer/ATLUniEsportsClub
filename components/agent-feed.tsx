@@ -14,8 +14,8 @@ const logIcons: Record<AgentLog["type"], React.ReactNode> = {
 
 const logColors: Record<AgentLog["type"], string> = {
   search: "text-blue-400 bg-blue-400/10",
-  compare: "text-yellow-400 bg-yellow-400/10",
-  rank: "text-purple-400 bg-purple-400/10",
+  compare: "text-sky-300 bg-sky-300/10",
+  rank: "text-sky-200 bg-sky-300/10",
   info: "text-white/50 bg-white/5",
 };
 

@@ -14,11 +14,11 @@ const config: Config = {
         card: "#141414",
         border: "rgba(255,255,255,0.1)",
         accent: {
-          DEFAULT: "#7c3aed",
-          hover: "#6d28d9",
+          DEFAULT: "#7dd3fc",
+          hover: "#bae6fd",
         },
         tier: {
-          s: "#7c3aed",
+          s: "#7dd3fc",
           a: "#4f46e5",
           b: "#0d9488",
         },
