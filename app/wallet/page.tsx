@@ -4,9 +4,10 @@ import { useState } from "react";
 import { useAccount, useConnect, useDisconnect, useBalance } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { baseSepolia } from "wagmi/chains";
-import { Wallet, LogOut, CheckCircle, Clock, ExternalLink, Bot, AlertCircle } from "lucide-react";
+import { Wallet, LogOut, CheckCircle, Clock, ExternalLink, Bot, AlertCircle, Download, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAgent } from "@/context/AgentContext";
+import { useIdentity } from "@/context/IdentityContext";
 
 // The dNZD contract address on Base Sepolia
 const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
@@ -18,57 +19,40 @@ const MOCK_TOKEN_PRICES: Record<string, number> = {
   ETH: 3000.00,
 };
 
-// Core: Hardcoded perfect Agent transaction records for demonstration
-const mockTransactions = [
-  {
-    id: "tx-1",
-    date: "Today, 14:32",
-    type: "Agent Purchase",
-    item: "MSI GeForce RTX 4090 24GB", 
-    amount: "-1,850.00",
-    token: "dNZD",
-    status: "Completed",
-    hash: "0x8f...3a1c",
-    isAgent: true
-  },
-  {
-    id: "tx-2",
-    date: "Yesterday, 09:15",
-    type: "Utility Payment",
-    item: "Mercury Energy Bill (Auto-paid)", 
-    amount: "-124.50",
-    token: "dNZD",
-    status: "Completed",
-    hash: "0x2b...9c4e",
-    isAgent: true
-  },
-  {
-    id: "tx-3",
-    date: "Apr 23, 18:20",
-    type: "Deposit",
-    item: "Monthly Allowance from Jack", 
-    amount: "+500.00",
-    token: "dNZD",
-    status: "Completed",
-    hash: "0xd4...f1a2",
-    isAgent: false
-  },
-  {
-    id: "tx-4",
-    date: "Apr 22, 11:05",
-    type: "Agent Purchase",
-    item: "Corsair Vengeance 32GB RAM",
-    amount: "-145.00",
-    token: "dNZD",
-    status: "Pending", 
-    hash: "0x...",
-    isAgent: true
-  }
-];
 
 export default function WalletPage() {
-  // State for our custom missing wallet modal
+  const { displayName } = useIdentity();
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [downloadingTx, setDownloadingTx] = useState<string | null>(null);
+
+  async function handleDownloadInvoice(tx: ReturnType<typeof useAgent>["transactions"][0]) {
+    setDownloadingTx(tx.id);
+    try {
+      const cleanAmount = tx.amount.replace(/[+\-,\s]/g, "");
+      const amountNum = parseFloat(cleanAmount) || 0;
+      const fee = 0.001;
+      const { downloadInvoice } = await import("@/components/invoice-pdf");
+      await downloadInvoice(
+        {
+          invoiceNumber: tx.id.replace(/[^a-zA-Z0-9]/g, "").toUpperCase(),
+          agentName: "agentcart.eth",
+          userName: displayName ?? "Unknown",
+          merchantName: "AgentCart Marketplace",
+          itemName: tx.item,
+          amount: cleanAmount,
+          token: tx.token,
+          networkFee: fee.toFixed(3),
+          total: (amountNum + fee).toFixed(3),
+          txHash: tx.hash,
+          timestamp: tx.date,
+          status: tx.status === "Completed" ? "CONFIRMED" : "PENDING",
+        },
+        tx.id
+      );
+    } finally {
+      setDownloadingTx(null);
+    }
+  }
 
   // Wagmi connection states
   const { address, isConnected } = useAccount();
@@ -236,10 +220,11 @@ export default function WalletPage() {
             <thead>
               <tr className="border-b border-white/5 text-white/30 font-medium text-xs">
                 <th className="text-left px-6 py-4 uppercase tracking-wider w-[15%]">Date</th>
-                <th className="text-left px-6 py-4 uppercase tracking-wider w-[35%]">Item & Type</th>
-                <th className="text-right px-6 py-4 uppercase tracking-wider w-[15%]">Amount</th>
-                <th className="text-right px-6 py-4 uppercase tracking-wider w-[15%]">Status</th>
+                <th className="text-left px-6 py-4 uppercase tracking-wider w-[33%]">Item & Type</th>
+                <th className="text-right px-6 py-4 uppercase tracking-wider w-[13%]">Amount</th>
+                <th className="text-right px-6 py-4 uppercase tracking-wider w-[13%]">Status</th>
                 <th className="text-right px-6 py-4 uppercase tracking-wider w-[10%]">Hash</th>
+                <th className="text-right px-6 py-4 uppercase tracking-wider w-[8%]">Invoice</th>
               </tr>
             </thead>
             <tbody>
@@ -281,11 +266,25 @@ export default function WalletPage() {
                         <ExternalLink className="w-3 h-3" />
                       </button>
                     </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => handleDownloadInvoice(tx)}
+                        disabled={downloadingTx === tx.id}
+                        title="Download Invoice"
+                        className="text-white/20 hover:text-purple-400 transition-colors inline-flex items-center justify-center disabled:opacity-40"
+                      >
+                        {downloadingTx === tx.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Download className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-16 text-center">
+                  <td colSpan={6} className="px-6 py-16 text-center">
                     <div className="inline-flex flex-col items-center justify-center opacity-40">
                       <Bot className="w-8 h-8 mb-3" />
                       <p className="text-white text-sm">Connect wallet to sync Agent transaction history</p>
