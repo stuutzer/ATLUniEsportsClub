@@ -51,21 +51,17 @@ export default function WalletPage() {
     }
   }
 
-  // Wagmi connection states
   const { address, isConnected } = useAccount();
   const { connect, isPending: isConnecting } = useConnect();
   const { disconnect } = useDisconnect();
 
   const { transactions, executeAgentPurchase } = useAgent();
 
-  // Native AVAX balance on Fuji (Avalanche C-Chain testnet)
   const { data: nativeBalance } = useBalance({
     address,
     chainId: avalancheFuji.id,
   });
 
-  // Hackathon-only: synthesize a transaction so the invoice flow can be tested
-  // without a wallet, faucet, or on-chain send. Generates a random 32-byte hash.
   function simulatePurchase() {
     const fakeHash =
       "0x" +
@@ -83,36 +79,33 @@ export default function WalletPage() {
     executeAgentPurchase(item, price, "AVAX", fakeHash);
   }
 
-  // Dynamically renders the balance card using on-chain symbol data
   const renderBalanceCard = (fallbackSymbol: string, balanceData?: { formatted: string, symbol: string }) => {
     const amount = balanceData ? Number(balanceData.formatted) : 0;
-    
-    // Extract real symbol from contract if available, otherwise use fallback
-    const actualSymbol = balanceData?.symbol || fallbackSymbol; 
-    
+    const actualSymbol = balanceData?.symbol || fallbackSymbol;
     const price = MOCK_TOKEN_PRICES[actualSymbol] || 1.00;
     const usdValue = amount * price;
-    
-    // Determine decimal formatting based on token type
-    const formattedAmount = actualSymbol.includes("USD") || actualSymbol.includes("NZD") 
-      ? amount.toFixed(2) 
+    const formattedAmount = actualSymbol.includes("USD") || actualSymbol.includes("NZD")
+      ? amount.toFixed(2)
       : amount.toFixed(4);
 
     return (
-      <div key={fallbackSymbol} className="rounded-xl bg-[#1c1c1c] border border-white/5 p-5 relative overflow-hidden group hover:border-purple-500/30 transition-colors">
-        <p className="text-white/40 text-xs uppercase tracking-widest mb-3">{actualSymbol}</p>
+      <div
+        key={fallbackSymbol}
+        className="rounded-xl bg-[#141414] border border-white/[0.07] p-6 relative overflow-hidden group hover:border-purple-500/30 transition-colors"
+      >
+        <p className="text-xs text-white/30 uppercase tracking-widest mb-4">
+          {actualSymbol}
+        </p>
         <p className="text-white font-bold text-3xl mb-1">
-          {formattedAmount} <span className="text-lg text-white/40 font-normal">{actualSymbol}</span>
+          {formattedAmount}{" "}
+          <span className="text-lg text-white/40 font-normal">{actualSymbol}</span>
         </p>
         <p className="text-white/40 text-sm">${usdValue.toFixed(2)}</p>
-        
-        {/* Decorative background glow effect */}
-        <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-purple-600/10 rounded-full blur-2xl group-hover:bg-purple-600/20 transition-all"></div>
+        <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-purple-600/10 rounded-full blur-2xl group-hover:bg-purple-600/20 transition-all" />
       </div>
     );
   };
 
-  // Custom connection handler to intercept users without a Web3 wallet
   const handleConnect = () => {
     if (typeof window !== "undefined" && !window.ethereum) {
       setShowInstallModal(true);
@@ -123,11 +116,11 @@ export default function WalletPage() {
 
   return (
     <div className="p-8 relative">
-      
-      {/* Custom Install Wallet Modal */}
+
+      {/* Install Wallet Modal */}
       {showInstallModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-[#141414] border border-white/10 rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl transform transition-all">
+          <div className="bg-[#141414] border border-white/[0.07] rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
             <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
               <AlertCircle className="w-8 h-8 text-purple-400" />
             </div>
@@ -156,17 +149,28 @@ export default function WalletPage() {
         </div>
       )}
 
-      {/* Header navigation section */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Wallet</h1>
-          <p className="text-white/40 text-sm">Manage funds and view AI spending history</p>
+      {/* Page header */}
+      <h1 className="text-2xl font-semibold text-white mb-7">Wallet</h1>
+
+      {/* ── Identity / Connection Card ───────────────────────────────────── */}
+      <div className="rounded-xl bg-[#141414] border border-white/[0.07] p-6 mb-4 flex items-center gap-5">
+        <div className="w-16 h-16 rounded-full bg-purple-900/40 border border-purple-600/30 flex items-center justify-center flex-shrink-0">
+          <Wallet className="w-6 h-6 text-purple-300" />
         </div>
-        
+        <div className="flex-1 min-w-0">
+          <p className="text-white font-semibold text-lg mb-1">
+            {isConnected ? (displayName ?? "Connected") : "Not connected"}
+          </p>
+          <p className="text-white/30 text-sm">
+            {isConnected
+              ? "Manage funds and view AI spending history"
+              : "Connect your wallet to fund your AI Agent"}
+          </p>
+        </div>
         {isConnected ? (
           <button
             onClick={() => disconnect()}
-            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white text-sm py-2 px-4 rounded-full transition-all"
+            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white text-sm py-2 px-4 rounded-full transition-all flex-shrink-0"
           >
             <LogOut className="w-4 h-4" />
             Disconnect
@@ -175,48 +179,58 @@ export default function WalletPage() {
           <button
             onClick={handleConnect}
             disabled={isConnecting}
-            className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium py-2 px-6 rounded-full transition-colors disabled:opacity-50"
+            className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold py-2.5 px-5 rounded-full transition-all hover:shadow-[0_0_20px_rgba(124,58,237,0.4)] disabled:opacity-50 flex-shrink-0"
           >
-            {isConnecting ? "Connecting..." : "Connect MetaMask"}
+            {isConnecting ? "Connecting…" : "Connect MetaMask"}
           </button>
         )}
       </div>
 
-      {/* Asset cards layout */}
-      {isConnected ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-          {renderBalanceCard("AVAX", nativeBalance)}
+      {/* ── Balances Panel ───────────────────────────────────────────────── */}
+      <div className="rounded-xl bg-[#141414] border border-white/[0.07] p-6 mb-4">
+        <p className="text-xs text-white/30 uppercase tracking-widest mb-4">
+          Balances
+        </p>
 
-          {/* Empty placeholder card for balanced layout design */}
-          <div className="rounded-xl bg-[#1c1c1c]/50 border border-white/5 border-dashed p-5 flex flex-col items-center justify-center text-white/20 hover:border-white/20 transition-colors cursor-pointer">
-            <span className="text-xs uppercase tracking-widest">+ Add Token</span>
+        {isConnected ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {renderBalanceCard("AVAX", nativeBalance)}
+
+            <div className="rounded-xl bg-white/[0.02] border border-white/[0.07] border-dashed p-5 flex flex-col items-center justify-center text-white/20 hover:border-white/20 transition-colors cursor-pointer">
+              <span className="text-xs uppercase tracking-widest">+ Add Token</span>
+            </div>
+            <div className="rounded-xl bg-white/[0.02] border border-white/[0.07] border-dashed p-5 flex flex-col items-center justify-center text-white/20 hover:border-white/20 transition-colors cursor-pointer">
+              <span className="text-xs uppercase tracking-widest">+ Add Token</span>
+            </div>
           </div>
-          <div className="rounded-xl bg-[#1c1c1c]/50 border border-white/5 border-dashed p-5 flex flex-col items-center justify-center text-white/20 hover:border-white/20 transition-colors cursor-pointer">
-            <span className="text-xs uppercase tracking-widest">+ Add Token</span>
+        ) : (
+          <div className="flex flex-col items-center text-center py-8 gap-4">
+            <div className="w-12 h-12 rounded-xl bg-white/[0.04] border border-white/8 flex items-center justify-center">
+              <Wallet className="w-5 h-5 text-white/20" />
+            </div>
+            <div>
+              <p className="text-white/70 font-medium mb-1">No Wallet Connected</p>
+              <p className="text-white/30 text-sm max-w-xs">
+                Connect your Web3 wallet to view real-time balances
+              </p>
+            </div>
+            <button
+              onClick={handleConnect}
+              className="px-5 py-2.5 rounded-full text-sm font-semibold bg-purple-600 hover:bg-purple-700 text-white transition-all hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]"
+            >
+              Connect Wallet
+            </button>
           </div>
-        </div>
-      ) : (
-        <div className="bg-[#1c1c1c] border border-white/5 rounded-xl p-12 flex flex-col items-center justify-center mb-10 text-center">
-          <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-            <Wallet className="w-8 h-8 text-white/30" />
-          </div>
-          <h3 className="text-white font-medium mb-2">Wallet Disconnected</h3>
-          <p className="text-white/40 text-sm max-w-sm mb-6">
-            Connect your Web3 wallet to fund your AI Agent and view real-time balances.
+        )}
+      </div>
+
+      {/* ── Transaction History Panel ────────────────────────────────────── */}
+      <div className="rounded-xl bg-[#141414] border border-white/[0.07] overflow-hidden">
+        {/* Panel header — mirrors Agent Credential / Agent Permissions label style */}
+        <div className="px-6 py-5 border-b border-white/[0.07] flex justify-between items-center">
+          <p className="text-xs text-white/30 uppercase tracking-widest">
+            Transaction History
           </p>
-          <button
-            onClick={handleConnect}
-            className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium py-2.5 px-8 rounded-full transition-colors"
-          >
-            Connect Wallet
-          </button>
-        </div>
-      )}
-
-      {/* Transaction history section */}
-      <div className="rounded-xl bg-[#1c1c1c] border border-white/5 overflow-hidden">
-        <div className="px-6 py-5 border-b border-white/5 flex justify-between items-center bg-[#141414]">
-          <h2 className="text-white font-medium">Transaction History</h2>
           <div className="flex items-center gap-2">
             <button
               onClick={simulatePurchase}
@@ -232,38 +246,42 @@ export default function WalletPage() {
             </span>
           </div>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/5 text-white/30 font-medium text-xs">
-                <th className="text-left px-6 py-4 uppercase tracking-wider w-[15%]">Date</th>
-                <th className="text-left px-6 py-4 uppercase tracking-wider w-[33%]">Item & Type</th>
-                <th className="text-right px-6 py-4 uppercase tracking-wider w-[13%]">Amount</th>
-                <th className="text-right px-6 py-4 uppercase tracking-wider w-[13%]">Status</th>
-                <th className="text-right px-6 py-4 uppercase tracking-wider w-[10%]">Hash</th>
-                <th className="text-right px-6 py-4 uppercase tracking-wider w-[8%]">Invoice</th>
+              <tr className="border-b border-white/[0.07] text-white/30 font-medium text-xs">
+                <th className="text-left px-6 py-4 uppercase tracking-widest w-[15%]">Date</th>
+                <th className="text-left px-6 py-4 uppercase tracking-widest w-[33%]">Item &amp; Type</th>
+                <th className="text-right px-6 py-4 uppercase tracking-widest w-[13%]">Amount</th>
+                <th className="text-right px-6 py-4 uppercase tracking-widest w-[13%]">Status</th>
+                <th className="text-right px-6 py-4 uppercase tracking-widest w-[10%]">Hash</th>
+                <th className="text-right px-6 py-4 uppercase tracking-widest w-[8%]">Invoice</th>
               </tr>
             </thead>
             <tbody>
               {isConnected ? (
                 transactions.map((tx) => (
-                  <tr key={tx.id} className="border-b border-white/5 last:border-0 hover:bg-white/3 transition-colors group">
+                  <tr
+                    key={tx.id}
+                    className="border-b border-white/[0.07] last:border-0 hover:bg-white/[0.02] transition-colors"
+                  >
                     <td className="px-6 py-4 text-white/40">{tx.date}</td>
                     <td className="px-6 py-4">
                       <p className="text-white/90 font-medium flex items-center gap-2">
                         {tx.item}
-                        {tx.isAgent && (
-                           <Bot className="w-3.5 h-3.5 text-purple-400" />
-                        )}
+                        {tx.isAgent && <Bot className="w-3.5 h-3.5 text-purple-400" />}
                       </p>
                       <p className="text-white/40 text-xs mt-0.5">{tx.type}</p>
                     </td>
-                    <td className={cn(
-                      "px-6 py-4 text-right font-mono",
-                      tx.amount.startsWith("+") ? "text-green-400" : "text-white"
-                    )}>
-                      {tx.amount} <span className="text-xs text-white/30">{tx.token}</span>
+                    <td
+                      className={cn(
+                        "px-6 py-4 text-right font-mono",
+                        tx.amount.startsWith("+") ? "text-green-400" : "text-white"
+                      )}
+                    >
+                      {tx.amount}{" "}
+                      <span className="text-xs text-white/30">{tx.token}</span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex justify-end items-center gap-1.5">
@@ -272,15 +290,21 @@ export default function WalletPage() {
                         ) : (
                           <Clock className="w-4 h-4 text-yellow-500/70 animate-pulse" />
                         )}
-                        <span className={cn(
-                          "text-xs",
-                          tx.status === "Completed" ? "text-white/50" : "text-yellow-500/70"
-                        )}>{tx.status}</span>
+                        <span
+                          className={cn(
+                            "text-xs",
+                            tx.status === "Completed"
+                              ? "text-white/50"
+                              : "text-yellow-500/70"
+                          )}
+                        >
+                          {tx.status}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button className="text-white/20 hover:text-purple-400 transition-colors inline-flex items-center gap-1">
-                        <span className="font-mono text-xs">{tx.hash.slice(0,6)}</span>
+                        <span className="font-mono text-xs">{tx.hash.slice(0, 6)}</span>
                         <ExternalLink className="w-3 h-3" />
                       </button>
                     </td>
@@ -305,7 +329,9 @@ export default function WalletPage() {
                   <td colSpan={6} className="px-6 py-16 text-center">
                     <div className="inline-flex flex-col items-center justify-center opacity-40">
                       <Bot className="w-8 h-8 mb-3" />
-                      <p className="text-white text-sm">Connect wallet to sync Agent transaction history</p>
+                      <p className="text-white text-sm">
+                        Connect wallet to sync Agent transaction history
+                      </p>
                     </div>
                   </td>
                 </tr>

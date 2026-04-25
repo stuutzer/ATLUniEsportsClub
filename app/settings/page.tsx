@@ -8,13 +8,12 @@ const sections = [
 export default function SettingsPage() {
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold text-white mb-8">Settings</h1>
-
+      <h1 className="text-2xl font-semibold text-white mb-7">Settings</h1>
       <div className="space-y-4">
         {sections.map(({ title, description }) => (
-          <div key={title} className="rounded-xl bg-[#1c1c1c] border border-white/5 p-6">
-            <p className="text-white font-semibold mb-1">{title}</p>
-            <p className="text-white/40 text-sm">{description}</p>
+          <div key={title} className="rounded-xl bg-[#141414] border border-white/[0.07] p-6">
+            <p className="text-xs text-white/30 uppercase tracking-widest mb-4">{title}</p>
+            <p className="text-white/60 text-sm">{description}</p>
           </div>
         ))}
       </div>
