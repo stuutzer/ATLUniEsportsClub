@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gem, User, Settings } from "lucide-react";
+import { Gem, User, Settings, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WalletButton } from "@/components/wallet-button";
 import { useIdentity } from "@/context/IdentityContext";
 
 const navItems = [
   { href: "/agent", icon: Gem, label: "Agent" },
+  { href: "/wallet", icon: Wallet, label: "Wallet" },
   { href: "/profile", icon: User, label: "Profile" },
   { href: "/settings", icon: Settings, label: "Settings" },
 ];
