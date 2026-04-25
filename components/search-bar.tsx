@@ -1,15 +1,65 @@
+// components/search-bar.tsx
 "use client";
 
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { Product } from "@/lib/mockData";
 
-export function SearchBar() {
+interface SearchBarProps {
+  onResults: (products: Product[]) => void;
+  onLoading: (loading: boolean) => void;
+  onQuery?: (query: string) => void;
+}
+
+export function SearchBar({ onResults, onLoading, onQuery }: SearchBarProps) {
   const [query, setQuery] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // TODO: trigger Claude API agent search
+    if (!query.trim()) return;
+
+    onLoading(true);
+    onResults([]);
+    onQuery?.(query.trim());
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: `You are a shopping agent. When the user asks for products, respond ONLY with a valid JSON array of product objects. No markdown, no explanation, just raw JSON.
+
+Each product object must have exactly these fields:
+{
+  "id": string (unique, e.g. "prod-1"),
+  "name": string,
+  "category": string (uppercase, e.g. "COMPUTING", "PERIPHERALS", "DISPLAYS", "AUDIO", "STORAGE"),
+  "merchantName": string,
+  "price": number,
+  "imageUrl": string (use https://picsum.photos/seed/{uniqueSeedWord}/600/450),
+  "tier": "S" | "A" | "B",
+  "acceptedCrypto": array containing any of "ETH", "AVAX", "USDC"
+}
+
+Return 6 products relevant to what the user asked for. Assign tiers based on quality/price (S = premium, A = great, B = good).`,
+          messages: [{ role: "user", content: query }],
+        }),
+      });
+
+      const data = await response.json();
+      const text = data.content?.find((b: { type: string }) => b.type === "text")?.text ?? "[]";
+      const clean = text.replace(/```json|```/g, "").trim();
+      const products: Product[] = JSON.parse(clean);
+      onResults(products);
+    } catch (err) {
+      console.error("Agent search failed:", err);
+      onResults([]);
+    } finally {
+      onLoading(false);
+    }
   }
 
   return (
