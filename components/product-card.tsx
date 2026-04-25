@@ -1,13 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { TierBadge } from "@/components/tier-badge";
 import { PurchaseModal } from "@/components/purchase-modal";
 import type { Product } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { Bot } from "lucide-react";
-import { BuyItemButton } from "@/components/buy-item-button";
+import { useAgent } from "@/context/AgentContext";
+import {
+  useSendTransaction,
+  useWaitForTransactionReceipt,
+  useSwitchChain,
+  useChainId,
+} from "wagmi";
+import { parseEther } from "viem";
+import { avalancheFuji } from "wagmi/chains";
 
 const cryptoColors: Record<string, string> = {
   ETH: "bg-blue-500/15 text-blue-300 border border-blue-500/20",
@@ -19,8 +27,50 @@ interface ProductCardProps {
   product: Product;
 }
 
+const DUMMY_MERCHANT_ADDRESS = "0x000000000000000000000000000000000000dEaD";
+const FLAT_AVAX_VALUE = parseEther("0.0003");
+
 export function ProductCard({ product }: ProductCardProps) {
+  const { executeAgentPurchase } = useAgent();
   const [modalOpen, setModalOpen] = useState(false);
+  const [isPurchased, setIsPurchased] = useState(false);
+  const chainId = useChainId();
+  const { switchChainAsync } = useSwitchChain();
+  const { sendTransaction, data: hash, isPending: isWalletPending } =
+    useSendTransaction();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({ hash });
+
+  useEffect(() => {
+    if (isConfirmed && hash && !isPurchased) {
+      executeAgentPurchase(product.name, product.price, "AVAX", hash);
+      setIsPurchased(true);
+    }
+  }, [isConfirmed, hash, isPurchased, executeAgentPurchase, product.name, product.price]);
+
+  const handleConfirmPayment = async () => {
+    setModalOpen(false);
+
+    if (chainId !== avalancheFuji.id) {
+      try {
+        await switchChainAsync({ chainId: avalancheFuji.id });
+      } catch (err) {
+        console.error("Failed to switch to Fuji", err);
+        return;
+      }
+    }
+
+    sendTransaction({
+      to: DUMMY_MERCHANT_ADDRESS,
+      value: FLAT_AVAX_VALUE,
+      chainId: avalancheFuji.id,
+    });
+  };
+
+  let buttonText = "Let Agent Purchase";
+  if (isWalletPending) buttonText = "Confirm in Wallet...";
+  if (isConfirming) buttonText = "Processing on Fuji...";
+  if (isConfirmed) buttonText = "Purchase Complete!";
 
   return (
     <>
@@ -71,24 +121,26 @@ export function ProductCard({ product }: ProductCardProps) {
           {/* Agent purchase button */}
     <button
       onClick={() => setModalOpen(true)}
+      disabled={isWalletPending || isConfirming || isConfirmed}
       className={cn(
         "mt-auto w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium",
         "bg-purple-600/10 border border-purple-500/20 text-purple-300",
         "hover:bg-purple-600/20 hover:border-purple-500/40 hover:text-purple-200",
-        "transition-all duration-150"
+        "transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50"
       )}
     >
       <Bot className="w-3.5 h-3.5" />
-      Let Agent Purchase
+      {buttonText}
     </button>
-    <div className="mt-auto">
-      <BuyItemButton product={product} />
-    </div>
   </div>
 </div>
 
       {modalOpen && (
-        <PurchaseModal product={product} onClose={() => setModalOpen(false)} />
+        <PurchaseModal
+          product={product}
+          onClose={() => setModalOpen(false)}
+          onConfirm={handleConfirmPayment}
+        />
       )}
     </>
   );

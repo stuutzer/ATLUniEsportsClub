@@ -2,14 +2,38 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Bot, Loader2 } from "lucide-react";
+import { Bot, Loader2, Sparkles } from "lucide-react";
 import { SearchBar } from "@/components/search-bar";
 import { ShoppingCategories } from "@/components/shopping-categories";
+import { ProductCard } from "@/components/product-card";
+import type { AgentRecommendation } from "@/lib/agent-types";
 import { cn } from "@/lib/utils";
 
 interface AgentRunResponse {
   model: string;
   output: string;
+  recommendations: AgentRecommendation[];
+}
+
+function RecommendationSkeleton() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <div
+          key={index}
+          className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#141414] animate-pulse"
+        >
+          <div className="aspect-[4/3] bg-white/5" />
+          <div className="space-y-3 p-4">
+            <div className="h-2 w-20 rounded bg-white/5" />
+            <div className="h-4 w-3/4 rounded bg-white/10" />
+            <div className="h-3 w-1/2 rounded bg-white/5" />
+            <div className="h-9 rounded-lg bg-white/5" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function AgentConsole() {
@@ -104,8 +128,8 @@ export function AgentConsole() {
         {showEmptyState ? (
           <ShoppingCategories />
         ) : (
-          <div className="mx-auto w-full max-w-3xl">
-            <div className="rounded-2xl border border-white/[0.06] bg-[#161616] p-6">
+          <div className="mx-auto w-full max-w-6xl space-y-5">
+            <div className="max-w-3xl rounded-2xl border border-white/[0.06] bg-[#161616] p-6">
               <div className="mb-5 flex items-center gap-3">
                 <div
                   className={cn(
@@ -148,6 +172,37 @@ export function AgentConsole() {
                 </div>
               )}
             </div>
+
+            {result && result.recommendations.length > 0 && (
+              <div className="max-w-5xl space-y-4 pt-1">
+                <div className="flex items-center justify-between gap-3 text-sm text-white/70">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-purple-300" />
+                    <span>Recommended products</span>
+                  </div>
+                  <span className="rounded-full border border-purple-400/30 bg-purple-500/10 px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-purple-200">
+                    {result.recommendations.length} picks
+                  </span>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {result.recommendations.map((recommendation) => (
+                    <div
+                      key={recommendation.product.id}
+                      className="w-full max-w-[320px] space-y-2"
+                    >
+                      <ProductCard product={recommendation.product} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {loading && (
+              <div className="mt-5">
+                <RecommendationSkeleton />
+              </div>
+            )}
           </div>
         )}
       </div>

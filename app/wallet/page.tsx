@@ -6,10 +6,8 @@ import { injected } from "wagmi/connectors";
 import { avalancheFuji } from "wagmi/chains";
 import { Wallet, LogOut, CheckCircle, Clock, ExternalLink, Bot, AlertCircle, Download, Loader2, Beaker } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { pdf } from "@react-pdf/renderer";
 import { useAgent } from "@/context/AgentContext";
 import { useIdentity } from "@/context/IdentityContext";
-import { InvoicePDF } from "@/components/invoice-pdf";
 import { generateInvoiceData, buildFilename } from "@/lib/invoiceData";
 
 // Hackathon MVP only: Local mock price oracle for USD value calculation
@@ -37,6 +35,10 @@ export default function WalletPage() {
         status: tx.status,
         userName: displayName ?? undefined,
       });
+      const [{ pdf }, { InvoicePDF }] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("@/components/invoice-pdf"),
+      ]);
       const blob = await pdf(<InvoicePDF data={invoiceData} />).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");

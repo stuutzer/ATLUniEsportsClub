@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { X, Check, Download, Loader2 } from "lucide-react";
-import { pdf } from "@react-pdf/renderer";
 import type { Transaction, TransactionStatus } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { useIdentity } from "@/context/IdentityContext";
-import { InvoicePDF } from "@/components/invoice-pdf";
 import { generateInvoiceData, buildFilename } from "@/lib/invoiceData";
 
 interface OrderTrackingModalProps {
@@ -47,6 +45,10 @@ export function OrderTrackingModal({ transaction, onClose }: OrderTrackingModalP
         hash: transaction.id,
         userName: displayName ?? undefined,
       });
+      const [{ pdf }, { InvoicePDF }] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("@/components/invoice-pdf"),
+      ]);
       const blob = await pdf(<InvoicePDF data={invoiceData} />).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
