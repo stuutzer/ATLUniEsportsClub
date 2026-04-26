@@ -6,9 +6,9 @@ import { PriceBreakdown } from "@/components/price-breakdown";
 import { PurchaseModal } from "@/components/purchase-modal";
 import { notFound } from "next/navigation";
 import { useAccount } from "wagmi";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, CheckCircle, Zap } from "lucide-react";
-import Link from "next/link";
 
 const cryptoColors: Record<string, string> = {
   ETH: "bg-blue-500/15 text-blue-300 border border-blue-500/20",
@@ -123,6 +123,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   if (!product) notFound();
 
   const { address, isConnected } = useAccount();
+  const router = useRouter();
   const [showModal, setShowModal] = useState(false);
 
   return (
@@ -131,13 +132,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         <PurchaseModal product={product} onClose={() => setShowModal(false)} />
       )}
       {/* Back */}
-      <Link
-        href="/"
+      <button
+        onClick={() => router.back()}
         className="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm mb-8 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Marketplace
-      </Link>
+        Back to Agent
+      </button>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left — product info */}
