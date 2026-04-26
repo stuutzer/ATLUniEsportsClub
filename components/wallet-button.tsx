@@ -26,7 +26,7 @@ export function WalletButton({ className }: WalletButtonProps = {}) {
           onClick={() => setShowMenu(!showMenu)}
           className={cn(
             "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium",
-            "bg-white/10 hover:bg-white/15 border border-white/10",
+            "bg-white/10 hover:bg-white/[0.15] border border-white/10",
             "text-white transition-all duration-200",
             className
           )}
@@ -58,8 +58,8 @@ export function WalletButton({ className }: WalletButtonProps = {}) {
       onClick={() => connect({ connector: metaMask() })}
       className={cn(
         "px-5 py-2 rounded-full text-sm font-semibold",
-        "bg-purple-600 hover:bg-purple-700 text-white",
-        "transition-all duration-200 hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]",
+        "border border-white/[0.15] bg-sky-200 text-[#06131d] hover:bg-sky-100",
+        "transition-all duration-200 shadow-[0_10px_28px_rgba(0,0,0,0.28)]",
         className
       )}
     >

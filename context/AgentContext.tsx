@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 
 // Define the shape of a single transaction
 export type Transaction = {
@@ -20,6 +20,11 @@ interface AgentContextType {
   transactions: Transaction[];
   agentBalanceUsdc: number; // Simulated local Agent budget/allowance
   executeAgentPurchase: (item: string, amount: number, token: string, realHash?: string) => void;
+  isAaveEnabled: boolean;
+  toggleAaveYield: () => void;
+  yieldEarned: number;
+  liveApy: number;
+  statusLabel: string;
 }
 
 const AgentContext = createContext<AgentContextType | undefined>(undefined);
@@ -55,6 +60,9 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   
   // Simulated Agent Budget (e.g., User authorized $5000 for the Agent to use)
   const [agentBalanceUsdc, setAgentBalanceUsdc] = useState<number>(5000.00);
+  const [isAaveEnabled, setIsAaveEnabled] = useState(false);
+  const [yieldEarned, setYieldEarned] = useState(0);
+  const liveApy = 5.2;
 
   // The globally available purchase function that any button can call
   const executeAgentPurchase = useCallback((item: string, amount: number, token: string, realHash?: string) => {
@@ -80,8 +88,37 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
     
   }, []);
 
+  const toggleAaveYield = useCallback(() => {
+    setIsAaveEnabled((prev) => !prev);
+  }, []);
+
+  useEffect(() => {
+    if (!isAaveEnabled) return;
+
+    const interval = window.setInterval(() => {
+      setYieldEarned((prev) => prev + 0.0015);
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [isAaveEnabled]);
+
+  const statusLabel = isAaveEnabled
+    ? "Agent is optimizing your idle funds"
+    : "Idle funds stay in wallet until optimization is enabled";
+
   return (
-    <AgentContext.Provider value={{ transactions, agentBalanceUsdc, executeAgentPurchase }}>
+    <AgentContext.Provider
+      value={{
+        transactions,
+        agentBalanceUsdc,
+        executeAgentPurchase,
+        isAaveEnabled,
+        toggleAaveYield,
+        yieldEarned,
+        liveApy,
+        statusLabel,
+      }}
+    >
       {children}
     </AgentContext.Provider>
   );

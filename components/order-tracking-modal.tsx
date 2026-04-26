@@ -15,8 +15,8 @@ interface OrderTrackingModalProps {
 const statusConfig: Record<TransactionStatus, { label: string; className: string }> = {
   placed:     { label: "Order Placed",       className: "bg-white/8 text-white/50 border border-white/10" },
   confirmed:  { label: "Payment Confirmed",  className: "bg-blue-500/15 text-blue-300 border border-blue-500/20" },
-  processing: { label: "Processing",         className: "bg-yellow-500/15 text-yellow-300 border border-yellow-500/20" },
-  shipped:    { label: "Shipped",            className: "bg-purple-500/15 text-purple-300 border border-purple-500/20" },
+  processing: { label: "Processing",         className: "bg-sky-400/15 text-sky-200 border border-sky-400/20" },
+  shipped:    { label: "Shipped",            className: "bg-sky-300/[0.15] text-sky-200 border border-sky-200/20" },
   delivered:  { label: "Delivered",          className: "bg-green-500/15 text-green-300 border border-green-500/20" },
 };
 
@@ -122,12 +122,12 @@ export function OrderTrackingModal({ transaction, onClose }: OrderTrackingModalP
                 <div className="flex flex-col items-center flex-shrink-0">
                   {/* Circle */}
                   {isDone ? (
-                    <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center">
-                      <Check className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+                    <div className="w-6 h-6 rounded-full bg-sky-300 text-black flex items-center justify-center">
+                      <Check className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                     </div>
                   ) : isCurrent ? (
-                    <div className="w-6 h-6 rounded-full border-2 border-purple-500 flex items-center justify-center">
-                      <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                    <div className="w-6 h-6 rounded-full border-2 border-sky-200 flex items-center justify-center">
+                      <span className="w-2 h-2 rounded-full bg-sky-200 animate-pulse" />
                     </div>
                   ) : (
                     <div className="w-6 h-6 rounded-full border border-[#3a3a3a]" />
@@ -138,7 +138,7 @@ export function OrderTrackingModal({ transaction, onClose }: OrderTrackingModalP
                     <div
                       className={cn(
                         "w-0.5 flex-1 my-1.5",
-                        isDone ? "bg-purple-600" : "bg-[#2e2e2e]"
+                        isDone ? "bg-sky-300" : "bg-[#2e2e2e]"
                       )}
                       style={{ minHeight: 20 }}
                     />
@@ -161,11 +161,11 @@ export function OrderTrackingModal({ transaction, onClose }: OrderTrackingModalP
 
                   {/* Special "Merchant Verified Agent" card */}
                   {isMerchantVerify && isDone && (
-                    <div className="mt-2 bg-[#2a1f3d] rounded-lg px-3 py-2 border border-purple-600/20">
+                    <div className="mt-2 bg-sky-300/[0.06] rounded-lg px-3 py-2 border border-sky-200/[0.15]">
                       <p className="text-white/75 text-xs">
                         🤖 Agent credential verified by merchant
                       </p>
-                      <p className="text-purple-300/60 text-[11px] mt-0.5 font-mono">
+                      <p className="text-sky-200/60 text-[11px] mt-0.5 font-mono">
                         Identity: agentcart.eth → justin.eth
                       </p>
                     </div>
@@ -186,7 +186,7 @@ export function OrderTrackingModal({ transaction, onClose }: OrderTrackingModalP
               <button
                 onClick={handleDownloadInvoice}
                 disabled={downloading}
-                className="flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
+                className="flex items-center gap-1.5 text-xs text-sky-200 hover:text-white bg-sky-300/10 hover:bg-sky-300/[0.15] border border-sky-200/20 px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
               >
                 {downloading ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />

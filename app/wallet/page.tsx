@@ -1,24 +1,55 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount, useConnect, useDisconnect, useBalance } from "wagmi";
+import { useAccount, useBalance, useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
-import { avalanche } from "wagmi/chains";
+import { avalanche, baseSepolia } from "wagmi/chains";
 import { Wallet, LogOut, CheckCircle, Clock, ExternalLink, Bot, AlertCircle, Download, Loader2, Beaker } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAgent } from "@/context/AgentContext";
 import { useIdentity } from "@/context/IdentityContext";
 import { generateInvoiceData, buildFilename } from "@/lib/invoiceData";
+import { AVALANCHE_USDC_ADDRESS } from "@/lib/aave";
+
+const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
 
 // Hackathon MVP only: Local mock price oracle for USD value calculation
 const MOCK_TOKEN_PRICES: Record<string, number> = {
   AVAX: 35.50,
+  dNZD: 0.6,
+  USDC: 1,
   ETH: 3000.00,
 };
 
+function Toggle({ checked, onChange, disabled = false }: { checked: boolean; onChange: () => void; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={onChange}
+      className={cn(
+        "group relative h-5 w-9 flex-shrink-0 rounded-full transition-[background-color,box-shadow,transform] duration-300",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]",
+        "active:scale-95 disabled:cursor-not-allowed disabled:opacity-50",
+        checked
+          ? "bg-emerald-400 shadow-[0_0_18px_rgba(74,222,128,0.22)]"
+          : "bg-white/10 hover:bg-white/[0.16]"
+      )}
+    >
+      <span
+        className={cn(
+          "absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform duration-300",
+          checked && "translate-x-4"
+        )}
+      />
+    </button>
+  );
+}
 
 export default function WalletPage() {
-  const { displayName, credential } = useIdentity();
+  const { displayName } = useIdentity();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [downloadingTx, setDownloadingTx] = useState<string | null>(null);
 
@@ -54,10 +85,27 @@ export default function WalletPage() {
   const { connect, isPending: isConnecting } = useConnect();
   const { disconnect } = useDisconnect();
 
-  const { transactions, executeAgentPurchase } = useAgent();
+  const {
+    transactions,
+    executeAgentPurchase,
+    isAaveEnabled,
+    toggleAaveYield,
+    yieldEarned,
+    liveApy,
+    statusLabel,
+  } = useAgent();
 
   const { data: nativeBalance } = useBalance({
     address,
+  });
+  const { data: dnzdBalance } = useBalance({
+    address,
+    token: DNZD_CONTRACT_ADDRESS,
+    chainId: baseSepolia.id,
+  });
+  const { data: usdcBalance } = useBalance({
+    address,
+    token: AVALANCHE_USDC_ADDRESS,
     chainId: avalanche.id,
   });
 
@@ -78,29 +126,38 @@ export default function WalletPage() {
     executeAgentPurchase(item, price, "AVAX", fakeHash);
   }
 
-  const renderBalanceCard = (fallbackSymbol: string, balanceData?: { formatted: string, symbol: string }) => {
+  const renderBalanceCard = (
+    fallbackSymbol: string,
+    balanceData?: { formatted: string, symbol: string },
+    statusNode?: React.ReactNode
+  ) => {
     const amount = balanceData ? Number(balanceData.formatted) : 0;
     const actualSymbol = balanceData?.symbol || fallbackSymbol;
+    const effectiveAmount =
+      actualSymbol === "USDC" ? amount + yieldEarned : amount;
     const price = MOCK_TOKEN_PRICES[actualSymbol] || 1.00;
-    const usdValue = amount * price;
+    const usdValue = effectiveAmount * price;
     const formattedAmount = actualSymbol.includes("USD") || actualSymbol.includes("NZD")
-      ? amount.toFixed(2)
+      ? effectiveAmount.toFixed(2)
       : amount.toFixed(4);
 
     return (
       <div
         key={fallbackSymbol}
-        className="rounded-xl bg-[#141414] border border-white/[0.07] p-6 relative overflow-hidden group hover:border-purple-500/30 transition-colors"
+        className="rounded-xl bg-[#141414] border border-white/[0.07] p-6 relative overflow-hidden group hover:border-sky-200/20 transition-colors"
       >
-        <p className="text-xs text-white/30 uppercase tracking-widest mb-4">
-          {actualSymbol}
-        </p>
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <p className="text-xs text-white/30 uppercase tracking-widest">
+            {actualSymbol}
+          </p>
+          {statusNode}
+        </div>
         <p className="text-white font-bold text-3xl mb-1">
           {formattedAmount}{" "}
           <span className="text-lg text-white/40 font-normal">{actualSymbol}</span>
         </p>
         <p className="text-white/40 text-sm">${usdValue.toFixed(2)}</p>
-        <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-purple-600/10 rounded-full blur-2xl group-hover:bg-purple-600/20 transition-all" />
+        <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-sky-300/[0.08] rounded-full blur-2xl group-hover:bg-sky-300/[0.12] transition-all" />
       </div>
     );
   };
@@ -120,8 +177,8 @@ export default function WalletPage() {
       {showInstallModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-[#141414] border border-white/[0.07] rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
-            <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
-              <AlertCircle className="w-8 h-8 text-purple-400" />
+            <div className="w-16 h-16 bg-sky-300/10 rounded-full flex items-center justify-center mx-auto mb-5">
+              <AlertCircle className="w-8 h-8 text-sky-200" />
             </div>
             <h3 className="text-xl font-bold text-white mb-2">Wallet Not Detected</h3>
             <p className="text-white/50 text-sm mb-8 leading-relaxed">
@@ -132,7 +189,7 @@ export default function WalletPage() {
                 href="https://metamask.io/download/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 rounded-xl transition-colors"
+                className="rounded-xl border border-white/[0.15] bg-sky-200 py-3 font-semibold text-[#06131d] transition-colors hover:bg-sky-100"
                 onClick={() => setShowInstallModal(false)}
               >
                 Install MetaMask
@@ -153,8 +210,8 @@ export default function WalletPage() {
 
       {/* ── Identity / Connection Card ───────────────────────────────────── */}
       <div className="rounded-xl bg-[#141414] border border-white/[0.07] p-6 mb-4 flex items-center gap-5">
-        <div className="w-16 h-16 rounded-full bg-purple-900/40 border border-purple-600/30 flex items-center justify-center flex-shrink-0">
-          <Wallet className="w-6 h-6 text-purple-300" />
+        <div className="w-16 h-16 rounded-full bg-sky-300/10 border border-sky-200/20 flex items-center justify-center flex-shrink-0">
+          <Wallet className="w-6 h-6 text-sky-200" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-white font-semibold text-lg mb-1">
@@ -178,7 +235,7 @@ export default function WalletPage() {
           <button
             onClick={handleConnect}
             disabled={isConnecting}
-            className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold py-2.5 px-5 rounded-full transition-all hover:shadow-[0_0_20px_rgba(124,58,237,0.4)] disabled:opacity-50 flex-shrink-0"
+            className="flex-shrink-0 rounded-full border border-white/[0.15] bg-sky-200 px-5 py-2.5 text-sm font-semibold text-[#06131d] shadow-[0_10px_28px_rgba(0,0,0,0.25)] transition-all hover:bg-sky-100 disabled:opacity-50"
           >
             {isConnecting ? "Connecting…" : "Connect MetaMask"}
           </button>
@@ -187,20 +244,41 @@ export default function WalletPage() {
 
       {/* ── Balances Panel ───────────────────────────────────────────────── */}
       <div className="rounded-xl bg-[#141414] border border-white/[0.07] p-6 mb-4">
-        <p className="text-xs text-white/30 uppercase tracking-widest mb-4">
-          Balances
-        </p>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-xs text-white/30 uppercase tracking-widest">
+              Balances
+            </p>
+            {isAaveEnabled && (
+              <p className="mt-2 text-xs font-medium text-emerald-400 animate-pulse">
+                Earning {liveApy.toFixed(1)}% APY via Aave...
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-3 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-2">
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-white/80">Smart Yield</p>
+              <p className="text-[11px] text-white/35">
+                Idle USDC auto-deposits into Aave after 24h
+              </p>
+            </div>
+            <Toggle checked={isAaveEnabled} onChange={toggleAaveYield} />
+          </div>
+        </div>
 
         {isConnected ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {renderBalanceCard("AVAX", nativeBalance)}
-
-            <div className="rounded-xl bg-white/[0.02] border border-white/[0.07] border-dashed p-5 flex flex-col items-center justify-center text-white/20 hover:border-white/20 transition-colors cursor-pointer">
-              <span className="text-xs uppercase tracking-widest">+ Add Token</span>
-            </div>
-            <div className="rounded-xl bg-white/[0.02] border border-white/[0.07] border-dashed p-5 flex flex-col items-center justify-center text-white/20 hover:border-white/20 transition-colors cursor-pointer">
-              <span className="text-xs uppercase tracking-widest">+ Add Token</span>
-            </div>
+            {renderBalanceCard(nativeBalance?.symbol ?? "Native", nativeBalance)}
+            {renderBalanceCard("dNZD", dnzdBalance)}
+            {renderBalanceCard(
+              "USDC",
+              usdcBalance,
+              isAaveEnabled ? (
+                <span className="inline-flex items-center rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300 animate-pulse">
+                  Earning {liveApy.toFixed(1)}% APY via Aave...
+                </span>
+              ) : undefined
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center text-center py-8 gap-4">
@@ -215,12 +293,38 @@ export default function WalletPage() {
             </div>
             <button
               onClick={handleConnect}
-              className="px-5 py-2.5 rounded-full text-sm font-semibold bg-purple-600 hover:bg-purple-700 text-white transition-all hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]"
+              className="rounded-full border border-white/[0.15] bg-sky-200 px-5 py-2.5 text-sm font-semibold text-[#06131d] shadow-[0_10px_28px_rgba(0,0,0,0.25)] transition-all hover:bg-sky-100"
             >
               Connect Wallet
             </button>
           </div>
         )}
+
+        <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-white/[0.07] pt-4">
+          <span
+            className={cn(
+              "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium",
+              isAaveEnabled
+                ? "border border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
+                : "border border-white/[0.10] bg-white/[0.04] text-white/55"
+            )}
+          >
+            {statusLabel}
+          </span>
+          <span className="text-xs text-white/35">
+            Total Yield Earned: ${yieldEarned.toFixed(2)} USDC
+          </span>
+          {isAaveEnabled ? (
+            <span className="inline-flex items-center gap-1 text-xs text-emerald-300 animate-pulse">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              Auto-routing idle capital into Aave vault strategy...
+            </span>
+          ) : (
+            <span className="text-xs text-white/35">
+              Yield engine paused. Accrued gains remain in wallet balance.
+            </span>
+          )}
+        </div>
       </div>
 
       {/* ── Transaction History Panel ────────────────────────────────────── */}
@@ -233,13 +337,13 @@ export default function WalletPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={simulatePurchase}
-              className="flex items-center gap-1.5 text-xs text-yellow-300/80 bg-yellow-400/8 hover:bg-yellow-400/15 px-2.5 py-1 rounded-md border border-yellow-400/20 transition-colors"
+              className="flex items-center gap-1.5 text-xs text-sky-200/80 bg-sky-300/10 hover:bg-sky-300/15 px-2.5 py-1 rounded-md border border-sky-300/20 transition-colors"
               title="Add a synthetic transaction (no wallet needed) to test invoice generation"
             >
               <Beaker className="w-3.5 h-3.5" />
               Simulate purchase (dev)
             </button>
-            <span className="flex items-center gap-1.5 text-xs text-purple-400 bg-purple-400/10 px-2.5 py-1 rounded-md border border-purple-400/20">
+            <span className="flex items-center gap-1.5 text-xs text-sky-200 bg-sky-300/10 px-2.5 py-1 rounded-md border border-sky-200/20">
               <Bot className="w-3.5 h-3.5" />
               100% Agent Managed
             </span>
@@ -269,7 +373,7 @@ export default function WalletPage() {
                     <td className="px-6 py-4">
                       <p className="text-white/90 font-medium flex items-center gap-2">
                         {tx.item}
-                        {tx.isAgent && <Bot className="w-3.5 h-3.5 text-purple-400" />}
+                        {tx.isAgent && <Bot className="w-3.5 h-3.5 text-sky-200" />}
                       </p>
                       <p className="text-white/40 text-xs mt-0.5">{tx.type}</p>
                     </td>
@@ -287,14 +391,14 @@ export default function WalletPage() {
                         {tx.status === "Completed" ? (
                           <CheckCircle className="w-4 h-4 text-green-500/70" />
                         ) : (
-                          <Clock className="w-4 h-4 text-yellow-500/70 animate-pulse" />
+                          <Clock className="w-4 h-4 text-sky-400/70 animate-pulse" />
                         )}
                         <span
                           className={cn(
                             "text-xs",
                             tx.status === "Completed"
                               ? "text-white/50"
-                              : "text-yellow-500/70"
+                              : "text-sky-400/70"
                           )}
                         >
                           {tx.status}
@@ -302,7 +406,7 @@ export default function WalletPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="text-white/20 hover:text-purple-400 transition-colors inline-flex items-center gap-1">
+                      <button className="text-white/20 hover:text-sky-200 transition-colors inline-flex items-center gap-1">
                         <span className="font-mono text-xs">{tx.hash.slice(0, 6)}</span>
                         <ExternalLink className="w-3 h-3" />
                       </button>
@@ -312,7 +416,7 @@ export default function WalletPage() {
                         onClick={() => handleDownloadInvoice(tx)}
                         disabled={downloadingTx === tx.id}
                         title="Download Invoice"
-                        className="text-white/20 hover:text-purple-400 transition-colors inline-flex items-center justify-center disabled:opacity-40"
+                        className="text-white/20 hover:text-sky-200 transition-colors inline-flex items-center justify-center disabled:opacity-40"
                       >
                         {downloadingTx === tx.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />

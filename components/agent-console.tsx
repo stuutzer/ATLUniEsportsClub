@@ -68,7 +68,7 @@ function AgentMarkdown({ content }: { content: string }) {
             className="flex gap-2 text-sm leading-7 text-white/75"
             style={{ marginLeft: item.indent * 14 }}
           >
-            <span className="mt-[0.8em] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-purple-300/70" />
+            <span className="mt-[0.8em] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-sky-200/70" />
             <span>{renderInlineMarkdown(item.text)}</span>
           </li>
         ))}
@@ -235,11 +235,11 @@ export function AgentConsole() {
                 <div
                   className={cn(
                     "flex h-10 w-10 items-center justify-center rounded-xl",
-                    loading ? "bg-purple-500/10" : "bg-white/5"
+                    loading ? "bg-sky-300/10" : "bg-white/5"
                   )}
                 >
                   {loading ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-purple-300" />
+                    <Loader2 className="h-5 w-5 animate-spin text-sky-200" />
                   ) : (
                     <Bot className="h-5 w-5 text-white/70" />
                   )}
@@ -276,10 +276,10 @@ export function AgentConsole() {
               <div className="max-w-5xl space-y-4 pt-1">
                 <div className="flex items-center justify-between gap-3 text-sm text-white/70">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-purple-300" />
+                    <Sparkles className="h-4 w-4 text-sky-200" />
                     <span>Recommended products</span>
                   </div>
-                  <span className="rounded-full border border-purple-400/30 bg-purple-500/10 px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-purple-200">
+                  <span className="rounded-full border border-sky-200/25 bg-sky-300/10 px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-sky-200">
                     {result.recommendations.length} picks
                   </span>
                 </div>

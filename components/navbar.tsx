@@ -27,11 +27,11 @@ export function Navbar() {
         <div className="flex items-center gap-4 h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-sky-300/[0.15] border border-sky-200/20 flex items-center justify-center">
               <ShoppingCart className="w-4 h-4 text-white" />
             </div>
             <span className="text-white font-bold text-lg tracking-tight hidden sm:block">
-              Agent<span className="text-purple-400">Cart</span>
+              Agent<span className="text-sky-200">Cart</span>
             </span>
           </Link>
 
@@ -47,7 +47,7 @@ export function Navbar() {
                 className={cn(
                   "w-full pl-10 pr-4 py-2.5 rounded-full text-sm",
                   "bg-white/5 border border-white/10 text-white placeholder:text-white/30",
-                  "focus:outline-none focus:border-purple-500/50 focus:bg-white/8",
+                  "focus:outline-none focus:border-sky-200/40 focus:bg-white/8",
                   "transition-all duration-200"
                 )}
               />
@@ -79,7 +79,7 @@ export function Navbar() {
               className={cn(
                 "p-2 rounded-full text-sm font-medium transition-colors",
                 pathname === "/profile"
-                  ? "text-purple-400 bg-purple-400/10"
+                  ? "text-sky-200 bg-sky-300/10"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               )}
             >

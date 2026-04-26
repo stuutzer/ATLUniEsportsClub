@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useSignTypedData } from "wagmi";
 import {
   Bell,
@@ -14,6 +15,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { CredentialCard } from "@/components/credential-card";
+import { useAgent } from "@/context/AgentContext";
 import { useIdentity } from "@/context/IdentityContext";
 import {
   buildCredentialDraft,
@@ -54,11 +56,11 @@ function useReducedMotion() {
 }
 
 function AmazonIcon({ className }: { className?: string }) {
-  return <img src="amazon.svg" alt="" className={className} />;
+  return <img src="/amazon.png" alt="Amazon" className={`${className} object-contain`} />;
 }
 
 function EbayIcon({ className }: { className?: string }) {
-  return <img src="ebay.svg" alt="" className={className} />;
+  return <img src="/ebay.png" alt="eBay" className={`${className} object-contain`} />;
 }
 
 function ShopifyIcon({ className }: { className?: string }) {
@@ -78,10 +80,10 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
       onClick={onChange}
       className={cn(
         "group relative h-5 w-9 flex-shrink-0 rounded-full transition-[background-color,box-shadow,transform] duration-300",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]",
         "active:scale-95",
         checked
-          ? "bg-purple-600 shadow-[0_0_18px_rgba(124,58,237,0.28)]"
+          ? "bg-sky-300 shadow-[0_0_18px_rgba(125,211,252,0.18)]"
           : "bg-white/10 hover:bg-white/[0.16]"
       )}
     >
@@ -93,6 +95,68 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
         )}
       />
     </button>
+  );
+}
+
+function ProfileSelect({
+  options,
+  value,
+  onChange,
+  className,
+}: {
+  options: string[];
+  value: string;
+  onChange: (v: string) => void;
+  className?: string;
+}) {
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "group flex min-h-9 w-full items-center justify-between gap-3 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 py-2 text-left text-sm text-white/75",
+            "transition-[background-color,border-color,box-shadow,transform] duration-200",
+            "hover:border-white/[0.14] hover:bg-white/[0.075] hover:text-white",
+            "focus:outline-none focus-visible:border-sky-200/40 focus-visible:shadow-[0_0_0_3px_rgba(125,211,252,0.10)]",
+            "data-[state=open]:border-sky-200/30 data-[state=open]:bg-white/[0.08] data-[state=open]:text-white",
+            className
+          )}
+        >
+          <span className="truncate">{value}</span>
+          <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-white/35 transition-[color,transform] duration-200 group-hover:text-white/55 group-data-[state=open]:rotate-180 group-data-[state=open]:text-sky-200" />
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="end"
+          sideOffset={8}
+          className={cn(
+            "z-50 min-w-[var(--radix-dropdown-menu-trigger-width)] overflow-hidden rounded-xl border border-white/[0.10] bg-[#181818]/95 p-1 text-sm text-white shadow-[0_18px_50px_rgba(0,0,0,0.42)] backdrop-blur-xl",
+            "data-[side=bottom]:animate-in data-[side=bottom]:fade-in-0 data-[side=bottom]:slide-in-from-top-1"
+          )}
+        >
+          {options.map((option) => {
+            const selected = option === value;
+
+            return (
+              <DropdownMenu.Item
+                key={option}
+                onSelect={() => onChange(option)}
+                className={cn(
+                  "flex cursor-pointer select-none items-center justify-between gap-3 rounded-lg px-3 py-2 text-white/65 outline-none transition-[background-color,color] duration-150",
+                  "data-[highlighted]:bg-white/[0.08] data-[highlighted]:text-white",
+                  selected && "bg-sky-300/[0.10] text-sky-100"
+                )}
+              >
+                <span className="truncate">{option}</span>
+                {selected && <Check className="h-3.5 w-3.5 flex-shrink-0 text-sky-200" />}
+              </DropdownMenu.Item>
+            );
+          })}
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   );
 }
 
@@ -233,7 +297,7 @@ function MarketplaceConnections({
               "group flex h-12 w-12 items-center justify-center rounded-2xl border will-change-transform",
               "transition-[background-color,border-color,color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
               "hover:-translate-y-0.5 hover:scale-105 active:translate-y-0 active:scale-95",
-              "focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#141414]",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#141414]",
               connected[integration.key]
                 ? cn(
                     "border-white/[0.09] shadow-[0_12px_30px_rgba(0,0,0,0.22)]",
@@ -243,7 +307,7 @@ function MarketplaceConnections({
                 : "border-white/[0.08] bg-white/[0.05] text-white/30 hover:border-white/20 hover:bg-white/[0.09] hover:text-white/60"
             )}
           >
-            <div className="h-6 w-6 transition-transform duration-300 group-hover:scale-105">
+            <div className="flex h-9 w-9 items-center justify-center transition-transform duration-300 group-hover:scale-105">
               {integration.icon}
             </div>
           </button>
@@ -265,7 +329,7 @@ function MarketplaceConnections({
                     integration.color
                   )}
                 >
-                  <div className="h-5 w-5">{integration.icon}</div>
+                  <div className="flex h-8 w-8 items-center justify-center">{integration.icon}</div>
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold leading-tight text-white">Connected</p>
@@ -327,9 +391,9 @@ function AddressForm() {
   const inputClass = cn(
     "w-full rounded-lg px-3 py-2 text-sm text-white",
     "border border-white/[0.08] bg-white/[0.04]",
-    "focus:border-purple-500/50 focus:bg-white/[0.06] focus:outline-none",
+    "focus:border-sky-200/40 focus:bg-white/[0.06] focus:outline-none",
     "transition-[background-color,border-color,box-shadow,transform] duration-200",
-    "focus:shadow-[0_0_0_3px_rgba(124,58,237,0.12)]",
+    "focus:shadow-[0_0_0_3px_rgba(125,211,252,0.10)]",
     "placeholder:text-white/20"
   );
 
@@ -408,19 +472,12 @@ function AddressForm() {
           <label className="mb-1.5 block text-xs uppercase tracking-widest text-white/30">
             Country
           </label>
-          <select
-            className={cn(inputClass, "cursor-pointer")}
+          <ProfileSelect
+            className={inputClass}
             value={form.country}
-            onChange={(e) => setForm((f) => ({ ...f, country: e.target.value }))}
-          >
-            {["New Zealand", "Australia", "United States", "United Kingdom", "Canada"].map(
-              (country) => (
-                <option key={country} value={country} className="bg-[#1a1a1a]">
-                  {country}
-                </option>
-              )
-            )}
-          </select>
+            options={["New Zealand", "Australia", "United States", "United Kingdom", "Canada"]}
+            onChange={(country) => setForm((f) => ({ ...f, country }))}
+          />
         </div>
       </div>
       <button
@@ -433,7 +490,7 @@ function AddressForm() {
           "mt-1 rounded-full px-5 py-2 text-sm font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-300",
           saved
             ? "scale-[0.98] border border-green-500/30 bg-green-600/20 text-green-400"
-            : "bg-purple-600 text-white hover:-translate-y-0.5 hover:bg-purple-700 hover:shadow-[0_0_22px_rgba(124,58,237,0.38)] active:translate-y-0 active:scale-95"
+            : "border border-white/[0.15] bg-sky-200 text-[#06131d] shadow-[0_10px_28px_rgba(0,0,0,0.24)] hover:-translate-y-0.5 hover:bg-sky-100 active:translate-y-0 active:scale-95"
         )}
       >
         {saved ? (
@@ -467,17 +524,12 @@ function PreferenceSelect({
         <p className="text-sm font-medium text-white/85">{label}</p>
         <p className="mt-0.5 text-xs text-white/30">{description}</p>
       </div>
-      <select
+      <ProfileSelect
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="cursor-pointer rounded-lg border border-white/[0.08] bg-white/[0.06] px-3 py-1.5 text-xs text-white/70 transition-[background-color,border-color,box-shadow] duration-200 focus:border-purple-500/40 focus:outline-none focus:shadow-[0_0_0_3px_rgba(124,58,237,0.12)]"
-      >
-        {options.map((option) => (
-          <option key={option} value={option} className="bg-[#1a1a1a]">
-            {option}
-          </option>
-        ))}
-      </select>
+        options={options}
+        onChange={onChange}
+        className="w-auto min-w-40 py-1.5 text-xs"
+      />
     </div>
   );
 }
@@ -506,6 +558,13 @@ function PermissionRow({
 
 export default function ProfilePage() {
   const { walletAddress, ensName, displayName, credential, setCredential } = useIdentity();
+  const {
+    isAaveEnabled,
+    liveApy,
+    yieldEarned,
+    statusLabel,
+    toggleAaveYield,
+  } = useAgent();
   const { signTypedDataAsync } = useSignTypedData();
 
   const [copied, setCopied] = useState(false);
@@ -603,23 +662,23 @@ export default function ProfilePage() {
       key: "amazon",
       label: "Amazon",
       description: "Search and purchase from Amazon",
-      icon: <AmazonIcon className="h-5 w-5" />,
-      color: "text-orange-400",
-      bgColor: "bg-orange-400/10",
+      icon: <AmazonIcon className="h-8 w-8" />,
+      color: "text-sky-400",
+      bgColor: "bg-sky-400/10",
     },
     {
       key: "ebay",
       label: "eBay",
       description: "Browse listings and buy from eBay",
-      icon: <EbayIcon className="h-5 w-5" />,
-      color: "text-yellow-400",
-      bgColor: "bg-yellow-400/10",
+      icon: <EbayIcon className="h-12 w-12" />,
+      color: "text-sky-300",
+      bgColor: "bg-sky-300/10",
     },
     {
       key: "shopify",
       label: "Shopify",
       description: "Access Shopify Vendors",
-      icon: <ShopifyIcon className="h-5 w-5" />,
+      icon: <ShopifyIcon className="h-7 w-7" />,
       color: "text-sky-400",
       bgColor: "bg-sky-400/10",
     },
@@ -627,7 +686,7 @@ export default function ProfilePage() {
       key: "stockx",
       label: "StockX",
       description: "Buy and sell on StockX",
-      icon: <StockXIcon className="h-5 w-5" />,
+      icon: <StockXIcon className="h-6 w-6" />,
       color: "text-green-400",
       bgColor: "bg-green-400/10",
     },
@@ -646,13 +705,13 @@ export default function ProfilePage() {
       </h1>
 
       <div className="mb-4 flex items-center gap-5 rounded-xl border border-white/[0.07] bg-[#141414] p-6 transition-[border-color,background-color] hover:border-white/[0.12] hover:bg-[#171717]">
-        <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full border border-purple-600/30 bg-purple-900/40 transition-[box-shadow,transform] duration-300 hover:scale-105 hover:shadow-[0_0_28px_rgba(124,58,237,0.22)]">
-          <span className="text-xl font-bold text-purple-300">{initials}</span>
+        <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full border border-sky-200/20 bg-sky-300/10 transition-[box-shadow,transform] duration-300 hover:scale-105 hover:shadow-[0_0_28px_rgba(125,211,252,0.14)]">
+          <span className="text-xl font-bold text-sky-200">{initials}</span>
         </div>
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex flex-wrap items-center gap-2">
             <p className="text-lg font-semibold text-white">{displayName ?? "Not connected"}</p>
-            {credential && (
+            {credential && walletAddress && (
               <span className="inline-flex items-center gap-1 rounded-full border border-green-400/20 bg-green-400/10 px-2 py-0.5 text-[11px] text-green-400">
                 <ShieldCheck className="h-3 w-3" />
                 Identity Verified ✓
@@ -684,7 +743,7 @@ export default function ProfilePage() {
       <div className="space-y-2">
         <SectionBlock
           label="Marketplace Connections"
-          iconBg="bg-purple-600/30"
+          iconBg="bg-sky-300/[0.15]"
           icon={<ShoppingCart className="h-4 w-4 text-white" />}
         >
           <MarketplaceConnections
@@ -724,8 +783,60 @@ export default function ProfilePage() {
         </SectionBlock>
 
         <SectionBlock
+          label="Yield Optimization"
+          iconBg="bg-green-600/30"
+          icon={<ShieldCheck className="h-4 w-4 text-white" />}
+        >
+          <div className="px-4 pb-4 pt-2">
+            <div className="flex items-center justify-between gap-4 rounded-lg px-4 py-3 transition-[background-color,transform] duration-200 hover:translate-x-0.5 hover:bg-white/[0.03]">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-white/85">Smart Yield Toggle</p>
+                <p className="mt-0.5 text-xs text-white/30">
+                  Agent monitors idle USDC and sweeps funds into Aave after 24 hours of inactivity.
+                </p>
+              </div>
+              <Toggle checked={isAaveEnabled} onChange={toggleAaveYield} />
+            </div>
+
+            <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+                <p className="text-[11px] uppercase tracking-widest text-white/30">
+                  Total Yield Earned
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-white">
+                  ${yieldEarned.toFixed(2)} USDC
+                </p>
+                <p className="mt-1 text-xs text-white/30">
+                  Agent-generated carry from idle capital while waiting for purchase execution.
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+                <p className="text-[11px] uppercase tracking-widest text-white/30">
+                  Live APY
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-emerald-300">
+                  {liveApy.toFixed(2)}% APY
+                </p>
+                <p className="mt-1 text-xs text-white/30">
+                  Current strategy target for idle USDC routed into Aave.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-emerald-400/15 bg-emerald-400/[0.05] px-4 py-3">
+              <span className="inline-flex items-center rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[11px] font-medium text-emerald-300">
+                {statusLabel}
+              </span>
+              <p className="text-xs text-white/40">
+                When your GPU target finally hits, the Agent can pull liquidity back before checkout.
+              </p>
+            </div>
+          </div>
+        </SectionBlock>
+
+        <SectionBlock
           label="Price Alerts & Notifications"
-          iconBg="bg-yellow-600/30"
+          iconBg="bg-sky-600/30"
           icon={<Bell className="h-4 w-4 text-white" />}
         >
           {[

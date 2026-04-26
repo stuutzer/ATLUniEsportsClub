@@ -231,10 +231,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           </div>
 
           {/* AI Recommendation panel */}
-          <div className="rounded-xl bg-purple-600/10 border border-purple-500/20 p-5">
+          <div className="rounded-xl bg-sky-300/[0.06] border border-sky-200/[0.15] p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Zap className="w-4 h-4 text-purple-400" />
-              <p className="text-purple-300 font-semibold text-sm">
+              <Zap className="w-4 h-4 text-sky-200" />
+              <p className="text-sky-200 font-semibold text-sm">
                 AI Recommendation
               </p>
             </div>
@@ -242,7 +242,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             <ul className="space-y-3">
               {product.aiReasons.map((reason, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-sky-200 flex-shrink-0 mt-0.5" />
                   <span className="text-white/70 text-sm leading-relaxed">
                     {reason}
                   </span>
@@ -255,9 +255,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           <button
             onClick={() => setShowModal(true)}
             className={cn(
-              "w-full py-4 rounded-full font-semibold text-white text-base",
-              "bg-purple-600 hover:bg-purple-700",
-              "transition-all duration-200 hover:shadow-[0_0_30px_rgba(124,58,237,0.4)]",
+              "w-full py-4 rounded-full font-semibold text-base",
+              "border border-white/[0.15] bg-sky-200 text-[#06131d] hover:bg-sky-100",
+              "transition-all duration-200 shadow-[0_12px_32px_rgba(0,0,0,0.3)]",
               "flex items-center justify-center gap-2",
             )}
           >

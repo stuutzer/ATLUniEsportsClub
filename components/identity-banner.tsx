@@ -34,7 +34,7 @@ export function IdentityBanner() {
     <div className="flex justify-center pt-5 px-8">
       <Link
         href="/profile"
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/8 border border-yellow-500/20 text-yellow-400 text-xs hover:bg-yellow-500/12 transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-400/10 border border-sky-400/20 text-sky-300 text-xs hover:bg-sky-400/15 transition-colors"
       >
         <span className="flex-shrink-0">⚠</span>
         <span>No agent credential — purchases unavailable.</span>

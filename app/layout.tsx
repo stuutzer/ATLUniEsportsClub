@@ -12,6 +12,9 @@ const Web3Provider = dynamic(
 export const metadata: Metadata = {
   title: "Quarter — Your AI Shopping Agent",
   description: "Quarter is your personal AI shopping agent. Tell it what you want; it finds, compares, and checks out for you.",
+  icons: {
+    icon: "/quarterLOGO.png",
+  },
 };
 
 export default function RootLayout({
