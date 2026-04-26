@@ -44,6 +44,7 @@ export function OrderTrackingModal({ transaction, onClose }: OrderTrackingModalP
         status: transaction.status,
         hash: transaction.id,
         userName: displayName ?? undefined,
+        agentName: ensName ?? undefined,
         userENS: ensName ?? undefined,
         userWallet: walletAddress ?? undefined,
       });

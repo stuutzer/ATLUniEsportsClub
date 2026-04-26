@@ -24,96 +24,12 @@ const mockBalances = {
 };
 
 const hardcodedKeyboardProducts: Product[] = [
-  {
-    id: "kb-1",
-    name: "Wooting 80HE",
-    description:
-      "Hall-effect magnetic switches with rapid trigger and premium aluminum build.",
-    price: 199.0,
-    category: "Peripherals",
-    acceptedCrypto: ["USDC", "AVAX", "ETH"],
-    merchantName: "Newegg",
-    imageUrl: "/products/keyboards/wooting-80he.webp",
-    aiReasons: [
-      "Fastest response profile for competitive gaming and low-latency typing.",
-      "Newegg is preferred here because the checkout can be routed through crypto payment rails.",
-    ],
-  },
-  {
-    id: "kb-2",
-    name: "Keychron Q1 Max",
-    description:
-      "CNC aluminum 75% keyboard with gasket mount, tri-mode wireless, and hot-swap.",
-    price: 219.0,
-    category: "Peripherals",
-    acceptedCrypto: ["USDC", "ETH"],
-    merchantName: "Crypto Emporium",
-    imageUrl: "/products/keyboards/keychron-q1-max.jpg",
-    aiReasons: [
-      "Excellent build quality out of the box with balanced acoustics.",
-      "Crypto Emporium is a direct crypto-friendly vendor for electronics orders.",
-    ],
-  },
-  {
-    id: "kb-3",
-    name: "NuPhy Halo75 V2",
-    description:
-      "Compact wireless mechanical keyboard tuned for smooth typing and everyday portability.",
-    price: 159.0,
-    category: "Peripherals",
-    acceptedCrypto: ["USDC", "AVAX"],
-    merchantName: "ShopinBit",
-    imageUrl: "/products/keyboards/nuphy-halo75-v2.png",
-    aiReasons: [
-      "Strong price-to-performance with premium feel in a smaller footprint.",
-      "ShopinBit is selected as the crypto-friendly checkout route for this board.",
-    ],
-  },
-  {
-    id: "kb-4",
-    name: "Akko MOD 007B HE",
-    description:
-      "Magnetic-switch enthusiast board with customizable actuation for gaming and coding.",
-    price: 169.0,
-    category: "Peripherals",
-    acceptedCrypto: ["USDC", "ETH"],
-    merchantName: "Crypto Emporium",
-    imageUrl: "/products/keyboards/akko-mod-007b-he.png",
-    aiReasons: [
-      "Hall-effect precision without flagship pricing.",
-      "Crypto Emporium keeps the checkout path aligned with direct crypto payment.",
-    ],
-  },
-  {
-    id: "kb-5",
-    name: "Razer Huntsman V3 Pro TKL",
-    description:
-      "Tournament-focused TKL board with optical analog switches and sturdy frame.",
-    price: 229.0,
-    category: "Peripherals",
-    acceptedCrypto: ["USDC", "AVAX", "ETH"],
-    merchantName: "Newegg",
-    imageUrl: "/products/keyboards/razer-huntsman-v3-pro-tkl.webp",
-    aiReasons: [
-      "Competitive-ready switch behavior and dependable polling stability.",
-      "Newegg is the preferred vendor because it can support crypto-funded checkout.",
-    ],
-  },
-  {
-    id: "kb-6",
-    name: "Logitech G PRO X TKL Lightspeed",
-    description:
-      "Wireless TKL esports keyboard with low-latency connection and durable keycaps.",
-    price: 199.0,
-    category: "Peripherals",
-    acceptedCrypto: ["USDC", "ETH"],
-    merchantName: "Crypto Emporium",
-    imageUrl: "/products/keyboards/logitech-g-pro-x-tkl.png",
-    aiReasons: [
-      "Clean professional design with proven tournament-grade wireless stack.",
-      "Crypto Emporium keeps this checkout on crypto-friendly rails.",
-    ],
-  },
+  { id: "kb-1", unit: "each", name: "Wooting 80HE",                    description: "Hall-effect magnetic switches with rapid trigger and premium aluminum build.",                            price: 199.0, category: "Peripherals", acceptedCrypto: ["USDC", "AVAX", "ETH"], merchantName: "Newegg",          imageUrl: "/products/keyboards/wooting-80he.webp",            aiReasons: ["Fastest response profile for competitive gaming and low-latency typing.", "Newegg is preferred here because the checkout can be routed through crypto payment rails."] },
+  { id: "kb-2", unit: "each", name: "Keychron Q1 Max",                 description: "CNC aluminum 75% keyboard with gasket mount, tri-mode wireless, and hot-swap.",                         price: 219.0, category: "Peripherals", acceptedCrypto: ["USDC", "ETH"],          merchantName: "Crypto Emporium", imageUrl: "/products/keyboards/keychron-q1-max.jpg",           aiReasons: ["Excellent build quality out of the box with balanced acoustics.", "Crypto Emporium is a direct crypto-friendly vendor for electronics orders."] },
+  { id: "kb-3", unit: "each", name: "NuPhy Halo75 V2",                 description: "Compact wireless mechanical keyboard tuned for smooth typing and everyday portability.",                price: 159.0, category: "Peripherals", acceptedCrypto: ["USDC", "AVAX"],         merchantName: "ShopinBit",       imageUrl: "/products/keyboards/nuphy-halo75-v2.png",           aiReasons: ["Strong price-to-performance with premium feel in a smaller footprint.", "ShopinBit is selected as the crypto-friendly checkout route for this board."] },
+  { id: "kb-4", unit: "each", name: "Akko MOD 007B HE",                description: "Magnetic-switch enthusiast board with customizable actuation for gaming and coding.",                   price: 169.0, category: "Peripherals", acceptedCrypto: ["USDC", "ETH"],          merchantName: "Crypto Emporium", imageUrl: "/products/keyboards/akko-mod-007b-he.png",          aiReasons: ["Hall-effect precision without flagship pricing.", "Crypto Emporium keeps the checkout path aligned with direct crypto payment."] },
+  { id: "kb-5", unit: "each", name: "Razer Huntsman V3 Pro TKL",       description: "Tournament-focused TKL board with optical analog switches and sturdy frame.",                           price: 229.0, category: "Peripherals", acceptedCrypto: ["USDC", "AVAX", "ETH"], merchantName: "Newegg",          imageUrl: "/products/keyboards/razer-huntsman-v3-pro-tkl.webp", aiReasons: ["Competitive-ready switch behavior and dependable polling stability.", "Newegg is the preferred vendor because it can support crypto-funded checkout."] },
+  { id: "kb-6", unit: "each", name: "Logitech G PRO X TKL Lightspeed", description: "Wireless TKL esports keyboard with low-latency connection and durable keycaps.",                       price: 199.0, category: "Peripherals", acceptedCrypto: ["USDC", "ETH"],          merchantName: "Crypto Emporium", imageUrl: "/products/keyboards/logitech-g-pro-x-tkl.png",      aiReasons: ["Clean professional design with proven tournament-grade wireless stack.", "Crypto Emporium keeps this checkout on crypto-friendly rails."] },
 ];
 
 export default function ProductPage({ params }: { params: { id: string } }) {
@@ -158,9 +74,16 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           <div>
             <div className="flex items-start justify-between gap-4 mb-3">
               <div>
-                <span className="text-xs text-white/40 uppercase tracking-widest">
-                  {product.category}
-                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs text-white/40 uppercase tracking-widest">
+                    {product.category}
+                  </span>
+                  {product.unit && (
+                    <span className="rounded-full border border-white/[0.08] bg-white/[0.05] px-2 py-0.5 text-[10px] text-white/45">
+                      per {product.unit}
+                    </span>
+                  )}
+                </div>
                 <h1 className="text-2xl font-bold text-white mt-1">
                   {product.name}
                 </h1>
