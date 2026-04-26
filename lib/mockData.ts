@@ -1,7 +1,5 @@
 export type CryptoToken = "ETH" | "AVAX" | "USDC" | "dNZD";
 
-export const AGENT_IDENTITY_ROOT = "agentic.eth";
-
 export interface Product {
   id: string;
   name: string;
