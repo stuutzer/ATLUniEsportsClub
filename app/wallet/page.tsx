@@ -3,22 +3,25 @@
 import { useState } from "react";
 import { useAccount, useConnect, useDisconnect, useBalance } from "wagmi";
 import { injected } from "wagmi/connectors";
-import { avalanche } from "wagmi/chains";
+import { baseSepolia } from "wagmi/chains";
 import { Wallet, LogOut, CheckCircle, Clock, ExternalLink, Bot, AlertCircle, Download, Loader2, Beaker } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAgent } from "@/context/AgentContext";
 import { useIdentity } from "@/context/IdentityContext";
 import { generateInvoiceData, buildFilename } from "@/lib/invoiceData";
 
+const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
+
 // Hackathon MVP only: Local mock price oracle for USD value calculation
 const MOCK_TOKEN_PRICES: Record<string, number> = {
   AVAX: 35.50,
+  dNZD: 0.6,
   ETH: 3000.00,
 };
 
 
 export default function WalletPage() {
-  const { displayName, credential } = useIdentity();
+  const { displayName } = useIdentity();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [downloadingTx, setDownloadingTx] = useState<string | null>(null);
 
@@ -58,7 +61,11 @@ export default function WalletPage() {
 
   const { data: nativeBalance } = useBalance({
     address,
-    chainId: avalanche.id,
+  });
+  const { data: dnzdBalance } = useBalance({
+    address,
+    token: DNZD_CONTRACT_ADDRESS,
+    chainId: baseSepolia.id,
   });
 
   function simulatePurchase() {
@@ -193,11 +200,9 @@ export default function WalletPage() {
 
         {isConnected ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {renderBalanceCard("AVAX", nativeBalance)}
+            {renderBalanceCard(nativeBalance?.symbol ?? "Native", nativeBalance)}
+            {renderBalanceCard("dNZD", dnzdBalance)}
 
-            <div className="rounded-xl bg-white/[0.02] border border-white/[0.07] border-dashed p-5 flex flex-col items-center justify-center text-white/20 hover:border-white/20 transition-colors cursor-pointer">
-              <span className="text-xs uppercase tracking-widest">+ Add Token</span>
-            </div>
             <div className="rounded-xl bg-white/[0.02] border border-white/[0.07] border-dashed p-5 flex flex-col items-center justify-center text-white/20 hover:border-white/20 transition-colors cursor-pointer">
               <span className="text-xs uppercase tracking-widest">+ Add Token</span>
             </div>
