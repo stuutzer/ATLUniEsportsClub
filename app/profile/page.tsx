@@ -56,11 +56,11 @@ function useReducedMotion() {
 }
 
 function AmazonIcon({ className }: { className?: string }) {
-  return <img src="amazon.svg" alt="" className={className} />;
+  return <img src="/amazon.png" alt="Amazon" className={`${className} object-contain`} />;
 }
 
 function EbayIcon({ className }: { className?: string }) {
-  return <img src="ebay.svg" alt="" className={className} />;
+  return <img src="/ebay.png" alt="eBay" className={`${className} object-contain`} />;
 }
 
 function ShopifyIcon({ className }: { className?: string }) {
@@ -307,7 +307,7 @@ function MarketplaceConnections({
                 : "border-white/[0.08] bg-white/[0.05] text-white/30 hover:border-white/20 hover:bg-white/[0.09] hover:text-white/60"
             )}
           >
-            <div className="h-6 w-6 transition-transform duration-300 group-hover:scale-105">
+            <div className="flex h-9 w-9 items-center justify-center transition-transform duration-300 group-hover:scale-105">
               {integration.icon}
             </div>
           </button>
@@ -329,7 +329,7 @@ function MarketplaceConnections({
                     integration.color
                   )}
                 >
-                  <div className="h-5 w-5">{integration.icon}</div>
+                  <div className="flex h-8 w-8 items-center justify-center">{integration.icon}</div>
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold leading-tight text-white">Connected</p>
@@ -662,7 +662,7 @@ export default function ProfilePage() {
       key: "amazon",
       label: "Amazon",
       description: "Search and purchase from Amazon",
-      icon: <AmazonIcon className="h-5 w-5" />,
+      icon: <AmazonIcon className="h-8 w-8" />,
       color: "text-sky-400",
       bgColor: "bg-sky-400/10",
     },
@@ -670,7 +670,7 @@ export default function ProfilePage() {
       key: "ebay",
       label: "eBay",
       description: "Browse listings and buy from eBay",
-      icon: <EbayIcon className="h-5 w-5" />,
+      icon: <EbayIcon className="h-12 w-12" />,
       color: "text-sky-300",
       bgColor: "bg-sky-300/10",
     },
@@ -678,7 +678,7 @@ export default function ProfilePage() {
       key: "shopify",
       label: "Shopify",
       description: "Access Shopify Vendors",
-      icon: <ShopifyIcon className="h-5 w-5" />,
+      icon: <ShopifyIcon className="h-7 w-7" />,
       color: "text-sky-400",
       bgColor: "bg-sky-400/10",
     },
@@ -686,7 +686,7 @@ export default function ProfilePage() {
       key: "stockx",
       label: "StockX",
       description: "Buy and sell on StockX",
-      icon: <StockXIcon className="h-5 w-5" />,
+      icon: <StockXIcon className="h-6 w-6" />,
       color: "text-green-400",
       bgColor: "bg-green-400/10",
     },

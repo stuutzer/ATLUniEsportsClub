@@ -43,9 +43,7 @@ export function IdentityProvider({ children }: { children: ReactNode }) {
 
   const displayName =
     ensName ??
-    (walletAddress
-      ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
-      : null);
+    (walletAddress ? "Justin" : null);
 
   return (
     <IdentityContext.Provider
