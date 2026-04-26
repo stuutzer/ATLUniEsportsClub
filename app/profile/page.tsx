@@ -719,7 +719,7 @@ export default function ProfilePage() {
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex flex-wrap items-center gap-2">
             <p className="text-lg font-semibold text-white">{displayName ?? "Not connected"}</p>
-            {credential && (
+            {credential && walletAddress && (
               <span className="inline-flex items-center gap-1 rounded-full border border-green-400/20 bg-green-400/10 px-2 py-0.5 text-[11px] text-green-400">
                 <ShieldCheck className="h-3 w-3" />
                 Identity Verified ✓

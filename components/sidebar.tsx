@@ -28,7 +28,7 @@ function QuarterLogo() {
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { displayName, isCredentialActive } = useIdentity();
+  const { displayName, walletAddress, isCredentialActive } = useIdentity();
 
   const initials = displayName
     ? displayName.startsWith("0x")
@@ -85,7 +85,7 @@ export function Sidebar() {
           <span
             className={cn(
               "w-1.5 h-1.5 rounded-full flex-shrink-0",
-              isCredentialActive ? "bg-green-400" : "bg-white/15"
+              walletAddress ? "bg-green-400" : "bg-white/15"
             )}
           />
         </Link>
