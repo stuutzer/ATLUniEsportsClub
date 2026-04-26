@@ -15,19 +15,21 @@ import {
 } from "lucide-react";
 import {
   useChainId,
-  useReadContract,
+  useSendTransaction,
   useSwitchChain,
   useWaitForTransactionReceipt,
-  useWriteContract,
 } from "wagmi";
-import { baseSepolia } from "wagmi/chains";
-import { erc20Abi, parseUnits } from "viem";
+import { parseEther } from "viem";
 import { useCart } from "@/context/CartContext";
 import { useAgent } from "@/context/AgentContext";
-
-const DUMMY_MERCHANT_ADDRESS = "0x000000000000000000000000000000000000dEaD";
-const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
-const DEFAULT_DNZD_DECIMALS = 6;
+import {
+  DEMO_MERCHANT_ADDRESS,
+  DEMO_PAYMENT_AMOUNT_AVAX,
+  DEMO_PAYMENT_CHAIN,
+  DEMO_PAYMENT_CHAIN_LABEL,
+  DEMO_PAYMENT_TOKEN,
+  demoPaymentErrorMessage,
+} from "@/lib/demoPayment";
 
 type ShipStatus = "idle" | "switching" | "signing" | "settling" | "settled" | "failed";
 
@@ -39,53 +41,30 @@ export default function CartPage() {
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
   const {
-    writeContract,
+    sendTransaction,
     data: hash,
     isPending: isWalletPending,
-    error: writeError,
+    error: sendError,
     reset,
-  } = useWriteContract();
+  } = useSendTransaction();
   const {
     isLoading: isConfirming,
     isSuccess: isConfirmed,
     error: receiptError,
   } = useWaitForTransactionReceipt({ hash });
-  const { data: dnzdDecimals } = useReadContract({
-    address: DNZD_CONTRACT_ADDRESS,
-    abi: erc20Abi,
-    functionName: "decimals",
-    chainId: baseSepolia.id,
-  });
 
   const [status, setStatus] = useState<ShipStatus>("idle");
   const [error, setError] = useState<string | null>(null);
 
-  function isUserRejection(err: unknown): boolean {
-    if (!err) return false;
-    const name = (err as { name?: string }).name ?? "";
-    const msg = (err as Error).message ?? "";
-    return /UserRejected|User rejected|denied/i.test(`${name} ${msg}`);
-  }
-
   useEffect(() => {
-    if (!writeError && !receiptError) return;
-    const err = writeError ?? receiptError;
+    if (!sendError && !receiptError) return;
+    const err = sendError ?? receiptError;
     setStatus("failed");
-    setError(
-      isUserRejection(err)
-        ? "Transaction cancelled."
-        : err instanceof Error
-          ? err.message
-          : "Base Sepolia dNZD settlement failed"
-    );
+    setError(demoPaymentErrorMessage(err));
     reset();
-  }, [writeError, receiptError, reset]);
+  }, [sendError, receiptError, reset]);
 
-  const totalDnzd = useMemo(() => total.toFixed(2), [total]);
-  const settlementValue = useMemo(
-    () => parseUnits(totalDnzd, Number(dnzdDecimals ?? DEFAULT_DNZD_DECIMALS)),
-    [totalDnzd, dnzdDecimals]
-  );
+  const demoPaymentAmount = DEMO_PAYMENT_AMOUNT_AVAX;
 
   const fiatExchangeMerchants = useMemo(() => {
     const merchants = new Set<string>();
@@ -101,7 +80,7 @@ export default function CartPage() {
       items.length === 1
         ? `${items[0].product.name}${items[0].quantity > 1 ? ` x${items[0].quantity}` : ""}`
         : `Cart bundle (${itemCount} items)`;
-    executeAgentPurchase(summary, total, "dNZD", hash);
+    executeAgentPurchase(summary, total, DEMO_PAYMENT_TOKEN, hash);
     setStatus("settled");
     clearCart();
   }, [isConfirmed, hash, status, items, itemCount, total, executeAgentPurchase, clearCart]);
@@ -112,27 +91,19 @@ export default function CartPage() {
     setStatus("idle");
     reset();
     try {
-      if (chainId !== baseSepolia.id) {
+      if (chainId !== DEMO_PAYMENT_CHAIN.id) {
         setStatus("switching");
-        await switchChainAsync({ chainId: baseSepolia.id });
+        await switchChainAsync({ chainId: DEMO_PAYMENT_CHAIN.id });
       }
       setStatus("signing");
-      writeContract({
-        address: DNZD_CONTRACT_ADDRESS,
-        abi: erc20Abi,
-        functionName: "transfer",
-        args: [DUMMY_MERCHANT_ADDRESS, settlementValue],
-        chainId: baseSepolia.id,
+      sendTransaction({
+        to: DEMO_MERCHANT_ADDRESS,
+        value: parseEther(DEMO_PAYMENT_AMOUNT_AVAX),
+        chainId: DEMO_PAYMENT_CHAIN.id,
       });
     } catch (err) {
       setStatus("failed");
-      setError(
-        isUserRejection(err)
-          ? "Transaction cancelled."
-          : err instanceof Error
-            ? err.message
-            : "Base Sepolia dNZD settlement failed"
-      );
+      setError(demoPaymentErrorMessage(err));
     }
   };
 
@@ -151,7 +122,7 @@ export default function CartPage() {
           </div>
           <h1 className="text-2xl font-semibold text-white">Order shipped</h1>
           <p className="mt-2 text-sm text-white/55">
-            Settled in dNZD on Base Sepolia.{" "}
+            Settled in test AVAX on {DEMO_PAYMENT_CHAIN_LABEL}.{" "}
             <Link
               href="/wallet"
               className="text-sky-200 hover:text-sky-100 underline underline-offset-2"
@@ -184,12 +155,12 @@ export default function CartPage() {
   const buttonLabel = isWalletPending
     ? "Confirm in Wallet..."
     : isConfirming && hash
-      ? "Processing on Base Sepolia..."
+      ? `Processing on ${DEMO_PAYMENT_CHAIN_LABEL}...`
       : status === "switching"
-        ? "Switching to Base Sepolia..."
+        ? `Switching to ${DEMO_PAYMENT_CHAIN_LABEL}...`
         : status === "failed"
           ? "Try again"
-          : `Ship All Items (${totalDnzd} dNZD)`;
+          : `Ship All Items (${demoPaymentAmount} ${DEMO_PAYMENT_TOKEN})`;
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
@@ -324,7 +295,9 @@ export default function CartPage() {
                 <span className="text-sm font-medium text-white/85">Total</span>
                 <div className="text-right">
                   <p className="text-lg font-bold text-white">${total.toFixed(2)}</p>
-                  <p className="text-[11px] text-white/40">{totalDnzd} dNZD</p>
+                  <p className="text-[11px] text-white/40">
+                    Demo payment {demoPaymentAmount} {DEMO_PAYMENT_TOKEN}
+                  </p>
                 </div>
               </div>
             </div>
@@ -364,7 +337,7 @@ export default function CartPage() {
             </button>
 
             <p className="text-center text-[11px] leading-5 text-white/35">
-              One dNZD settlement on Base Sepolia covers every item in this cart.
+              One test AVAX payment on {DEMO_PAYMENT_CHAIN_LABEL} covers every item in this cart.
             </p>
           </aside>
         </div>

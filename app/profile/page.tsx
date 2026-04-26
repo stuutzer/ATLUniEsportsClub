@@ -603,7 +603,6 @@ export default function ProfilePage() {
   const [allowCompare, setAllowCompare] = useState(true);
   const [allowPurchase, setAllowPurchase] = useState(true);
   const [autoApprove, setAutoApprove] = useState(false);
-  const [spendingLimit, setSpendingLimit] = useState("100");
   const [categories, setCategories] = useState<string[]>(["Electronics", "Software"]);
   const [agentIdentityDraft, setAgentIdentityDraft] = useState("");
   const [agentIdentityModalOpen, setAgentIdentityModalOpen] = useState(false);
@@ -613,7 +612,6 @@ export default function ProfilePage() {
     setAllowSearch(credential.permissions.includes("search"));
     setAllowCompare(credential.permissions.includes("compare"));
     setAllowPurchase(credential.permissions.includes("purchase"));
-    setSpendingLimit(String(credential.spendingLimit));
     setCategories(credential.allowedCategories);
   }, [credential]);
 
@@ -645,7 +643,6 @@ export default function ProfilePage() {
       walletAddress,
       ensName,
       buildPermissions(),
-      Number(spendingLimit) || 100,
       categories
     );
 
@@ -661,7 +658,6 @@ export default function ProfilePage() {
         walletAddress,
         ensName,
         buildPermissions(),
-        Number(spendingLimit) || 100,
         categories
       );
       saveCredential(cred);

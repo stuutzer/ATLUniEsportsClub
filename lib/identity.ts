@@ -3,7 +3,6 @@ export interface AgentCredential {
   agentName: string;
   actingFor: string;
   permissions: string[];
-  spendingLimit: number;
   allowedCategories: string[];
   issuedAt: string;
   expiresAt: string;
@@ -14,7 +13,7 @@ export interface AgentCredential {
 const EIP712_DOMAIN = {
   name: "Quarter",
   version: "1",
-  chainId: 43114, // Avalanche C-Chain
+  chainId: 43114, // Fixed credential domain
 } as const;
 
 const EIP712_TYPES = {
@@ -23,7 +22,6 @@ const EIP712_TYPES = {
     { name: "agent", type: "string" },
     { name: "actingFor", type: "string" },
     { name: "permissions", type: "string" },
-    { name: "spendingLimit", type: "uint256" },
     { name: "allowedCategories", type: "string" },
     { name: "issuedAt", type: "uint256" },
     { name: "expiresAt", type: "uint256" },
@@ -39,7 +37,6 @@ export interface CredentialTypedData {
     agent: string;
     actingFor: string;
     permissions: string;
-    spendingLimit: bigint;
     allowedCategories: string;
     issuedAt: bigint;
     expiresAt: bigint;
@@ -51,7 +48,6 @@ export interface CredentialDraft {
   agentName: string;
   actingFor: string;
   permissions: string[];
-  spendingLimit: number;
   allowedCategories: string[];
   issuedAt: string;
   expiresAt: string;
@@ -61,7 +57,6 @@ export function buildCredentialDraft(
   walletAddress: string,
   ensName: string | null,
   permissions: string[],
-  spendingLimit: number,
   allowedCategories: string[]
 ): CredentialDraft {
   const now = new Date();
@@ -71,7 +66,6 @@ export function buildCredentialDraft(
     agentName: "quarter.eth",
     actingFor: ensName || walletAddress,
     permissions,
-    spendingLimit,
     allowedCategories,
     issuedAt: now.toISOString(),
     expiresAt: expires.toISOString(),
@@ -88,7 +82,6 @@ export function buildTypedData(draft: CredentialDraft): CredentialTypedData {
       agent: draft.agentName,
       actingFor: draft.actingFor,
       permissions: draft.permissions.join(","),
-      spendingLimit: BigInt(Math.round(draft.spendingLimit)),
       allowedCategories: draft.allowedCategories.join(","),
       issuedAt: BigInt(Math.floor(new Date(draft.issuedAt).getTime() / 1000)),
       expiresAt: BigInt(Math.floor(new Date(draft.expiresAt).getTime() / 1000)),
@@ -101,7 +94,6 @@ function mockSignature(draft: CredentialDraft): string {
     agent: draft.agentName,
     for: draft.actingFor,
     permissions: draft.permissions,
-    limit: draft.spendingLimit,
     issued: draft.issuedAt,
   });
   const hash = Array.from(payload).reduce(
@@ -126,10 +118,9 @@ export function generateMockCredential(
   walletAddress: string,
   ensName: string | null,
   permissions: string[],
-  spendingLimit: number,
   allowedCategories: string[]
 ): AgentCredential {
-  const draft = buildCredentialDraft(walletAddress, ensName, permissions, spendingLimit, allowedCategories);
+  const draft = buildCredentialDraft(walletAddress, ensName, permissions, allowedCategories);
   return finalizeCredential(draft, mockSignature(draft), "mock");
 }
 

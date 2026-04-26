@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import {
   CheckCircle2,
   Loader2,
@@ -10,7 +9,6 @@ import {
   X,
   AlertTriangle,
   RefreshCw,
-  XCircle,
 } from "lucide-react";
 import { useIdentity } from "@/context/IdentityContext";
 import type { AgentCredential } from "@/lib/identity";
@@ -21,7 +19,6 @@ interface PurchaseModalProps {
   product: Product;
   onClose: () => void;
   onConfirm?: () => void;
-  policyError?: string | null;
   settlementStatus?: SettlementStatus;
   settlementError?: string | null;
   paymentToken?: string;
@@ -40,12 +37,11 @@ export function PurchaseModal({
   product,
   onClose,
   onConfirm,
-  policyError,
   settlementStatus = "idle",
   settlementError,
   paymentToken = "USDC",
   paymentAmount,
-  networkLabel = "Avalanche C-Chain",
+  networkLabel = "Avalanche Fuji Testnet",
   priceLabel,
   priceValue,
   shippingValue,
@@ -62,10 +58,9 @@ export function PurchaseModal({
 
   useEffect(() => {
     if (step >= 5) return;
-    if (step === 4 && policyError) return;
     const timer = window.setTimeout(() => setStep((current) => current + 1), STEP_DELAYS[step - 1]);
     return () => window.clearTimeout(timer);
-  }, [policyError, step]);
+  }, [step]);
 
   const cryptoTotal = paymentAmount ?? product.price.toFixed(2);
 
@@ -106,8 +101,6 @@ export function PurchaseModal({
           {step === 4 && (
             <StepVerification
               credential={credential}
-              policyError={policyError ?? null}
-              onClose={onClose}
             />
           )}
           {step === 5 && (
@@ -153,10 +146,6 @@ function StepLoading({
           label="Acting As"
           value={credential?.actingFor ?? "Guest checkout session"}
           mono
-        />
-        <Row
-          label="Limit"
-          value={credential ? `$${credential.spendingLimit}` : "No policy limit set"}
         />
       </div>
     </div>
@@ -238,37 +227,9 @@ function StepPresenting({
 
 function StepVerification({
   credential,
-  policyError,
-  onClose,
 }: {
   credential: AgentCredential | null;
-  policyError: string | null;
-  onClose: () => void;
 }) {
-  if (policyError) {
-    return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full border border-red-500/20 bg-red-500/10">
-          <XCircle className="h-7 w-7 text-red-400" />
-        </div>
-        <div>
-          <p className="mb-2 text-lg font-semibold text-white">Blocked by policy</p>
-          <p className="mb-1 max-w-xs text-sm text-white/55">{policyError}</p>
-          <p className="max-w-xs text-xs text-white/35">
-            The merchant accepted the identity, but your spending policy refused this purchase.
-          </p>
-        </div>
-        <Link
-          href="/profile"
-          onClick={onClose}
-          className="quarter-button px-6 py-2.5"
-        >
-          Adjust limit in Profile
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
       <div
@@ -388,7 +349,7 @@ function StepPayment({
           <span className="text-white">{networkLabel}</span>
         </div>
         <div className="flex justify-between bg-white/[0.04] px-4 py-3.5 text-sm">
-          <span className="font-medium text-white">Stablecoin settlement</span>
+          <span className="font-medium text-white">Testnet payment</span>
           <span className="font-bold text-white">
             {cryptoTotal} {preferredToken}
           </span>
@@ -437,7 +398,7 @@ function StepPayment({
           disabled={isSettling}
           className="quarter-button flex-1 py-2.5 font-semibold disabled:cursor-wait"
         >
-          {isSettling ? "Settling on C-Chain..." : "Confirm Settlement"}
+          {isSettling ? `Settling on ${networkLabel}...` : "Confirm Settlement"}
         </button>
       </div>
 

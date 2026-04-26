@@ -122,7 +122,7 @@ const shoppingTools = {
 };
 
 function isCryptoToken(value: string): value is CryptoToken {
-  return ["ETH", "AVAX", "USDC", "dNZD"].includes(value);
+  return ["ETH", "AVAX", "USDC"].includes(value);
 }
 
 function findMockProduct(productName: string) {
@@ -167,20 +167,20 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
       id: "12",
       name: "Keyboard Test Item",
       description:
-        "Low-value keyboard listing for testing Base Sepolia dNZD deduction and MetaMask confirmation flows.",
+        "Low-value keyboard listing for testing Avalanche Fuji test AVAX and MetaMask confirmation flows.",
       price: 0.01,
       category: "Peripherals",
-      acceptedCrypto: ["dNZD", "USDC", "ETH"] as CryptoToken[],
+      acceptedCrypto: ["AVAX", "USDC", "ETH"] as CryptoToken[],
       merchantName: "Quarter Test Merchant",
       imageUrl: "/products/keyboards/neural-pro-keyboard.webp",
       aiReasons: [
-        "Best pick for testing because the ticket size is only 0.01 dNZD.",
-        "Lets you verify MetaMask confirmation and token deduction without spending meaningful balance.",
+        "Best pick for testing because checkout uses a tiny Fuji test AVAX payment.",
+        "Lets you verify MetaMask confirmation without spending real funds.",
       ],
       shippingUsd: 0,
       totalUsd: 0.01,
-      chain: "base",
-      token: "dNZD",
+      chain: "avalanche",
+      token: "AVAX",
       trustScore: 100,
     },
     {

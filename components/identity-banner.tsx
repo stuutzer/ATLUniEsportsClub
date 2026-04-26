@@ -23,8 +23,6 @@ export function IdentityBanner() {
             acting as <span className="font-medium">{credential.actingFor}</span>
           </span>
           <span className="text-green-400/40">•</span>
-          <span>Limit ${credential.spendingLimit}</span>
-          <span className="text-green-400/40">•</span>
           <span>Expires in {hoursLeft}h</span>
         </div>
       </div>

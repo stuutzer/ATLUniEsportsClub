@@ -3,20 +3,18 @@
 import { useState } from "react";
 import { useAccount, useBalance, useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
-import { avalanche, baseSepolia } from "wagmi/chains";
+import { avalanche } from "wagmi/chains";
 import { Wallet, LogOut, CheckCircle, Clock, ExternalLink, Bot, AlertCircle, Download, Loader2, Beaker } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAgent } from "@/context/AgentContext";
 import { useIdentity } from "@/context/IdentityContext";
 import { generateInvoiceData, buildFilename } from "@/lib/invoiceData";
 import { AVALANCHE_USDC_ADDRESS } from "@/lib/aave";
-
-const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
+import { DEMO_PAYMENT_CHAIN } from "@/lib/demoPayment";
 
 // Hackathon MVP only: Local mock price oracle for USD value calculation
 const MOCK_TOKEN_PRICES: Record<string, number> = {
   AVAX: 35.50,
-  dNZD: 0.6,
   USDC: 1,
   ETH: 3000.00,
 };
@@ -101,11 +99,7 @@ export default function WalletPage() {
 
   const { data: nativeBalance } = useBalance({
     address,
-  });
-  const { data: dnzdBalance } = useBalance({
-    address,
-    token: DNZD_CONTRACT_ADDRESS,
-    chainId: baseSepolia.id,
+    chainId: DEMO_PAYMENT_CHAIN.id,
   });
   const { data: usdcBalance } = useBalance({
     address,
@@ -271,9 +265,8 @@ export default function WalletPage() {
         </div>
 
         {isConnected ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {renderBalanceCard(nativeBalance?.symbol ?? "Native", nativeBalance)}
-            {renderBalanceCard("dNZD", dnzdBalance)}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {renderBalanceCard("AVAX", nativeBalance)}
             {renderBalanceCard(
               "USDC",
               usdcBalance,

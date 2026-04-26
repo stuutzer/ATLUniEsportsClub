@@ -42,7 +42,7 @@ export interface InvoiceData {
   total: string                // "0.241 AVAX"
   totalUSD: string             // "≈ $8.42 USD"
   token: string                // "AVAX"
-  network: string              // "Avalanche C-Chain"
+  network: string              // "Avalanche Fuji Testnet"
   txHash: string               // "0x1234...5678"
   blockNumber: string          // "12845673"
 }
@@ -92,7 +92,7 @@ export function generateInvoiceData(txn: Partial<Transaction>): InvoiceData {
     total: `${(parseFloat(txn.amount || "0.240") + 0.001).toFixed(3)} ${txn.token || "AVAX"}`,
     totalUSD: "≈ $8.42 USD",
     token: txn.token || "AVAX",
-    network: "Avalanche C-Chain (Fuji Testnet)",
+    network: "Avalanche Fuji Testnet",
     txHash: txn.txHash || "0x3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a",
     blockNumber: "12845673"
   }
@@ -129,7 +129,7 @@ LEFT column:
 - Below it: pill-shaped badge row:
   - Dark rounded rectangle (#0a0a0a), white text "agentcart.eth" — 9px
   - Small gap
-  - Light gray rounded rectangle (#f0f0f0), dark text "Avalanche C-Chain" — 9px
+  - Light gray rounded rectangle (#f0f0f0), dark text "Avalanche Fuji Testnet" — 9px
 
 RIGHT column (right-aligned):
 - Invoice number: "INV-2025-0042" — 11px bold, color #0a0a0a

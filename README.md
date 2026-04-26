@@ -14,16 +14,16 @@ AgentCart connects your Ethereum wallet and issues a signed **Agent Credential**
 
 ### Digital Identity System
 - Resolves your **ENS name** on connect (falls back to truncated address `0x1234...5678`)
-- Issues a signed **Agent Credential** scoped with permissions, a spending limit, and an expiry (24 h)
+- Issues a signed **Agent Credential** scoped with permissions and an expiry (24 h)
 - **Real EIP-712 signature** via `eth_signTypedData` (domain `AgentCart`, chainId `43114`); falls back to a deterministic mock signature when no wallet is connected or the user rejects the prompt. The credential carries a `signatureType: "eip-712" | "mock"` discriminator.
 - Credential stored in `localStorage` under key `agentcart_credential`; auto-invalidated on expiry
 
 ### Profile Page (`/profile`)
 - Identity card with avatar initials and "Identity Verified ✓" badge
-- Styled credential card (dark card with purple left-border accent) showing agent name, authorized identity, permissions, spending limit, validity, and truncated signature
+- Styled credential card (dark card with purple left-border accent) showing agent name, authorized identity, permissions, validity, and truncated signature
 - Revoke / Renew credential actions
 - Permission toggles: web search, price comparison, purchase initiation, auto-approve
-- Spending limit input and category allowlist (Electronics, Clothing, Food, Software, Travel, Other)
+- Category allowlist (Electronics, Clothing, Food, Software, Travel, Other)
 - "Save Permissions" regenerates the credential with updated settings
 
 ### 5-Step Purchase Modal
@@ -39,8 +39,7 @@ Triggered by the "Buy with Agent" button on any product card:
 
 - Progress indicator (5 dots, active dot purple)
 - If no credential: flow halts at step 4 with a "Go to Profile" link
-- Step 5 "Confirm Payment" triggers a real on-chain **AVAX** transfer on **Avalanche C-Chain** via wagmi `useSendTransaction` (auto-switches chain if needed)
-- **Spending-limit policy enforcement:** if the product price exceeds the credential's per-tx `spendingLimit` (USD), the modal halts at step 4 with a "Blocked by policy" state and the transaction is never broadcast
+- Step 5 "Confirm Payment" triggers a real on-chain **test AVAX** transfer on **Avalanche Fuji Testnet** via wagmi `useSendTransaction` (auto-switches chain if needed)
 
 ### Invoice PDF Generation
 - Every settled purchase can be exported as a professional PDF invoice via `@react-pdf/renderer`
@@ -67,7 +66,7 @@ Triggered by the "Buy with Agent" button on any product card:
 | Styling | Tailwind CSS + tailwindcss-animate |
 | UI components | Radix UI primitives (Dialog, Switch, Tooltip, etc.) |
 | Web3 | wagmi v2 + viem |
-| Chains | Avalanche C-Chain (settlement), Avalanche Fuji, Base Sepolia, mainnet, sepolia |
+| Chains | Avalanche Fuji Testnet (demo payments), mainnet, sepolia |
 | ENS resolution | wagmi `useEnsName` hook (mainnet) |
 | AI agent | Vercel AI SDK + `@ai-sdk/openai` (`gpt-5.4-mini`) over local MCP tools |
 | PDF | `@react-pdf/renderer` (client-only) |
@@ -82,16 +81,15 @@ Triggered by the "Buy with Agent" button on any product card:
 app/
   agent/          — main shopping / agent page (default landing)
   api/            — Next.js route handlers (OpenAI agent endpoint)
-  product/[id]/   — product detail
   profile/        — identity & credential management
   settings/       — app settings
 
 components/
-  purchase-modal       — 5-step merchant verification flow (with policy-block state)
+  purchase-modal       — 5-step merchant verification flow
   credential-card      — styled digital ID card
   identity-banner      — agent page status bar
   sidebar              — navigation + identity display
-  buy-item-button      — opens purchase modal, fires AVAX send on Avalanche C-Chain
+  buy-item-button      — opens purchase modal, fires test AVAX send on Avalanche Fuji
   order-tracking-modal — post-purchase status + invoice download
   invoice-pdf          — @react-pdf/renderer invoice document
   agent-console        — chat-style agent interface
@@ -103,7 +101,8 @@ context/
 
 lib/
   identity.ts            — AgentCredential + EIP-712 typed-data builder + mock fallback
-  wagmiConfig.ts         — wagmi chain + connector config (Avalanche, Fuji, Base Sepolia, mainnet, sepolia)
+  demoPayment.ts         — shared Avalanche Fuji test payment constants
+  wagmiConfig.ts         — wagmi chain + connector config, including Avalanche Fuji for demo payments
   openai-shopping-agent  — server-side AI SDK shopping agent (gpt-5.4-mini + local MCP tools)
   shopping-backend.mjs   — local shopping data backend used by the MCP server
   invoiceData.ts         — invoice data shape + generator from a Transaction
@@ -189,9 +188,9 @@ npm start
 ## Usage
 
 1. **Connect wallet** — click the wallet button in the sidebar; ENS name resolves automatically.
-2. **Generate credential** — go to `/profile`, configure permissions and spending limit, click "Generate Credential".
+2. **Generate credential** — go to `/profile`, configure permissions, and click "Generate Credential".
 3. **Shop** — browse categories or use the search bar on the Agent page; the identity banner confirms the credential is active.
-4. **Purchase** — click "Purchase with Agent" on any product card. The 5-step verification flow runs; if the price is within your spending limit, confirming step 5 sends an AVAX transfer on Avalanche C-Chain through MetaMask. Otherwise the modal blocks at step 4.
+4. **Purchase** — click "Purchase with Agent" in an item modal. The 5-step verification flow runs, then confirming step 5 sends the configured on-chain payment through MetaMask.
 5. **Invoice** — open a settled order (profile or order-tracking modal) and click "Download Invoice ↓" to export the PDF compliance artifact.
 
 ---
@@ -204,7 +203,6 @@ interface AgentCredential {
   agentName: string       // "agentcart.eth"
   actingFor: string       // ENS name or wallet address
   permissions: string[]   // ["search", "compare", "purchase"]
-  spendingLimit: number   // USD, enforced as a hard per-tx cap by the buy button
   allowedCategories: string[]
   issuedAt: string        // ISO 8601
   expiresAt: string       // ISO 8601 — 24 h after issuedAt
@@ -222,4 +220,5 @@ Typed-data domain: `{ name: "AgentCart", version: "1", chainId: 43114 }`. Creden
 - Signing prefers real EIP-712 via `eth_signTypedData`; the deterministic mock signature is only used when no wallet is available or the user rejects the prompt. The `signatureType` field on the stored credential records which path was taken.
 - No backend or database — all state lives in localStorage and React context.
 - The purchase flow is intentionally animated and staged to make the AI identity verification process visible to observers (e.g. judges / demos).
-- The `app/wallet` page exposes a `simulatePurchase` dev affordance for seeding transaction history without burning real AVAX.
+- Buy, cart checkout, and order commitment use a tiny Fuji test AVAX payment so demos do not require real funds.
+- The `app/wallet` page exposes a `simulatePurchase` dev affordance for seeding transaction history without broadcasting a transaction.

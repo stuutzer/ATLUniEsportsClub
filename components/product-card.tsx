@@ -64,8 +64,6 @@ function formatChain(chain: string) {
     base: "Base",
     avalanche: "Avalanche",
     ethereum: "Ethereum",
-    "Base Sepolia": "Base Sepolia",
-    "Avalanche C-Chain": "Avalanche",
   };
 
   return chainLabels[chain] ?? chain;

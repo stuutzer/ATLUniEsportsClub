@@ -43,7 +43,6 @@ export function CredentialCard({ credential, className }: CredentialCardProps) {
         <Field label="Agent" value={credential.agentName} mono />
         <Field label="Authorized For" value={credential.actingFor} mono />
         <Field label="Permissions" value={permissionsLabel} />
-        <Field label="Spending Limit" value={`$${credential.spendingLimit}`} />
         <Field label="Valid Until" value={validUntil} />
         <div className="flex items-start justify-between gap-6">
           <span className="text-white/30 text-xs flex-shrink-0 pt-px">Signature</span>
