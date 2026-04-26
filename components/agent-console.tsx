@@ -15,6 +15,8 @@ interface AgentRunResponse {
   recommendations: AgentRecommendation[];
 }
 
+const AGENT_RESULT_CACHE_PREFIX = "quarter_agent_result:";
+
 function RecommendationSkeleton() {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -140,6 +142,20 @@ export function AgentConsole() {
       return;
     }
 
+    const cacheKey = `${AGENT_RESULT_CACHE_PREFIX}${q}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached) as AgentRunResponse;
+        setResult(parsed);
+        setError(null);
+        setLoading(false);
+        return;
+      } catch {
+        sessionStorage.removeItem(cacheKey);
+      }
+    }
+
     let cancelled = false;
 
     async function runAgent() {
@@ -163,6 +179,7 @@ export function AgentConsole() {
 
         if (!cancelled) {
           setResult(data);
+          sessionStorage.setItem(cacheKey, JSON.stringify(data));
         }
       } catch (runError) {
         if (!cancelled) {

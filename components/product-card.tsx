@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { PurchaseModal } from "@/components/purchase-modal";
 import type { Product } from "@/lib/mockData";
 import type { AgentRecommendation } from "@/lib/agent-types";
 import { cn } from "@/lib/utils";
-import { Bot, ShieldCheck, Truck } from "lucide-react";
+import { Bot, ShieldCheck, Truck, X } from "lucide-react";
 import { useAgent } from "@/context/AgentContext";
 import {
   useSendTransaction,
@@ -141,6 +140,7 @@ const FLAT_AVAX_VALUE = parseEther("0.0003");
 export function ProductCard({ product, recommendation }: ProductCardProps) {
   const { executeAgentPurchase } = useAgent();
   const [modalOpen, setModalOpen] = useState(false);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
   const [isPurchased, setIsPurchased] = useState(false);
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
@@ -175,7 +175,7 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
     });
   };
 
-  let buttonText = "Let Agent Purchase";
+  let buttonText = "Purchase with Agent";
   if (isWalletPending) buttonText = "Confirm in Wallet...";
   if (isConfirming) buttonText = "Processing on C-Chain...";
   if (isConfirmed) buttonText = "Purchase Complete!";
@@ -208,8 +208,12 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
           "hover:border-amber-200/20 hover:shadow-[0_18px_44px_rgba(0,0,0,0.32)]"
         )}
       >
-        {/* Product image — links to detail */}
-        <Link href={`/product/${product.id}`} className="block cursor-pointer">
+        {/* Product image — opens quick view without leaving the chat */}
+        <button
+          type="button"
+          onClick={() => setQuickViewOpen(true)}
+          className="block cursor-pointer text-left"
+        >
           <div className="aspect-[4/3] bg-[#1a1a1a] overflow-hidden">
             <img
               src={product.imageUrl}
@@ -217,7 +221,7 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
             />
           </div>
-        </Link>
+        </button>
 
         {/* Card body */}
         <div className="p-4 flex flex-col flex-1">
@@ -332,6 +336,182 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
           onConfirm={handleConfirmPayment}
         />
       )}
+
+      {quickViewOpen && (
+        <ProductQuickView
+          product={product}
+          merchantName={merchantName}
+          merchantMark={merchantMark}
+          totalUsd={totalUsd}
+          subtotalUsd={subtotalUsd}
+          shippingUsd={shippingUsd}
+          acceptedTokens={[...acceptedTokens]}
+          supportedChains={supportedChains}
+          agentNote={agentNote}
+          buttonText={buttonText}
+          purchaseDisabled={isWalletPending || isConfirming || isConfirmed}
+          onClose={() => setQuickViewOpen(false)}
+          onPurchase={() => {
+            setQuickViewOpen(false);
+            setModalOpen(true);
+          }}
+        />
+      )}
     </>
+  );
+}
+
+function ProductQuickView({
+  product,
+  merchantName,
+  merchantMark,
+  totalUsd,
+  subtotalUsd,
+  shippingUsd,
+  acceptedTokens,
+  supportedChains,
+  agentNote,
+  buttonText,
+  purchaseDisabled,
+  onClose,
+  onPurchase,
+}: {
+  product: Product;
+  merchantName: string;
+  merchantMark: { initials: string; className: string };
+  totalUsd: number;
+  subtotalUsd: number;
+  shippingUsd: number;
+  acceptedTokens: string[];
+  supportedChains: string[];
+  agentNote: string;
+  buttonText: string;
+  purchaseDisabled: boolean;
+  onClose: () => void;
+  onPurchase: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/75 p-0 backdrop-blur-sm sm:items-center sm:p-6">
+      <button
+        type="button"
+        aria-label="Close product details"
+        className="absolute inset-0 cursor-default"
+        onClick={onClose}
+      />
+
+      <div className="relative z-10 grid max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-t-3xl border border-white/[0.08] bg-[#101010] shadow-2xl sm:grid-cols-[1.05fr_0.95fr] sm:rounded-3xl">
+        <button
+          type="button"
+          aria-label="Close product details"
+          onClick={onClose}
+          className="absolute right-4 top-4 z-20 rounded-full border border-white/10 bg-black/45 p-2 text-white/50 transition-colors hover:text-white"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <div className="relative min-h-[280px] bg-[#171717] sm:min-h-[560px]">
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white/70 backdrop-blur">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />
+              {merchantName}
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-y-auto p-6 sm:p-8">
+          <div className="mb-5 flex items-center gap-3">
+            <div
+              className={cn(
+                "flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br text-xs font-black shadow-lg",
+                merchantMark.className
+              )}
+            >
+              {merchantMark.initials}
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-[0.16em] text-white/35">
+                {product.category}
+              </p>
+              <p className="truncate text-sm text-white/70">{merchantName}</p>
+            </div>
+          </div>
+
+          <h2 className="text-2xl font-semibold leading-tight text-white">
+            {product.name}
+          </h2>
+          <p className="mt-3 text-sm leading-7 text-white/55">
+            {product.description}
+          </p>
+
+          <div className="mt-6 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.14em] text-white/35">
+                  Landed total
+                </p>
+                <p className="mt-1 text-3xl font-bold text-white">
+                  ${totalUsd.toFixed(2)}
+                </p>
+              </div>
+              <div className="text-right text-xs text-white/45">
+                <p>Item ${subtotalUsd.toFixed(2)}</p>
+                <p>Shipping ${shippingUsd.toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl border border-white/[0.08] bg-black/20 p-4">
+              <p className="mb-3 text-xs uppercase tracking-[0.14em] text-white/35">
+                Accepted assets
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {acceptedTokens.map((token) => (
+                  <TokenBadge key={token} token={token} />
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/[0.08] bg-black/20 p-4">
+              <p className="mb-3 text-xs uppercase tracking-[0.14em] text-white/35">
+                Routes
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {supportedChains.map((chain) => (
+                  <ChainBadge key={chain} chain={chain} />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-amber-200/[0.1] bg-amber-200/[0.04] p-4">
+            <p className="text-xs uppercase tracking-[0.14em] text-amber-100/45">
+              Agent note
+            </p>
+            <p className="mt-2 text-sm leading-6 text-white/60">{agentNote}</p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onPurchase}
+            disabled={purchaseDisabled}
+            className={cn(
+              "mt-6 flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold",
+              "border border-purple-300/20 bg-purple-500/15 text-purple-100 transition-colors",
+              "hover:border-purple-200/35 hover:bg-purple-500/25 hover:text-white",
+              "disabled:cursor-not-allowed disabled:opacity-50"
+            )}
+          >
+            <Bot className="h-4 w-4" />
+            {buttonText}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

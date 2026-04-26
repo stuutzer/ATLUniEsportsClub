@@ -76,7 +76,7 @@ export function BuyItemButton({ product }: { product: Product }) {
     }
   };
 
-  let buttonText = "Buy with Agent";
+  let buttonText = "Purchase with Agent";
   if (settlementStatus === "settling" || isWalletPending) buttonText = "Confirm in Wallet...";
   if (isConfirming) buttonText = "Processing on C-Chain...";
   if (isPurchased) buttonText = "Purchase Complete!";

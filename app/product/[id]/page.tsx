@@ -4,7 +4,7 @@ import { useState } from "react";
 import { mockProducts, type Product } from "@/lib/mockData";
 import { PriceBreakdown } from "@/components/price-breakdown";
 import { PurchaseModal } from "@/components/purchase-modal";
-import { notFound } from "next/navigation";
+import { notFound, useSearchParams } from "next/navigation";
 import { useAccount } from "wagmi";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, CheckCircle, Zap } from "lucide-react";
@@ -117,6 +117,7 @@ const hardcodedKeyboardProducts: Product[] = [
 ];
 
 export default function ProductPage({ params }: { params: { id: string } }) {
+  const searchParams = useSearchParams();
   const product =
     mockProducts.find((p) => p.id === params.id) ??
     hardcodedKeyboardProducts.find((p) => p.id === params.id);
@@ -124,6 +125,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   const { address, isConnected } = useAccount();
   const [showModal, setShowModal] = useState(false);
+  const from = searchParams.get("from");
+  const backHref = from?.startsWith("/") ? from : "/agent";
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -132,11 +135,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       )}
       {/* Back */}
       <Link
-        href="/"
+        href={backHref}
         className="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm mb-8 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Marketplace
+        Back to Agent
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -259,7 +262,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             )}
           >
             <Zap className="w-5 h-5" />
-            Let Agent Purchase
+            Purchase with Agent
           </button>
 
           <button
