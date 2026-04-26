@@ -9,6 +9,8 @@ import {
   ShieldCheck,
   Store,
   X,
+  AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 import { useIdentity } from "@/context/IdentityContext";
 import { AgentCredential } from "@/lib/identity";
@@ -322,6 +324,21 @@ function StepPayment({
   settlementError: string | null;
 }) {
   const isSettling = settlementStatus === "settling";
+  const [exchangePromptOpen, setExchangePromptOpen] = useState(false);
+
+  const handleConfirmClick = () => {
+    if (product.requiresFiatExchange) {
+      setExchangePromptOpen(true);
+      return;
+    }
+
+    onConfirm ? onConfirm() : onClose();
+  };
+
+  const handleExchangeConfirm = () => {
+    setExchangePromptOpen(false);
+    onConfirm ? onConfirm() : onClose();
+  };
 
   return (
     <div className="flex flex-col gap-5 flex-1">
@@ -366,6 +383,20 @@ function StepPayment({
         )}
       </div>
 
+      {product.requiresFiatExchange && (
+        <div className="rounded-xl border border-amber-400/20 bg-amber-400/10 px-4 py-3">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-300" />
+            <div>
+              <p className="text-sm font-medium text-amber-100">Exchange required</p>
+              <p className="mt-1 text-xs leading-5 text-amber-100/65">
+                Grocery merchants do not accept crypto directly, so Quarter will exchange your crypto to fiat before checkout.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-3 mt-auto">
         <button
           onClick={onClose}
@@ -375,13 +406,55 @@ function StepPayment({
           Cancel
         </button>
         <button
-          onClick={() => (onConfirm ? onConfirm() : onClose())}
+          onClick={handleConfirmClick}
           disabled={isSettling}
           className="flex-1 py-2.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all hover:shadow-[0_0_20px_rgba(124,58,237,0.4)] disabled:cursor-wait disabled:opacity-60"
         >
           {isSettling ? "Settling on C-Chain..." : "Confirm Settlement"}
         </button>
       </div>
+
+      {exchangePromptOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setExchangePromptOpen(false)}
+          />
+          <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-[#151515] p-5 shadow-2xl">
+            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-amber-400/20 bg-amber-400/10">
+              <RefreshCw className="h-5 w-5 text-amber-200" />
+            </div>
+            <p className="text-lg font-semibold text-white">You need to make an exchange</p>
+            <p className="mt-2 text-sm leading-6 text-white/55">
+              {product.merchantName} takes fiat for groceries. Quarter will exchange USDC to fiat, then continue checkout for {product.name}.
+            </p>
+            <div className="mt-5 rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3 text-xs">
+              <div className="flex justify-between gap-3">
+                <span className="text-white/40">Exchange from</span>
+                <span className="font-medium text-white/75">USDC</span>
+              </div>
+              <div className="mt-2 flex justify-between gap-3">
+                <span className="text-white/40">Merchant receives</span>
+                <span className="font-medium text-white/75">Fiat checkout</span>
+              </div>
+            </div>
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={() => setExchangePromptOpen(false)}
+                className="flex-1 rounded-full border border-white/10 py-2.5 text-sm text-white/55 transition-colors hover:border-white/20 hover:text-white"
+              >
+                Back
+              </button>
+              <button
+                onClick={handleExchangeConfirm}
+                className="flex-1 rounded-full bg-purple-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-purple-700"
+              >
+                Make Exchange
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

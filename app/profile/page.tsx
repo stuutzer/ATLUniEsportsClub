@@ -27,7 +27,15 @@ import {
 } from "@/lib/identity";
 import { cn } from "@/lib/utils";
 
-const ALL_CATEGORIES = ["Electronics", "Clothing", "Food", "Software", "Travel", "Other"];
+const ALL_CATEGORIES = [
+  "Electronics",
+  "Clothing",
+  "Food",
+  "Groceries",
+  "Software",
+  "Travel",
+  "Other",
+];
 const EASE_OUT = "cubic-bezier(0.22, 1, 0.36, 1)";
 const EASE_SPRING = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 

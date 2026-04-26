@@ -44,29 +44,25 @@ interface ProductCardProps {
 }
 
 const merchantMarks: Record<string, { initials: string; className: string }> = {
-  "TechVault Store": {
-    initials: "TV",
+  Newegg: {
+    initials: "NE",
     className: "from-cyan-400 to-blue-600 text-white shadow-cyan-950/30",
   },
-  "Wooting Official": {
-    initials: "WO",
-    className: "from-sky-300 to-blue-600 text-white shadow-blue-950/30",
+  "Crypto Emporium": {
+    initials: "CE",
+    className: "from-emerald-300 to-teal-700 text-white shadow-emerald-950/30",
   },
-  "Keychron Store": {
-    initials: "KC",
-    className: "from-slate-200 to-slate-600 text-white shadow-slate-950/30",
+  ShopinBit: {
+    initials: "SB",
+    className: "from-amber-300 to-yellow-700 text-black shadow-yellow-950/30",
   },
-  NuPhy: {
-    initials: "NP",
-    className: "from-lime-300 to-emerald-600 text-white shadow-emerald-950/30",
+  Countdown: {
+    initials: "CD",
+    className: "from-green-300 to-emerald-700 text-white shadow-emerald-950/30",
   },
-  "Akko Global": {
-    initials: "AK",
-    className: "from-pink-300 to-fuchsia-600 text-white shadow-fuchsia-950/30",
-  },
-  Razer: {
-    initials: "RZ",
-    className: "from-green-300 to-lime-600 text-black shadow-lime-950/30",
+  "New World": {
+    initials: "NW",
+    className: "from-red-300 to-rose-700 text-white shadow-rose-950/30",
   },
 };
 

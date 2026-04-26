@@ -32,11 +32,11 @@ const hardcodedKeyboardProducts: Product[] = [
     price: 199.0,
     category: "Peripherals",
     acceptedCrypto: ["USDC", "AVAX", "ETH"],
-    merchantName: "Wooting Official",
+    merchantName: "Newegg",
     imageUrl: "/products/keyboards/wooting-80he.webp",
     aiReasons: [
       "Fastest response profile for competitive gaming and low-latency typing.",
-      "Strong firmware support and broad community tuning presets.",
+      "Newegg is preferred here because the checkout can be routed through crypto payment rails.",
     ],
   },
   {
@@ -47,11 +47,11 @@ const hardcodedKeyboardProducts: Product[] = [
     price: 219.0,
     category: "Peripherals",
     acceptedCrypto: ["USDC", "ETH"],
-    merchantName: "Keychron Store",
+    merchantName: "Crypto Emporium",
     imageUrl: "/products/keyboards/keychron-q1-max.jpg",
     aiReasons: [
       "Excellent build quality out of the box with balanced acoustics.",
-      "Great long-term value due to easy switch and keycap customization.",
+      "Crypto Emporium is a direct crypto-friendly vendor for electronics orders.",
     ],
   },
   {
@@ -62,11 +62,11 @@ const hardcodedKeyboardProducts: Product[] = [
     price: 159.0,
     category: "Peripherals",
     acceptedCrypto: ["USDC", "AVAX"],
-    merchantName: "NuPhy",
+    merchantName: "ShopinBit",
     imageUrl: "/products/keyboards/nuphy-halo75-v2.png",
     aiReasons: [
       "Strong price-to-performance with premium feel in a smaller footprint.",
-      "Reliable multi-device Bluetooth behavior for mixed workflows.",
+      "ShopinBit is selected as the crypto-friendly checkout route for this board.",
     ],
   },
   {
@@ -77,11 +77,11 @@ const hardcodedKeyboardProducts: Product[] = [
     price: 169.0,
     category: "Peripherals",
     acceptedCrypto: ["USDC", "ETH"],
-    merchantName: "Akko Global",
+    merchantName: "Crypto Emporium",
     imageUrl: "/products/keyboards/akko-mod-007b-he.png",
     aiReasons: [
       "Hall-effect precision without flagship pricing.",
-      "Useful software controls for per-key actuation and rapid-trigger tuning.",
+      "Crypto Emporium keeps the checkout path aligned with direct crypto payment.",
     ],
   },
   {
@@ -92,11 +92,11 @@ const hardcodedKeyboardProducts: Product[] = [
     price: 229.0,
     category: "Peripherals",
     acceptedCrypto: ["USDC", "AVAX", "ETH"],
-    merchantName: "Razer",
+    merchantName: "Newegg",
     imageUrl: "/products/keyboards/razer-huntsman-v3-pro-tkl.webp",
     aiReasons: [
       "Competitive-ready switch behavior and dependable polling stability.",
-      "Excellent choice when prioritizing esports-style performance.",
+      "Newegg is the preferred vendor because it can support crypto-funded checkout.",
     ],
   },
   {
@@ -107,11 +107,11 @@ const hardcodedKeyboardProducts: Product[] = [
     price: 199.0,
     category: "Peripherals",
     acceptedCrypto: ["USDC", "ETH"],
-    merchantName: "Logitech G",
+    merchantName: "Crypto Emporium",
     imageUrl: "/products/keyboards/logitech-g-pro-x-tkl.png",
     aiReasons: [
       "Clean professional design with proven tournament-grade wireless stack.",
-      "Strong battery life and reliable software profiles for travel setups.",
+      "Crypto Emporium keeps this checkout on crypto-friendly rails.",
     ],
   },
 ];

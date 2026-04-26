@@ -146,6 +146,21 @@ function isKeyboardRecommendationRequest(input: string) {
   );
 }
 
+function isGroceryRecommendationRequest(input: string) {
+  const normalized = input.toLowerCase();
+  return (
+    normalized.includes("grocery") ||
+    normalized.includes("groceries") ||
+    normalized.includes("produce") ||
+    normalized.includes("pantry") ||
+    normalized.includes("apples") ||
+    normalized.includes("toilet paper") ||
+    normalized.includes("milk") ||
+    normalized.includes("bread") ||
+    normalized.includes("eggs")
+  );
+}
+
 function buildKeyboardRecommendations(): AgentRecommendation[] {
   const keyboardProducts = [
     {
@@ -156,10 +171,10 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
       price: 249.99,
       category: "Peripherals",
       acceptedCrypto: ["ETH", "AVAX", "USDC"] as CryptoToken[],
-      merchantName: "TechVault Store",
+      merchantName: "Newegg",
       imageUrl: "/products/keyboards/neural-pro-keyboard.webp",
       aiReasons: [
-        "Best overall pick because TechVault has the lowest landed cost and supports the agent credential flow.",
+        "Best overall pick because Newegg has the lowest landed cost and supports crypto checkout through a payment processor.",
         "Broad token support keeps checkout flexible across Base, Avalanche, and Ethereum.",
       ],
       shippingUsd: 12,
@@ -176,11 +191,11 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
       price: 199.0,
       category: "Peripherals",
       acceptedCrypto: ["USDC", "AVAX", "ETH"] as CryptoToken[],
-      merchantName: "Wooting Official",
+      merchantName: "Newegg",
       imageUrl: "/products/keyboards/wooting-80he.webp",
       aiReasons: [
         "Fastest response profile for competitive gaming and low-latency typing.",
-        "Strong firmware support and broad community tuning presets.",
+        "Newegg is preferred here because the checkout can be routed through crypto payment rails.",
       ],
       shippingUsd: 6.99,
       totalUsd: 206.79,
@@ -196,11 +211,11 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
       price: 219.0,
       category: "Peripherals",
       acceptedCrypto: ["USDC", "ETH"] as CryptoToken[],
-      merchantName: "Keychron Store",
+      merchantName: "Crypto Emporium",
       imageUrl: "/products/keyboards/keychron-q1-max.jpg",
       aiReasons: [
         "Excellent build quality out of the box with balanced acoustics.",
-        "Great long-term value due to easy switch and keycap customization.",
+        "Crypto Emporium is a direct crypto-friendly vendor for electronics orders.",
       ],
       shippingUsd: 6.99,
       totalUsd: 226.79,
@@ -216,11 +231,11 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
       price: 159.0,
       category: "Peripherals",
       acceptedCrypto: ["USDC", "AVAX"] as CryptoToken[],
-      merchantName: "NuPhy",
+      merchantName: "ShopinBit",
       imageUrl: "/products/keyboards/nuphy-halo75-v2.png",
       aiReasons: [
         "Strong price-to-performance with premium feel in a smaller footprint.",
-        "Reliable multi-device Bluetooth behavior for mixed workflows.",
+        "ShopinBit is selected as the crypto-friendly checkout route for this board.",
       ],
       shippingUsd: 6.99,
       totalUsd: 166.79,
@@ -236,11 +251,11 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
       price: 169.0,
       category: "Peripherals",
       acceptedCrypto: ["USDC", "ETH"] as CryptoToken[],
-      merchantName: "Akko Global",
+      merchantName: "Crypto Emporium",
       imageUrl: "/products/keyboards/akko-mod-007b-he.png",
       aiReasons: [
         "Hall-effect precision without flagship pricing.",
-        "Useful software controls for per-key actuation and rapid-trigger tuning.",
+        "Crypto Emporium keeps the checkout path aligned with direct crypto payment.",
       ],
       shippingUsd: 6.99,
       totalUsd: 176.79,
@@ -256,11 +271,11 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
       price: 229.0,
       category: "Peripherals",
       acceptedCrypto: ["USDC", "AVAX", "ETH"] as CryptoToken[],
-      merchantName: "Razer",
+      merchantName: "Newegg",
       imageUrl: "/products/keyboards/razer-huntsman-v3-pro-tkl.webp",
       aiReasons: [
         "Competitive-ready switch behavior and dependable polling stability.",
-        "Excellent choice when prioritizing esports-style performance.",
+        "Newegg is the preferred vendor because it can support crypto-funded checkout.",
       ],
       shippingUsd: 6.99,
       totalUsd: 236.79,
@@ -289,9 +304,37 @@ function buildKeyboardRecommendations(): AgentRecommendation[] {
   }));
 }
 
+function buildGroceryRecommendations(): AgentRecommendation[] {
+  const groceryProducts = mockProducts.filter(
+    (product) => product.category.toLowerCase() === "groceries"
+  );
+
+  return groceryProducts.map((product, index) => {
+    const shippingUsd = index === 0 ? 4.5 : index === 1 ? 3.5 : 5;
+    const gasUsd = 0.18;
+
+    return {
+      product,
+      token: "USDC",
+      chain: "avalanche",
+      totalUsd: Number((product.price + shippingUsd + gasUsd).toFixed(2)),
+      subtotalUsd: product.price,
+      shippingUsd,
+      gasUsd,
+      trustScore: index === 0 ? 97 : index === 1 ? 95 : 94,
+      score: 98 - index,
+      reasoning: product.aiReasons,
+    };
+  });
+}
+
 function buildRecommendations(input: string): AgentRecommendation[] {
   if (isKeyboardRecommendationRequest(input)) {
     return buildKeyboardRecommendations();
+  }
+
+  if (isGroceryRecommendationRequest(input)) {
+    return buildGroceryRecommendations();
   }
 
   const result = rankPurchaseOptions(
