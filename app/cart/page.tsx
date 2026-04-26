@@ -24,7 +24,6 @@ import { baseSepolia } from "wagmi/chains";
 import { erc20Abi, parseUnits } from "viem";
 import { useCart } from "@/context/CartContext";
 import { useAgent } from "@/context/AgentContext";
-import { cn } from "@/lib/utils";
 
 const DUMMY_MERCHANT_ADDRESS = "0x000000000000000000000000000000000000dEaD";
 const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
@@ -164,13 +163,13 @@ export default function CartPage() {
           <div className="mt-8 flex justify-center gap-3">
             <Link
               href="/agent"
-              className="rounded-full border border-white/[0.08] bg-white/[0.04] px-5 py-2 text-sm text-white/75 hover:bg-white/[0.08] hover:text-white"
+              className="quarter-button px-5 py-2"
             >
               Continue shopping
             </Link>
             <button
               onClick={resetAfterSettle}
-              className="rounded-full border border-sky-300/25 bg-sky-300/10 px-5 py-2 text-sm font-medium text-sky-200 hover:bg-sky-300/15"
+              className="quarter-button px-5 py-2"
             >
               View cart
             </button>
@@ -222,7 +221,7 @@ export default function CartPage() {
           <p className="text-white/55">Your cart is empty.</p>
           <Link
             href="/agent"
-            className="mt-5 inline-block rounded-full border border-sky-300/25 bg-sky-300/10 px-5 py-2 text-sm font-medium text-sky-200 hover:bg-sky-300/15"
+            className="quarter-button mt-5 px-5 py-2"
           >
             Start shopping
           </Link>
@@ -358,12 +357,7 @@ export default function CartPage() {
             <button
               onClick={handleShipAll}
               disabled={items.length === 0 || isBusy}
-              className={cn(
-                "flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold transition-colors",
-                "border border-purple-300/25 bg-purple-500/15 text-purple-100",
-                "hover:border-purple-200/40 hover:bg-purple-500/25 hover:text-white",
-                "disabled:cursor-not-allowed disabled:opacity-50"
-              )}
+              className="quarter-button w-full py-3 font-semibold"
             >
               <Bot className="h-4 w-4" />
               {buttonLabel}

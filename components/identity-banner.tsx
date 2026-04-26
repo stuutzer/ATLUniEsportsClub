@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AlertTriangle } from "lucide-react";
 import { useIdentity } from "@/context/IdentityContext";
 
 export function IdentityBanner() {
@@ -34,12 +35,12 @@ export function IdentityBanner() {
     <div className="flex justify-center pt-5 px-8">
       <Link
         href="/profile"
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-400/10 border border-sky-400/20 text-sky-300 text-xs hover:bg-sky-400/15 transition-colors"
+        className="quarter-button px-4 py-2 text-xs"
       >
-        <span className="flex-shrink-0">⚠</span>
+        <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
         <span>No agent credential — purchases unavailable.</span>
         <span className="font-semibold underline underline-offset-2">
-          Generate one in Profile →
+          Generate one in Profile
         </span>
       </Link>
     </div>

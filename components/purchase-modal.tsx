@@ -261,7 +261,7 @@ function StepVerification({
         <Link
           href="/profile"
           onClick={onClose}
-          className="rounded-full border border-white/[0.15] bg-sky-200 px-6 py-2.5 text-sm font-semibold text-[#06131d] transition-colors hover:bg-sky-100"
+          className="quarter-button px-6 py-2.5"
         >
           Adjust limit in Profile
         </Link>
@@ -428,14 +428,14 @@ function StepPayment({
         <button
           onClick={onClose}
           disabled={isSettling}
-          className="flex-1 rounded-full border border-white/10 py-2.5 text-sm text-white/50 transition-colors hover:border-white/20 hover:text-white"
+          className="quarter-button flex-1 py-2.5"
         >
           Cancel
         </button>
         <button
           onClick={handleConfirmClick}
           disabled={isSettling}
-          className="flex-1 rounded-full bg-purple-600 py-2.5 text-sm font-semibold text-white transition-all hover:bg-purple-700 hover:shadow-[0_0_20px_rgba(124,58,237,0.4)] disabled:cursor-wait disabled:opacity-60"
+          className="quarter-button flex-1 py-2.5 font-semibold disabled:cursor-wait"
         >
           {isSettling ? "Settling on C-Chain..." : "Confirm Settlement"}
         </button>
@@ -468,13 +468,13 @@ function StepPayment({
             <div className="mt-5 flex gap-3">
               <button
                 onClick={() => setExchangePromptOpen(false)}
-                className="flex-1 rounded-full border border-white/10 py-2.5 text-sm text-white/55 transition-colors hover:border-white/20 hover:text-white"
+                className="quarter-button flex-1 py-2.5"
               >
                 Back
               </button>
               <button
                 onClick={handleExchangeConfirm}
-                className="flex-1 rounded-full bg-purple-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-purple-700"
+                className="quarter-button flex-1 py-2.5 font-semibold"
               >
                 Make Exchange
               </button>

@@ -107,7 +107,7 @@ export function BuyItemButton({
       <button
         onClick={handleBuy}
         disabled={settlementStatus === "settling" || isPurchased}
-        className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-xl disabled:opacity-50 transition-all text-sm font-medium mt-4 shadow-lg shadow-purple-900/20"
+        className="quarter-button mt-4 w-full rounded-xl px-4 py-2.5"
       >
         <Bot className="w-4 h-4" />
         {buttonText}

@@ -191,7 +191,7 @@ export function OrderTrackingModal({ transaction, onClose }: OrderTrackingModalP
               <button
                 onClick={handleDownloadInvoice}
                 disabled={downloading}
-                className="flex items-center gap-1.5 text-xs text-sky-200 hover:text-white bg-sky-300/10 hover:bg-sky-300/[0.15] border border-sky-200/20 px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
+                className="quarter-button rounded-lg px-3 py-1.5 text-xs"
               >
                 {downloading ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
