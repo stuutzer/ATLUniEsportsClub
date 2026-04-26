@@ -49,7 +49,7 @@ function Toggle({ checked, onChange, disabled = false }: { checked: boolean; onC
 }
 
 export default function WalletPage() {
-  const { displayName } = useIdentity();
+  const { displayName, ensName, walletAddress } = useIdentity();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [downloadingTx, setDownloadingTx] = useState<string | null>(null);
 
@@ -64,6 +64,8 @@ export default function WalletPage() {
         token: tx.token,
         status: tx.status,
         userName: displayName ?? undefined,
+        userENS: ensName ?? undefined,
+        userWallet: walletAddress ?? undefined,
       });
       const [{ pdf }, { InvoicePDF }] = await Promise.all([
         import("@react-pdf/renderer"),

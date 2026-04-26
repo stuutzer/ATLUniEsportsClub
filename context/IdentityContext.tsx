@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { AgentCredential, loadCredential } from "@/lib/identity";
+import { resolveDemoIdentity } from "@/lib/demoIdentity";
 
 interface IdentityContextValue {
   walletAddress: string | null;
@@ -36,9 +37,10 @@ export function IdentityProvider({ children }: { children: ReactNode }) {
   }, []);
 
   function setIdentity(address: string | null, ens: string | null, avatar: string | null) {
+    const resolved = resolveDemoIdentity(address, ens);
     setWalletAddress(address);
-    setEnsName(ens);
-    setEnsAvatar(avatar);
+    setEnsName(resolved.ensName);
+    setEnsAvatar(resolved.ensAvatar ?? avatar);
   }
 
   function setCredential(c: AgentCredential | null) {
