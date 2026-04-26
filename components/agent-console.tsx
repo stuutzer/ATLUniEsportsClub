@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Bot, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, Bot, Loader2, Sparkles } from "lucide-react";
 import { SearchBar } from "@/components/search-bar";
 import { ShoppingCategories } from "@/components/shopping-categories";
 import { ProductCard } from "@/components/product-card";
@@ -255,6 +255,16 @@ export function AgentConsole() {
     setQuery("");
   }
 
+  function handleReturn() {
+    sessionStorage.removeItem(AGENT_LAST_RESULT_KEY);
+    setActiveQuery("");
+    setResult(null);
+    setError(null);
+    setLoading(false);
+    setQuery("");
+    router.push("/agent");
+  }
+
   const showEmptyState = !activeQuery && !loading && !result && !error;
 
   return (
@@ -274,6 +284,16 @@ export function AgentConsole() {
           <ShoppingCategories />
         ) : (
           <div className="mx-auto w-full max-w-6xl space-y-5">
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleReturn}
+                className="inline-flex items-center gap-2 rounded-full border border-white/[0.10] bg-white/[0.03] px-4 py-2 text-xs font-medium text-white/65 transition-colors hover:bg-white/[0.06] hover:text-white"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Return
+              </button>
+            </div>
             <div className="max-w-3xl rounded-2xl border border-white/[0.06] bg-[#161616] p-6">
               <div className="mb-5 flex items-center gap-3">
                 <div
