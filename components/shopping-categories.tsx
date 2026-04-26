@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShoppingCart, Home, Plane, Power, Gem, Shirt } from "lucide-react";
 import { useIdentity } from "@/context/IdentityContext";
+import { useAccount } from "wagmi";
+import { WalletRequiredModal } from "@/components/wallet-required-modal";
 
 const categories = [
   { id: "groceries", label: "Groceries", icon: ShoppingCart, prompt: "Show me groceries options" },
@@ -23,8 +25,10 @@ function getGreeting() {
 
 export function ShoppingCategories() {
   const [visible, setVisible] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
   const router = useRouter();
   const { displayName } = useIdentity();
+  const { isConnected } = useAccount();
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80);
@@ -32,6 +36,10 @@ export function ShoppingCategories() {
   }, []);
 
   const handleCategory = (prompt: string) => {
+    if (!isConnected) {
+      setShowWalletModal(true);
+      return;
+    }
     router.push(`/agent?q=${encodeURIComponent(prompt)}`);
   };
 
@@ -43,6 +51,9 @@ export function ShoppingCategories() {
 
   return (
     <div className="flex flex-col items-center w-full">
+      {showWalletModal && (
+        <WalletRequiredModal onClose={() => setShowWalletModal(false)} />
+      )}
       {/* Greeting */}
       <div className="text-center mb-10">
         <p

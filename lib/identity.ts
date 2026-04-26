@@ -12,7 +12,7 @@ export interface AgentCredential {
 }
 
 const EIP712_DOMAIN = {
-  name: "AgentCart",
+  name: "Quarter",
   version: "1",
   chainId: 43114, // Avalanche C-Chain
 } as const;
@@ -68,7 +68,7 @@ export function buildCredentialDraft(
   const expires = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   return {
     id: crypto.randomUUID(),
-    agentName: "agentcart.eth",
+    agentName: "quarter.eth",
     actingFor: ensName || walletAddress,
     permissions,
     spendingLimit,

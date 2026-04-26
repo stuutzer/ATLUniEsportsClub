@@ -15,18 +15,20 @@ import {
 } from "lucide-react";
 import {
   useChainId,
-  useSendTransaction,
+  useReadContract,
   useSwitchChain,
   useWaitForTransactionReceipt,
+  useWriteContract,
 } from "wagmi";
-import { avalanche } from "wagmi/chains";
-import { parseEther } from "viem";
+import { baseSepolia } from "wagmi/chains";
+import { erc20Abi, parseUnits } from "viem";
 import { useCart } from "@/context/CartContext";
 import { useAgent } from "@/context/AgentContext";
 import { cn } from "@/lib/utils";
 
-const PER_ITEM_AVAX = 0.0003;
 const DUMMY_MERCHANT_ADDRESS = "0x000000000000000000000000000000000000dEaD";
+const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
+const DEFAULT_DNZD_DECIMALS = 6;
 
 type ShipStatus = "idle" | "switching" | "signing" | "settling" | "settled" | "failed";
 
@@ -38,17 +40,23 @@ export default function CartPage() {
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
   const {
-    sendTransaction,
+    writeContract,
     data: hash,
     isPending: isWalletPending,
-    error: sendError,
+    error: writeError,
     reset,
-  } = useSendTransaction();
+  } = useWriteContract();
   const {
     isLoading: isConfirming,
     isSuccess: isConfirmed,
     error: receiptError,
   } = useWaitForTransactionReceipt({ hash });
+  const { data: dnzdDecimals } = useReadContract({
+    address: DNZD_CONTRACT_ADDRESS,
+    abi: erc20Abi,
+    functionName: "decimals",
+    chainId: baseSepolia.id,
+  });
 
   const [status, setStatus] = useState<ShipStatus>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -61,20 +69,24 @@ export default function CartPage() {
   }
 
   useEffect(() => {
-    if (!sendError && !receiptError) return;
-    const err = sendError ?? receiptError;
+    if (!writeError && !receiptError) return;
+    const err = writeError ?? receiptError;
     setStatus("failed");
     setError(
       isUserRejection(err)
         ? "Transaction cancelled."
         : err instanceof Error
-        ? err.message
-        : "Avalanche C-Chain settlement failed"
+          ? err.message
+          : "Base Sepolia dNZD settlement failed"
     );
     reset();
-  }, [sendError, receiptError, reset]);
+  }, [writeError, receiptError, reset]);
 
-  const totalAvax = useMemo(() => itemCount * PER_ITEM_AVAX, [itemCount]);
+  const totalDnzd = useMemo(() => total.toFixed(2), [total]);
+  const settlementValue = useMemo(
+    () => parseUnits(totalDnzd, Number(dnzdDecimals ?? DEFAULT_DNZD_DECIMALS)),
+    [totalDnzd, dnzdDecimals]
+  );
 
   const fiatExchangeMerchants = useMemo(() => {
     const merchants = new Set<string>();
@@ -88,9 +100,9 @@ export default function CartPage() {
     if (!isConfirmed || !hash || status === "settled") return;
     const summary =
       items.length === 1
-        ? `${items[0].product.name}${items[0].quantity > 1 ? ` ×${items[0].quantity}` : ""}`
+        ? `${items[0].product.name}${items[0].quantity > 1 ? ` x${items[0].quantity}` : ""}`
         : `Cart bundle (${itemCount} items)`;
-    executeAgentPurchase(summary, total, "AVAX", hash);
+    executeAgentPurchase(summary, total, "dNZD", hash);
     setStatus("settled");
     clearCart();
   }, [isConfirmed, hash, status, items, itemCount, total, executeAgentPurchase, clearCart]);
@@ -101,15 +113,17 @@ export default function CartPage() {
     setStatus("idle");
     reset();
     try {
-      if (chainId !== avalanche.id) {
+      if (chainId !== baseSepolia.id) {
         setStatus("switching");
-        await switchChainAsync({ chainId: avalanche.id });
+        await switchChainAsync({ chainId: baseSepolia.id });
       }
       setStatus("signing");
-      sendTransaction({
-        to: DUMMY_MERCHANT_ADDRESS,
-        value: parseEther(totalAvax.toFixed(6)),
-        chainId: avalanche.id,
+      writeContract({
+        address: DNZD_CONTRACT_ADDRESS,
+        abi: erc20Abi,
+        functionName: "transfer",
+        args: [DUMMY_MERCHANT_ADDRESS, settlementValue],
+        chainId: baseSepolia.id,
       });
     } catch (err) {
       setStatus("failed");
@@ -117,8 +131,8 @@ export default function CartPage() {
         isUserRejection(err)
           ? "Transaction cancelled."
           : err instanceof Error
-          ? err.message
-          : "Avalanche C-Chain settlement failed"
+            ? err.message
+            : "Base Sepolia dNZD settlement failed"
       );
     }
   };
@@ -138,8 +152,11 @@ export default function CartPage() {
           </div>
           <h1 className="text-2xl font-semibold text-white">Order shipped</h1>
           <p className="mt-2 text-sm text-white/55">
-            Settled on Avalanche C-Chain.{" "}
-            <Link href="/wallet" className="text-sky-200 hover:text-sky-100 underline underline-offset-2">
+            Settled in dNZD on Base Sepolia.{" "}
+            <Link
+              href="/wallet"
+              className="text-sky-200 hover:text-sky-100 underline underline-offset-2"
+            >
               View transaction
             </Link>
             .
@@ -163,18 +180,17 @@ export default function CartPage() {
     );
   }
 
-  const isBusy =
-    status === "switching" || isWalletPending || (isConfirming && !!hash);
+  const isBusy = status === "switching" || isWalletPending || (isConfirming && !!hash);
 
   const buttonLabel = isWalletPending
     ? "Confirm in Wallet..."
     : isConfirming && hash
-    ? "Processing on C-Chain..."
-    : status === "switching"
-    ? "Switching to Avalanche..."
-    : status === "failed"
-    ? "Try again"
-    : `Ship All Items (${totalAvax.toFixed(4)} AVAX)`;
+      ? "Processing on Base Sepolia..."
+      : status === "switching"
+        ? "Switching to Base Sepolia..."
+        : status === "failed"
+          ? "Try again"
+          : `Ship All Items (${totalDnzd} dNZD)`;
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
@@ -213,7 +229,6 @@ export default function CartPage() {
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          {/* Line items */}
           <div className="space-y-3">
             {items.map(({ product, quantity }) => (
               <div
@@ -221,7 +236,11 @@ export default function CartPage() {
                 className="flex gap-4 rounded-2xl border border-white/[0.06] bg-[#121212] p-4"
               >
                 <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-[#1a1a1a]">
-                  <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] uppercase tracking-widest text-white/30">
@@ -278,7 +297,6 @@ export default function CartPage() {
             </button>
           </div>
 
-          {/* Summary */}
           <aside className="space-y-4">
             <div className="rounded-2xl border border-white/[0.06] bg-[#121212] p-5">
               <p className="text-[10px] uppercase tracking-[0.16em] text-white/35">
@@ -286,8 +304,10 @@ export default function CartPage() {
               </p>
 
               <div className="mt-4 space-y-2.5 text-sm">
-                <Row label={`Subtotal (${itemCount} item${itemCount === 1 ? "" : "s"})`}
-                     value={`$${subtotal.toFixed(2)}`} />
+                <Row
+                  label={`Subtotal (${itemCount} item${itemCount === 1 ? "" : "s"})`}
+                  value={`$${subtotal.toFixed(2)}`}
+                />
                 <Row
                   label={
                     <span className="inline-flex items-center gap-1.5">
@@ -305,7 +325,7 @@ export default function CartPage() {
                 <span className="text-sm font-medium text-white/85">Total</span>
                 <div className="text-right">
                   <p className="text-lg font-bold text-white">${total.toFixed(2)}</p>
-                  <p className="text-[11px] text-white/40">≈ {totalAvax.toFixed(4)} AVAX</p>
+                  <p className="text-[11px] text-white/40">{totalDnzd} dNZD</p>
                 </div>
               </div>
             </div>
@@ -350,7 +370,7 @@ export default function CartPage() {
             </button>
 
             <p className="text-center text-[11px] leading-5 text-white/35">
-              One settlement on Avalanche C-Chain covers every item in this cart.
+              One dNZD settlement on Base Sepolia covers every item in this cart.
             </p>
           </aside>
         </div>

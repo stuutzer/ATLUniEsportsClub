@@ -8,6 +8,7 @@ import { useCart } from "@/context/CartContext";
 import type { AgentRecommendation } from "@/lib/agent-types";
 import type { Product } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
+import { calcBestCrypto } from "@/components/price-breakdown";
 
 const tokenStyles: Record<
   string,
@@ -130,17 +131,17 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const inCart = cartItems.some((i) => i.product.id === product.id);
 
-  const handleAddToCart = () => {
-    addItem(product);
-    setJustAdded(true);
-    window.setTimeout(() => setJustAdded(false), 1400);
-  };
-
   const merchantName = recommendation?.product.merchantName ?? product.merchantName;
   const merchantMark = getMerchantMark(merchantName);
   const subtotalUsd = recommendation?.subtotalUsd ?? product.price;
   const shippingUsd =
     product.name === "Neural Pro Keyboard" ? 12 : recommendation?.shippingUsd ?? 0;
+
+  const handleAddToCart = () => {
+    addItem(product, 1, shippingUsd);
+    setJustAdded(true);
+    window.setTimeout(() => setJustAdded(false), 1400);
+  };
   const totalUsd =
     product.name === "Neural Pro Keyboard"
       ? 261.99
@@ -153,6 +154,8 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
   const agentNote =
     recommendation?.reasoning[0] ??
     "Balanced pick based on price, merchant trust, and checkout flexibility.";
+
+  const bestCrypto = calcBestCrypto(totalUsd);
 
   return (
     <>
@@ -179,9 +182,16 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
       </button>
 
       <div className="flex flex-1 flex-col p-4">
-        <span className="text-[10px] uppercase tracking-widest text-white/30">
-          {product.category}
-        </span>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] uppercase tracking-widest text-white/30">
+            {product.category}
+          </span>
+          {product.unit && (
+            <span className="rounded-full border border-white/[0.07] bg-white/[0.04] px-1.5 py-0.5 text-[9px] text-white/35">
+              per {product.unit}
+            </span>
+          )}
+        </div>
         <h3 className="mt-1 mb-3 line-clamp-2 text-sm font-semibold leading-snug text-white/90">
           {product.name}
         </h3>
@@ -212,6 +222,9 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
               </p>
               <p className="mt-1 text-lg font-bold text-white">
                 ${totalUsd.toFixed(2)}
+              </p>
+              <p className="mt-0.5 text-[11px] text-white/35">
+                ≈ {bestCrypto.amount} {bestCrypto.token}
               </p>
             </div>
             <div className="rounded-lg border border-white/[0.07] bg-white/[0.025] px-2.5 py-1.5 text-right">

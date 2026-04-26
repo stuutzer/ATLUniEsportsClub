@@ -5,6 +5,7 @@ import { X, Check, Download, Loader2 } from "lucide-react";
 import type { Transaction, TransactionStatus } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { useIdentity } from "@/context/IdentityContext";
+import { useAgent } from "@/context/AgentContext";
 import { generateInvoiceData, buildFilename } from "@/lib/invoiceData";
 
 interface OrderTrackingModalProps {
@@ -22,6 +23,7 @@ const statusConfig: Record<TransactionStatus, { label: string; className: string
 
 export function OrderTrackingModal({ transaction, onClose }: OrderTrackingModalProps) {
   const { displayName, ensName, walletAddress } = useIdentity();
+  const { agentIdentity } = useAgent();
   const [downloading, setDownloading] = useState(false);
 
   // Close on Escape
@@ -44,6 +46,7 @@ export function OrderTrackingModal({ transaction, onClose }: OrderTrackingModalP
         status: transaction.status,
         hash: transaction.id,
         userName: displayName ?? undefined,
+        agentName: agentIdentity ?? undefined,
         userENS: ensName ?? undefined,
         userWallet: walletAddress ?? undefined,
       });
@@ -168,7 +171,7 @@ export function OrderTrackingModal({ transaction, onClose }: OrderTrackingModalP
                         🤖 Agent credential verified by merchant
                       </p>
                       <p className="text-sky-200/60 text-[11px] mt-0.5 font-mono">
-                        Identity: agentcart.eth → justin.eth
+                        Identity: quarter.eth → justin.eth
                       </p>
                     </div>
                   )}

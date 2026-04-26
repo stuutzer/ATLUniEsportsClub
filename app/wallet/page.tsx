@@ -64,6 +64,7 @@ export default function WalletPage() {
         token: tx.token,
         status: tx.status,
         userName: displayName ?? undefined,
+        agentName: agentIdentity ?? undefined,
         userENS: ensName ?? undefined,
         userWallet: walletAddress ?? undefined,
       });
