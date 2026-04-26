@@ -20,7 +20,13 @@ const DUMMY_MERCHANT_ADDRESS = "0x000000000000000000000000000000000000dEaD";
 const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
 const DEFAULT_DNZD_DECIMALS = 6;
 
-export function BuyItemButton({ product }: { product: Product }) {
+export function BuyItemButton({
+  product,
+  shippingUsd,
+}: {
+  product: Product;
+  shippingUsd?: number;
+}) {
   const { executeAgentPurchase } = useAgent();
   const { credential } = useIdentity();
   const [isPurchased, setIsPurchased] = useState(false);
@@ -117,6 +123,7 @@ export function BuyItemButton({ product }: { product: Product }) {
           paymentToken="dNZD"
           paymentAmount={dnzdAmount}
           networkLabel="Base Sepolia"
+          shippingValue={shippingUsd}
         />
       )}
     </>

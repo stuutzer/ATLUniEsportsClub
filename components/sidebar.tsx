@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gem, User, Settings, Wallet, ShoppingCart } from "lucide-react";
+import { Gem, User, Settings, Wallet, ShoppingCart, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WalletButton } from "@/components/wallet-button";
 import { useIdentity } from "@/context/IdentityContext";
 import { useCart } from "@/context/CartContext";
+import { useOrders } from "@/context/OrdersContext";
 
 const navItems = [
   { href: "/agent", icon: Gem, label: "Agent" },
   { href: "/cart", icon: ShoppingCart, label: "Cart" },
+  { href: "/orders", icon: ClipboardList, label: "Orders" },
   { href: "/wallet", icon: Wallet, label: "Wallet" },
   { href: "/profile", icon: User, label: "Profile" },
   { href: "/settings", icon: Settings, label: "Settings" },
@@ -32,6 +34,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const { displayName, ensAvatar, walletAddress } = useIdentity();
   const { itemCount } = useCart();
+  const { pendingCount } = useOrders();
 
   const initials = displayName
     ? displayName.startsWith("0x")
@@ -66,6 +69,11 @@ export function Sidebar() {
               {href === "/cart" && itemCount > 0 && (
                 <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-sky-300/15 px-1.5 text-[10px] font-semibold text-sky-200 ring-1 ring-sky-300/25">
                   {itemCount}
+                </span>
+              )}
+              {href === "/orders" && pendingCount > 0 && (
+                <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-300/15 px-1.5 text-[10px] font-semibold text-amber-200 ring-1 ring-amber-300/25">
+                  {pendingCount}
                 </span>
               )}
             </Link>

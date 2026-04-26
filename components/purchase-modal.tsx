@@ -27,6 +27,9 @@ interface PurchaseModalProps {
   paymentToken?: string;
   paymentAmount?: string;
   networkLabel?: string;
+  priceLabel?: string;
+  priceValue?: number;
+  shippingValue?: number;
 }
 
 export type SettlementStatus = "idle" | "settling" | "settled" | "failed";
@@ -43,6 +46,9 @@ export function PurchaseModal({
   paymentToken = "USDC",
   paymentAmount,
   networkLabel = "Avalanche C-Chain",
+  priceLabel,
+  priceValue,
+  shippingValue,
 }: PurchaseModalProps) {
   const { credential } = useIdentity();
   const [step, setStep] = useState(1);
@@ -110,6 +116,9 @@ export function PurchaseModal({
               preferredToken={paymentToken}
               cryptoTotal={cryptoTotal}
               networkLabel={networkLabel}
+              priceLabel={priceLabel}
+              priceValue={priceValue}
+              shippingValue={shippingValue}
               onClose={onClose}
               onConfirm={onConfirm}
               settlementStatus={settlementStatus}
@@ -307,6 +316,9 @@ function StepPayment({
   preferredToken,
   cryptoTotal,
   networkLabel,
+  priceLabel,
+  priceValue,
+  shippingValue,
   onClose,
   onConfirm,
   settlementStatus,
@@ -316,6 +328,9 @@ function StepPayment({
   preferredToken: string;
   cryptoTotal: string;
   networkLabel: string;
+  priceLabel?: string;
+  priceValue?: number;
+  shippingValue?: number;
   onClose: () => void;
   onConfirm?: () => void;
   settlementStatus: SettlementStatus;
@@ -349,9 +364,25 @@ function StepPayment({
 
       <div className="overflow-hidden rounded-xl border border-white/8 bg-white/[0.03]">
         <div className="flex justify-between border-b border-white/5 px-4 py-3 text-sm">
-          <span className="text-white/40">Product price</span>
-          <span className="text-white">${product.price.toFixed(2)}</span>
+          <span className="text-white/40">{priceLabel ?? "Product price"}</span>
+          <span className="text-white">
+            ${(priceValue ?? product.price).toFixed(2)}
+          </span>
         </div>
+        {shippingValue != null && shippingValue > 0 && (
+          <>
+            <div className="flex justify-between border-b border-white/5 px-4 py-3 text-sm">
+              <span className="text-white/40">Shipping</span>
+              <span className="text-white">${shippingValue.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between border-b border-white/5 px-4 py-3 text-sm">
+              <span className="font-medium text-white/65">Total</span>
+              <span className="font-semibold text-white">
+                ${((priceValue ?? product.price) + shippingValue).toFixed(2)}
+              </span>
+            </div>
+          </>
+        )}
         <div className="flex justify-between border-b border-white/5 px-4 py-3 text-sm">
           <span className="text-white/40">Network</span>
           <span className="text-white">{networkLabel}</span>

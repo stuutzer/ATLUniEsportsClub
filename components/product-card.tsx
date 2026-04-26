@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { Check, Plus, ShieldCheck, Truck } from "lucide-react";
+import { Check, ClipboardList, Plus, ShieldCheck, Truck, X } from "lucide-react";
 import { BuyItemButton } from "@/components/buy-item-button";
+import { PlaceOrderModal } from "@/components/place-order-modal";
 import { useCart } from "@/context/CartContext";
 import type { AgentRecommendation } from "@/lib/agent-types";
 import type { Product } from "@/lib/mockData";
@@ -126,6 +126,8 @@ function ChainBadge({ chain }: { chain: string }) {
 export function ProductCard({ product, recommendation }: ProductCardProps) {
   const { addItem, items: cartItems } = useCart();
   const [justAdded, setJustAdded] = useState(false);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
   const inCart = cartItems.some((i) => i.product.id === product.id);
 
   const handleAddToCart = () => {
@@ -153,6 +155,7 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
     "Balanced pick based on price, merchant trust, and checkout flexibility.";
 
   return (
+    <>
     <div
       className={cn(
         "relative flex h-full flex-col overflow-hidden rounded-2xl group",
@@ -161,7 +164,11 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
         "hover:border-sky-300/20 hover:shadow-[0_18px_44px_rgba(0,0,0,0.32)]"
       )}
     >
-      <Link href={`/product/${product.id}`} className="block cursor-pointer">
+      <button
+        type="button"
+        onClick={() => setQuickViewOpen(true)}
+        className="block cursor-pointer text-left"
+      >
         <div className="aspect-[4/3] overflow-hidden bg-[#1a1a1a]">
           <img
             src={product.imageUrl}
@@ -169,7 +176,7 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
             className="h-full w-full object-cover opacity-80 transition-all duration-500 group-hover:scale-105 group-hover:opacity-100"
           />
         </div>
-      </Link>
+      </button>
 
       <div className="flex flex-1 flex-col p-4">
         <span className="text-[10px] uppercase tracking-widest text-white/30">
@@ -260,7 +267,7 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
         </div>
 
         <div className="mt-auto flex flex-col gap-2">
-          <BuyItemButton product={product} />
+          <BuyItemButton product={product} shippingUsd={shippingUsd} />
           <button
             onClick={handleAddToCart}
             className={cn(
@@ -284,6 +291,222 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
               </>
             )}
           </button>
+        </div>
+      </div>
+    </div>
+
+    {quickViewOpen && (
+      <ProductQuickView
+        product={product}
+        merchantName={merchantName}
+        merchantMark={merchantMark}
+        totalUsd={totalUsd}
+        subtotalUsd={subtotalUsd}
+        shippingUsd={shippingUsd}
+        acceptedTokens={[...acceptedTokens]}
+        supportedChains={supportedChains}
+        agentNote={agentNote}
+        inCart={inCart}
+        justAdded={justAdded}
+        onAddToCart={handleAddToCart}
+        onPlaceOrder={() => {
+          setQuickViewOpen(false);
+          setOrderModalOpen(true);
+        }}
+        onClose={() => setQuickViewOpen(false)}
+      />
+    )}
+    {orderModalOpen && (
+      <PlaceOrderModal product={product} onClose={() => setOrderModalOpen(false)} />
+    )}
+    </>
+  );
+}
+
+function ProductQuickView({
+  product,
+  merchantName,
+  merchantMark,
+  totalUsd,
+  subtotalUsd,
+  shippingUsd,
+  acceptedTokens,
+  supportedChains,
+  agentNote,
+  inCart,
+  justAdded,
+  onAddToCart,
+  onPlaceOrder,
+  onClose,
+}: {
+  product: Product;
+  merchantName: string;
+  merchantMark: { initials: string; className: string };
+  totalUsd: number;
+  subtotalUsd: number;
+  shippingUsd: number;
+  acceptedTokens: string[];
+  supportedChains: string[];
+  agentNote: string;
+  inCart: boolean;
+  justAdded: boolean;
+  onAddToCart: () => void;
+  onPlaceOrder: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/75 p-0 backdrop-blur-sm sm:items-center sm:p-6">
+      <button
+        type="button"
+        aria-label="Close product details"
+        className="absolute inset-0 cursor-default"
+        onClick={onClose}
+      />
+
+      <div className="relative z-10 grid max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-t-3xl border border-white/[0.08] bg-[#101010] shadow-2xl sm:grid-cols-[1.05fr_0.95fr] sm:rounded-3xl">
+        <button
+          type="button"
+          aria-label="Close product details"
+          onClick={onClose}
+          className="absolute right-4 top-4 z-20 rounded-full border border-white/10 bg-black/45 p-2 text-white/50 transition-colors hover:text-white"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <div className="relative min-h-[280px] bg-[#171717] sm:min-h-[560px]">
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white/70 backdrop-blur">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />
+              {merchantName}
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-y-auto p-6 sm:p-8">
+          <div className="mb-5 flex items-center gap-3">
+            <div
+              className={cn(
+                "flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br text-xs font-black shadow-lg",
+                merchantMark.className
+              )}
+            >
+              {merchantMark.initials}
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-[0.16em] text-white/35">
+                {product.category}
+              </p>
+              <p className="truncate text-sm text-white/70">{merchantName}</p>
+            </div>
+          </div>
+
+          <h2 className="text-2xl font-semibold leading-tight text-white">
+            {product.name}
+          </h2>
+          <p className="mt-3 text-sm leading-7 text-white/55">
+            {product.description}
+          </p>
+
+          <div className="mt-6 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.14em] text-white/35">
+                  Landed total
+                </p>
+                <p className="mt-1 text-3xl font-bold text-white">
+                  ${totalUsd.toFixed(2)}
+                </p>
+              </div>
+              <div className="text-right text-xs text-white/45">
+                <p>Item ${subtotalUsd.toFixed(2)}</p>
+                <p>
+                  <Truck className="mr-1 inline h-3 w-3" />
+                  Shipping ${shippingUsd.toFixed(2)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl border border-white/[0.08] bg-black/20 p-4">
+              <p className="mb-3 text-xs uppercase tracking-[0.14em] text-white/35">
+                Accepted assets
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {acceptedTokens.map((token) => (
+                  <TokenBadge key={token} token={token} />
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/[0.08] bg-black/20 p-4">
+              <p className="mb-3 text-xs uppercase tracking-[0.14em] text-white/35">
+                Routes
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {supportedChains.length > 0 ? (
+                  supportedChains.map((chain) => (
+                    <ChainBadge key={chain} chain={chain} />
+                  ))
+                ) : (
+                  <span className="text-[11px] text-white/35">
+                    Agent picks at checkout
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-amber-200/[0.1] bg-amber-200/[0.04] p-4">
+            <p className="text-xs uppercase tracking-[0.14em] text-amber-100/45">
+              Agent note
+            </p>
+            <p className="mt-2 text-sm leading-6 text-white/60">{agentNote}</p>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-2.5">
+            <BuyItemButton product={product} shippingUsd={shippingUsd} />
+            <button
+              type="button"
+              onClick={onAddToCart}
+              className={cn(
+                "flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-medium transition-colors",
+                justAdded
+                  ? "border border-emerald-300/30 bg-emerald-300/10 text-emerald-200"
+                  : inCart
+                  ? "border border-sky-300/25 bg-sky-300/10 text-sky-200 hover:bg-sky-300/15"
+                  : "border border-white/[0.10] bg-transparent text-white/70 hover:bg-white/[0.06] hover:text-white"
+              )}
+            >
+              {justAdded ? (
+                <>
+                  <Check className="h-4 w-4" />
+                  Added to cart
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" />
+                  {inCart ? "Add another to cart" : "Add to cart"}
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onPlaceOrder}
+              className={cn(
+                "flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-medium transition-colors",
+                "border border-white/[0.10] bg-transparent text-white/70 hover:bg-white/[0.06] hover:text-white"
+              )}
+            >
+              <ClipboardList className="h-4 w-4" />
+              Place an Order
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -87,7 +87,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       (sum, i) => sum + i.product.price * i.quantity,
       0
     );
-    const shipping = itemCount > 0 ? SHIPPING_PER_ITEM_USD * itemCount : 0;
+    const shipping = items.length > 0 ? SHIPPING_PER_ITEM_USD * items.length : 0;
     return { itemCount, subtotal, shipping, total: subtotal + shipping };
   }, [items]);
 

@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { Sidebar } from "@/components/sidebar";
 import { AgentProvider } from "@/context/AgentContext";
 import { CartProvider } from "@/context/CartContext";
+import { OrdersProvider } from "@/context/OrdersContext";
 
 const Web3Provider = dynamic(
   () => import("@/providers/web3-provider").then((m) => m.Web3Provider),
@@ -29,8 +30,10 @@ export default function RootLayout({
         <Web3Provider>
           <AgentProvider>
             <CartProvider>
-              <Sidebar />
-              <main className="ml-[260px] min-h-screen">{children}</main>
+              <OrdersProvider>
+                <Sidebar />
+                <main className="ml-[260px] min-h-screen">{children}</main>
+              </OrdersProvider>
             </CartProvider>
           </AgentProvider>
         </Web3Provider>
