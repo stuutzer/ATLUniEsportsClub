@@ -134,7 +134,7 @@ export function generateInvoiceData(txn: TxnInput): InvoiceData {
     status:
       txn.status === "Completed" || txn.status === "delivered" ? "PAID" : "PENDING",
 
-    agentName: txn.agentName || "agentcart.eth",
+    agentName: txn.agentName || "quarter.eth",
     agentWallet: "0x1A2b3C4d5E6f7A8b9C0d1E2f3A4b5C6d7E8f9A0b",
 
     userName: resolvedUserName,
@@ -143,8 +143,8 @@ export function generateInvoiceData(txn: TxnInput): InvoiceData {
       txn.userWallet || "0xAbCd1234EfGh5678IjKl9012MnOp3456QrSt7890",
     userLocation: "Auckland, New Zealand",
 
-    merchantName: merchantInfo?.name || txn.vendor || "AgentCart Marketplace",
-    merchantWebsite: txn.vendorWebsite || merchantInfo?.website || "agentcart.eth",
+    merchantName: merchantInfo?.name || txn.vendor || "Quarter Marketplace",
+    merchantWebsite: txn.vendorWebsite || merchantInfo?.website || "quarter.eth",
     merchantWallet: "0xDEaD000000000000000042069000bEEF00000000",
 
     items: [
@@ -152,7 +152,7 @@ export function generateInvoiceData(txn: TxnInput): InvoiceData {
         name: itemName,
         description:
           txn.productDescription ||
-          "Purchased autonomously by AgentCart AI Agent",
+          "Purchased autonomously by Quarter AI Agent",
         quantity: 1,
         unitPrice: `${cleanAmount} ${token}`,
         total: `${cleanAmount} ${token}`,

@@ -37,7 +37,7 @@ const AGENT_IDENTITY_STORAGE_KEY = "agentcart_agent_identity";
 const initialTransactions: Transaction[] = [
   {
     id: "tx-1",
-    date: "Today, 14:32",
+    date: "Apr 26, 2026, 14:32",
     type: "Agent Purchase",
     item: "MSI GeForce RTX 4090 24GB",
     amount: "-1,850.00",
@@ -48,7 +48,7 @@ const initialTransactions: Transaction[] = [
   },
   {
     id: "tx-2",
-    date: "Yesterday, 09:15",
+    date: "Apr 25, 2026, 09:15",
     type: "Utility Payment",
     item: "Mercury Energy Bill (Auto-paid)",
     amount: "-124.50",

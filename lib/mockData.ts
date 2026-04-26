@@ -115,7 +115,7 @@ export const mockProducts: Product[] = [
 export const mockPurchaseHistory: PurchaseHistory[] = [
   {
     id: "tx1",
-    date: "2025-04-18",
+    date: "2026-04-18",
     item: "Neural Pro Keyboard",
     amountPaid: 249.99,
     tokenUsed: "AVAX",
@@ -123,7 +123,7 @@ export const mockPurchaseHistory: PurchaseHistory[] = [
   },
   {
     id: "tx2",
-    date: "2025-04-10",
+    date: "2026-04-10",
     item: "AuraSound ANC Headset",
     amountPaid: 329.5,
     tokenUsed: "USDC",
@@ -131,7 +131,7 @@ export const mockPurchaseHistory: PurchaseHistory[] = [
   },
   {
     id: "tx3",
-    date: "2025-03-29",
+    date: "2026-03-29",
     item: "Quantum SSD 2TB",
     amountPaid: 189.99,
     tokenUsed: "ETH",
@@ -139,7 +139,7 @@ export const mockPurchaseHistory: PurchaseHistory[] = [
   },
   {
     id: "tx4",
-    date: "2025-03-15",
+    date: "2026-03-15",
     item: "TokenTracks USB Hub",
     amountPaid: 59.99,
     tokenUsed: "AVAX",
@@ -147,7 +147,7 @@ export const mockPurchaseHistory: PurchaseHistory[] = [
   },
   {
     id: "tx5",
-    date: "2025-03-02",
+    date: "2026-03-02",
     item: "Ledger Vault Case",
     amountPaid: 45.0,
     tokenUsed: "USDC",
