@@ -578,6 +578,9 @@ export default function ProfilePage() {
     yieldEarned,
     statusLabel,
     toggleAaveYield,
+    isYieldActive,
+    yieldReservedUsd,
+    yieldEligibleOrderCount,
     agentIdentity,
     setAgentIdentity,
   } = useAgent();
@@ -949,7 +952,7 @@ export default function ProfilePage() {
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-white/85">Smart Yield Toggle</p>
                 <p className="mt-0.5 text-xs text-white/30">
-                  Agent monitors idle USDC and sweeps funds into Aave after 24 hours of inactivity.
+                  Agent only routes funds reserved for waiting price-drop orders into Aave.
                 </p>
               </div>
               <Toggle checked={isAaveEnabled} onChange={toggleAaveYield} />
@@ -964,7 +967,7 @@ export default function ProfilePage() {
                   ${yieldEarned.toFixed(2)} USDC
                 </p>
                 <p className="mt-1 text-xs text-white/30">
-                  Agent-generated carry from idle capital while waiting for purchase execution.
+                  Agent-generated carry from reserved capital while waiting for price targets to hit.
                 </p>
               </div>
               <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
@@ -975,17 +978,22 @@ export default function ProfilePage() {
                   {liveApy.toFixed(2)}% APY
                 </p>
                 <p className="mt-1 text-xs text-white/30">
-                  Current strategy target for idle USDC routed into Aave.
+                  Current strategy target for reserved order funds routed into Aave.
                 </p>
               </div>
             </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-emerald-400/15 bg-emerald-400/[0.05] px-4 py-3">
-              <span className="inline-flex items-center rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[11px] font-medium text-emerald-300">
+              <span className={cn(
+                "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium",
+                isYieldActive
+                  ? "border border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
+                  : "border border-white/[0.10] bg-white/[0.04] text-white/55"
+              )}>
                 {statusLabel}
               </span>
               <p className="text-xs text-white/40">
-                When your GPU target finally hits, the Agent can pull liquidity back before checkout.
+                Reserved for optimization: ${yieldReservedUsd.toFixed(2)} across {yieldEligibleOrderCount} waiting price-drop order{yieldEligibleOrderCount === 1 ? "" : "s"}.
               </p>
             </div>
           </div>

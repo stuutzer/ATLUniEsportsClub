@@ -93,6 +93,9 @@ export default function WalletPage() {
     toggleAaveYield,
     yieldEarned,
     liveApy,
+    isYieldActive,
+    yieldReservedUsd,
+    yieldEligibleOrderCount,
     statusLabel,
     agentIdentity,
   } = useAgent();
@@ -247,7 +250,7 @@ export default function WalletPage() {
             <p className="text-xs text-white/30 uppercase tracking-widest">
               Balances
             </p>
-            {isAaveEnabled && (
+            {isYieldActive && (
               <p className="mt-2 text-xs font-medium text-emerald-400 animate-pulse">
                 Earning {liveApy.toFixed(1)}% APY via Aave...
               </p>
@@ -257,7 +260,7 @@ export default function WalletPage() {
             <div className="min-w-0">
               <p className="text-xs font-medium text-white/80">Smart Yield</p>
               <p className="text-[11px] text-white/35">
-                Idle USDC auto-deposits into Aave after 24h
+                Reserved price-drop funds auto-route into Aave while orders wait
               </p>
             </div>
             <Toggle checked={isAaveEnabled} onChange={toggleAaveYield} />
@@ -270,7 +273,7 @@ export default function WalletPage() {
             {renderBalanceCard(
               "USDC",
               usdcBalance,
-              isAaveEnabled ? (
+              isYieldActive ? (
                 <span className="inline-flex items-center rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300 animate-pulse">
                   Earning {liveApy.toFixed(1)}% APY via Aave...
                 </span>
@@ -301,7 +304,7 @@ export default function WalletPage() {
           <span
             className={cn(
               "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium",
-              isAaveEnabled
+              isYieldActive
                 ? "border border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
                 : "border border-white/[0.10] bg-white/[0.04] text-white/55"
             )}
@@ -311,14 +314,17 @@ export default function WalletPage() {
           <span className="text-xs text-white/35">
             Total Yield Earned: ${yieldEarned.toFixed(2)} USDC
           </span>
-          {isAaveEnabled ? (
+          <span className="text-xs text-white/35">
+            Reserved for yield: ${yieldReservedUsd.toFixed(2)} across {yieldEligibleOrderCount} waiting price-drop order{yieldEligibleOrderCount === 1 ? "" : "s"}
+          </span>
+          {isYieldActive ? (
             <span className="inline-flex items-center gap-1 text-xs text-emerald-300 animate-pulse">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Auto-routing idle capital into Aave vault strategy...
+              Auto-routing reserved order capital into Aave vault strategy...
             </span>
           ) : (
             <span className="text-xs text-white/35">
-              Yield engine paused. Accrued gains remain in wallet balance.
+              Accrued gains remain in wallet balance until the next eligible order starts earning.
             </span>
           )}
         </div>
