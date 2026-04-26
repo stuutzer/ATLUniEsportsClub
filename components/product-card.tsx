@@ -5,8 +5,9 @@ import { PurchaseModal } from "@/components/purchase-modal";
 import type { Product } from "@/lib/mockData";
 import type { AgentRecommendation } from "@/lib/agent-types";
 import { cn } from "@/lib/utils";
-import { Bot, ShieldCheck, Truck, X } from "lucide-react";
+import { Bot, Check, Plus, ShieldCheck, Truck, X } from "lucide-react";
 import { useAgent } from "@/context/AgentContext";
+import { useCart } from "@/context/CartContext";
 import {
   useSendTransaction,
   useWaitForTransactionReceipt,
@@ -135,9 +136,18 @@ const FLAT_AVAX_VALUE = parseEther("0.0003");
 
 export function ProductCard({ product, recommendation }: ProductCardProps) {
   const { executeAgentPurchase } = useAgent();
+  const { addItem, items: cartItems } = useCart();
   const [modalOpen, setModalOpen] = useState(false);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
   const [isPurchased, setIsPurchased] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
+  const inCart = cartItems.some((i) => i.product.id === product.id);
+
+  const handleAddToCart = () => {
+    addItem(product);
+    setJustAdded(true);
+    window.setTimeout(() => setJustAdded(false), 1400);
+  };
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
   const { sendTransaction, data: hash, isPending: isWalletPending } =
@@ -308,20 +318,45 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
             </div>
           </div>
 
-          {/* Agent purchase button */}
-          <button
-            onClick={() => setModalOpen(true)}
-            disabled={isWalletPending || isConfirming || isConfirmed}
-            className={cn(
-              "mt-auto w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium",
-              "border border-white/[0.10] bg-white/[0.06] text-white/75 cursor-pointer",
-              "hover:bg-white/[0.11] hover:border-sky-200/25 hover:text-white",
-              "transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50"
-            )}
-          >
-            <Bot className="w-3.5 h-3.5" />
-            {buttonText}
-          </button>
+          {/* Action buttons */}
+          <div className="mt-auto flex flex-col gap-2">
+            <button
+              onClick={() => setModalOpen(true)}
+              disabled={isWalletPending || isConfirming || isConfirmed}
+              className={cn(
+                "w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium",
+                "border border-white/[0.10] bg-white/[0.06] text-white/75 cursor-pointer",
+                "hover:bg-white/[0.11] hover:border-sky-200/25 hover:text-white",
+                "transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50"
+              )}
+            >
+              <Bot className="w-3.5 h-3.5" />
+              {buttonText}
+            </button>
+            <button
+              onClick={handleAddToCart}
+              className={cn(
+                "w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors duration-200",
+                justAdded
+                  ? "border border-emerald-300/25 bg-emerald-300/10 text-emerald-200"
+                  : inCart
+                  ? "border border-sky-300/20 bg-sky-300/10 text-sky-200 hover:bg-sky-300/15"
+                  : "border border-white/[0.10] bg-transparent text-white/65 hover:bg-white/[0.06] hover:text-white"
+              )}
+            >
+              {justAdded ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  Added to cart
+                </>
+              ) : (
+                <>
+                  <Plus className="w-3.5 h-3.5" />
+                  {inCart ? "Add another" : "Add to cart"}
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -346,6 +381,9 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
           agentNote={agentNote}
           buttonText={buttonText}
           purchaseDisabled={isWalletPending || isConfirming || isConfirmed}
+          inCart={inCart}
+          justAdded={justAdded}
+          onAddToCart={handleAddToCart}
           onClose={() => setQuickViewOpen(false)}
           onPurchase={() => {
             setQuickViewOpen(false);
@@ -369,6 +407,9 @@ function ProductQuickView({
   agentNote,
   buttonText,
   purchaseDisabled,
+  inCart,
+  justAdded,
+  onAddToCart,
   onClose,
   onPurchase,
 }: {
@@ -383,6 +424,9 @@ function ProductQuickView({
   agentNote: string;
   buttonText: string;
   purchaseDisabled: boolean;
+  inCart: boolean;
+  justAdded: boolean;
+  onAddToCart: () => void;
   onClose: () => void;
   onPurchase: () => void;
 }) {
@@ -492,20 +536,46 @@ function ProductQuickView({
             <p className="mt-2 text-sm leading-6 text-white/60">{agentNote}</p>
           </div>
 
-          <button
-            type="button"
-            onClick={onPurchase}
-            disabled={purchaseDisabled}
-            className={cn(
-              "mt-6 flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold",
-              "border border-purple-300/20 bg-purple-500/15 text-purple-100 transition-colors",
-              "hover:border-purple-200/35 hover:bg-purple-500/25 hover:text-white",
-              "disabled:cursor-not-allowed disabled:opacity-50"
-            )}
-          >
-            <Bot className="h-4 w-4" />
-            {buttonText}
-          </button>
+          <div className="mt-6 flex flex-col gap-2.5">
+            <button
+              type="button"
+              onClick={onPurchase}
+              disabled={purchaseDisabled}
+              className={cn(
+                "flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold",
+                "border border-purple-300/20 bg-purple-500/15 text-purple-100 transition-colors",
+                "hover:border-purple-200/35 hover:bg-purple-500/25 hover:text-white",
+                "disabled:cursor-not-allowed disabled:opacity-50"
+              )}
+            >
+              <Bot className="h-4 w-4" />
+              {buttonText}
+            </button>
+            <button
+              type="button"
+              onClick={onAddToCart}
+              className={cn(
+                "flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-medium transition-colors",
+                justAdded
+                  ? "border border-emerald-300/30 bg-emerald-300/10 text-emerald-200"
+                  : inCart
+                  ? "border border-sky-300/25 bg-sky-300/10 text-sky-200 hover:bg-sky-300/15"
+                  : "border border-white/[0.10] bg-transparent text-white/70 hover:bg-white/[0.06] hover:text-white"
+              )}
+            >
+              {justAdded ? (
+                <>
+                  <Check className="h-4 w-4" />
+                  Added to cart
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" />
+                  {inCart ? "Add another to cart" : "Add to cart"}
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gem, User, Settings, Wallet } from "lucide-react";
+import { Gem, User, Settings, Wallet, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WalletButton } from "@/components/wallet-button";
 import { useIdentity } from "@/context/IdentityContext";
+import { useCart } from "@/context/CartContext";
 
 const navItems = [
   { href: "/agent", icon: Gem, label: "Agent" },
+  { href: "/cart", icon: ShoppingCart, label: "Cart" },
   { href: "/wallet", icon: Wallet, label: "Wallet" },
   { href: "/profile", icon: User, label: "Profile" },
   { href: "/settings", icon: Settings, label: "Settings" },
@@ -29,6 +31,7 @@ function QuarterLogo() {
 export function Sidebar() {
   const pathname = usePathname();
   const { displayName, walletAddress, isCredentialActive } = useIdentity();
+  const { itemCount } = useCart();
 
   const initials = displayName
     ? displayName.startsWith("0x")
@@ -59,7 +62,12 @@ export function Sidebar() {
               )}
             >
               <Icon className="w-[18px] h-[18px] flex-shrink-0" />
-              {label}
+              <span className="flex-1">{label}</span>
+              {href === "/cart" && itemCount > 0 && (
+                <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-sky-300/15 px-1.5 text-[10px] font-semibold text-sky-200 ring-1 ring-sky-300/25">
+                  {itemCount}
+                </span>
+              )}
             </Link>
           );
         })}
