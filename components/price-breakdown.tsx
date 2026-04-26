@@ -13,10 +13,27 @@ interface PriceBreakdownProps {
   basePrice: number;
 }
 
+export function calcBestCrypto(usdAmount: number): { amount: string; token: string } {
+  const ethPrice = 2320;
+  const avaxPrice = 9.30;
+
+  const avaxTotal = usdAmount + 0.08;
+  const usdcTotal = usdAmount + 0.50;
+  const ethTotal  = usdAmount + 4.20;
+
+  if (avaxTotal <= usdcTotal && avaxTotal <= ethTotal) {
+    return { amount: (usdAmount / avaxPrice).toFixed(3), token: "AVAX" };
+  } else if (usdcTotal <= ethTotal) {
+    return { amount: usdAmount.toFixed(2), token: "USDC" };
+  } else {
+    return { amount: (usdAmount / ethPrice).toFixed(5), token: "ETH" };
+  }
+}
+
 // TODO: Replace with real on-chain price feed and gas estimation
 function calcRows(basePrice: number): NetworkRow[] {
-  const ethPrice = 3200;
-  const avaxPrice = 28;
+  const ethPrice = 2320;
+  const avaxPrice = 9.30;
   const usdcRate = 1;
 
   const ethGas = 4.2;
