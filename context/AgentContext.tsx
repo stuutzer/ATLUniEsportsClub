@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
-import { AGENT_IDENTITY_ROOT } from "@/lib/mockData";
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from "react";
+import { useIdentity } from "@/context/IdentityContext";
+import { getAgentIdentityRoot } from "@/lib/demoIdentity";
 
 // Define the shape of a single transaction
 export type Transaction = {
@@ -60,6 +61,7 @@ const initialTransactions: Transaction[] = [
 ];
 
 export function AgentProvider({ children }: { children: React.ReactNode }) {
+  const { ensName } = useIdentity();
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   
   // Simulated Agent Budget (e.g., User authorized $5000 for the Agent to use)
@@ -68,13 +70,24 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   const [yieldEarned, setYieldEarned] = useState(0);
   const [agentIdentity, setAgentIdentityState] = useState<string | null>(null);
   const liveApy = 5.2;
+  const agentIdentityRoot = useMemo(() => getAgentIdentityRoot(ensName), [ensName]);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(AGENT_IDENTITY_STORAGE_KEY);
     if (saved) {
-      setAgentIdentityState(saved);
+      const normalizedSaved = saved.trim().toLowerCase();
+      const currentRootSuffix = `.${agentIdentityRoot}`;
+      if (normalizedSaved.endsWith(currentRootSuffix)) {
+        setAgentIdentityState(normalizedSaved);
+        return;
+      }
+
+      const label = normalizedSaved.split(".")[0];
+      const migratedIdentity = `${label}${currentRootSuffix}`;
+      window.localStorage.setItem(AGENT_IDENTITY_STORAGE_KEY, migratedIdentity);
+      setAgentIdentityState(migratedIdentity);
     }
-  }, []);
+  }, [agentIdentityRoot]);
 
   // The globally available purchase function that any button can call
   const executeAgentPurchase = useCallback((item: string, amount: number, token: string, realHash?: string) => {
@@ -111,10 +124,10 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const normalized = `${label.trim().toLowerCase()}.${AGENT_IDENTITY_ROOT}`;
+    const normalized = `${label.trim().toLowerCase()}.${agentIdentityRoot}`;
     window.localStorage.setItem(AGENT_IDENTITY_STORAGE_KEY, normalized);
     setAgentIdentityState(normalized);
-  }, []);
+  }, [agentIdentityRoot]);
 
   useEffect(() => {
     if (!isAaveEnabled) return;

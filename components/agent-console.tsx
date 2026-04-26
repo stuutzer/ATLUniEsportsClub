@@ -18,6 +18,7 @@ interface AgentRunResponse {
 }
 
 const AGENT_RESULT_CACHE_PREFIX = "quarter_agent_result:";
+const AGENT_LAST_RESULT_KEY = "quarter_agent_last_result";
 
 
 function RecommendationSkeleton() {
@@ -132,16 +133,36 @@ export function AgentConsole() {
 
   const [query, setQuery] = useState(q);
   const [result, setResult] = useState<AgentRunResponse | null>(null);
+  const [activeQuery, setActiveQuery] = useState(q);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showWalletModal, setShowWalletModal] = useState(false);
 
   useEffect(() => {
+    setActiveQuery(q);
     if (!q) setQuery("");
   }, [q]);
 
   useEffect(() => {
     if (!q) {
+      const cached = sessionStorage.getItem(AGENT_LAST_RESULT_KEY);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached) as {
+            query: string;
+            response: AgentRunResponse;
+          };
+          setActiveQuery(parsed.query);
+          setResult(parsed.response);
+          setError(null);
+          setLoading(false);
+          return;
+        } catch {
+          sessionStorage.removeItem(AGENT_LAST_RESULT_KEY);
+        }
+      }
+
+      setActiveQuery("");
       setResult(null);
       setError(null);
       return;
@@ -152,9 +173,14 @@ export function AgentConsole() {
     if (cached) {
       try {
         const parsed = JSON.parse(cached) as AgentRunResponse;
+        setActiveQuery(q);
         setResult(parsed);
         setError(null);
         setLoading(false);
+        sessionStorage.setItem(
+          AGENT_LAST_RESULT_KEY,
+          JSON.stringify({ query: q, response: parsed })
+        );
         return;
       } catch {
         sessionStorage.removeItem(cacheKey);
@@ -183,8 +209,13 @@ export function AgentConsole() {
         }
 
         if (!cancelled) {
+          setActiveQuery(q);
           setResult(data);
           sessionStorage.setItem(cacheKey, JSON.stringify(data));
+          sessionStorage.setItem(
+            AGENT_LAST_RESULT_KEY,
+            JSON.stringify({ query: q, response: data })
+          );
         }
       } catch (runError) {
         if (!cancelled) {
@@ -224,7 +255,7 @@ export function AgentConsole() {
     setQuery("");
   }
 
-  const showEmptyState = !q && !loading && !result && !error;
+  const showEmptyState = !activeQuery && !loading && !result && !error;
 
   return (
     <>
@@ -258,7 +289,7 @@ export function AgentConsole() {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-white">{q}</p>
+                  <p className="truncate text-sm font-medium text-white">{activeQuery}</p>
                   <p className="text-xs text-white/35">
                     {loading
                       ? "Running agent with AI SDK tools"

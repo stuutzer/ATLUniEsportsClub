@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useSignTypedData } from "wagmi";
@@ -20,7 +20,7 @@ import {
 import { CredentialCard } from "@/components/credential-card";
 import { useAgent } from "@/context/AgentContext";
 import { useIdentity } from "@/context/IdentityContext";
-import { AGENT_IDENTITY_ROOT } from "@/lib/mockData";
+import { getAgentIdentityRoot } from "@/lib/demoIdentity";
 import {
   buildCredentialDraft,
   buildTypedData,
@@ -580,6 +580,7 @@ export default function ProfilePage() {
     setAgentIdentity,
   } = useAgent();
   const { signTypedDataAsync } = useSignTypedData();
+  const agentIdentityRoot = useMemo(() => getAgentIdentityRoot(ensName), [ensName]);
 
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -602,9 +603,7 @@ export default function ProfilePage() {
   const [autoApprove, setAutoApprove] = useState(false);
   const [spendingLimit, setSpendingLimit] = useState("100");
   const [categories, setCategories] = useState<string[]>(["Electronics", "Software"]);
-  const [agentIdentityDraft, setAgentIdentityDraft] = useState(
-    agentIdentity ? agentIdentity.replace(`.${AGENT_IDENTITY_ROOT}`, "") : ""
-  );
+  const [agentIdentityDraft, setAgentIdentityDraft] = useState("");
   const [agentIdentityModalOpen, setAgentIdentityModalOpen] = useState(false);
 
   useEffect(() => {
@@ -615,6 +614,12 @@ export default function ProfilePage() {
     setSpendingLimit(String(credential.spendingLimit));
     setCategories(credential.allowedCategories);
   }, [credential]);
+
+  useEffect(() => {
+    setAgentIdentityDraft(
+      agentIdentity ? agentIdentity.replace(`.${agentIdentityRoot}`, "") : ""
+    );
+  }, [agentIdentity, agentIdentityRoot]);
 
   function copyAddress() {
     if (!walletAddress) return;
@@ -808,7 +813,7 @@ export default function ProfilePage() {
                     Agent Identity
                   </p>
                   <p className="mt-1 text-sm font-medium text-white">
-                    {agentIdentity ?? `Unassigned .${AGENT_IDENTITY_ROOT}`}
+                    {agentIdentity ?? `Unassigned .${agentIdentityRoot}`}
                   </p>
                   <p className="mt-1 text-xs text-white/35">
                     Give your AI agent a trusted identity for on-chain commerce.
@@ -855,7 +860,7 @@ export default function ProfilePage() {
                           placeholder="mybot"
                           className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/20"
                         />
-                        <span className="text-sm text-white/35">.{AGENT_IDENTITY_ROOT}</span>
+                        <span className="text-sm text-white/35">.{agentIdentityRoot}</span>
                       </div>
 
                       <div className="mt-5 flex items-center justify-between gap-3">

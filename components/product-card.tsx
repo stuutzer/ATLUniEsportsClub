@@ -130,7 +130,7 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
   const inCart = cartItems.some((i) => i.product.id === product.id);
 
   const handleAddToCart = () => {
-    addItem(product);
+    addItem(product, 1, shippingUsd);
     setJustAdded(true);
     window.setTimeout(() => setJustAdded(false), 1400);
   };

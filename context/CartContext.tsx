@@ -11,11 +11,10 @@ import React, {
 import type { Product } from "@/lib/mockData";
 
 const STORAGE_KEY = "quarter_cart";
-const SHIPPING_PER_ITEM_USD = 4.99;
-
 export interface CartItem {
   product: Product;
   quantity: number;
+  shippingUsd: number;
 }
 
 interface CartContextType {
@@ -24,7 +23,7 @@ interface CartContextType {
   subtotal: number;
   shipping: number;
   total: number;
-  addItem: (product: Product, quantity?: number) => void;
+  addItem: (product: Product, quantity?: number, shippingUsd?: number) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -39,7 +38,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setItems(JSON.parse(raw) as CartItem[]);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Array<Partial<CartItem> & { product: Product; quantity: number }>;
+        setItems(
+          parsed.map((item) => ({
+            product: item.product,
+            quantity: item.quantity,
+            shippingUsd: item.shippingUsd ?? 0,
+          }))
+        );
+      }
     } catch {
       localStorage.removeItem(STORAGE_KEY);
     }
@@ -51,17 +59,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items, hydrated]);
 
-  const addItem = useCallback((product: Product, quantity = 1) => {
+  const addItem = useCallback((product: Product, quantity = 1, shippingUsd = 0) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.product.id === product.id);
       if (existing) {
         return prev.map((i) =>
           i.product.id === product.id
-            ? { ...i, quantity: i.quantity + quantity }
+            ? { ...i, quantity: i.quantity + quantity, shippingUsd }
             : i
         );
       }
-      return [...prev, { product, quantity }];
+      return [...prev, { product, quantity, shippingUsd }];
     });
   }, []);
 
@@ -87,7 +95,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       (sum, i) => sum + i.product.price * i.quantity,
       0
     );
-    const shipping = itemCount > 0 ? SHIPPING_PER_ITEM_USD * itemCount : 0;
+    const shipping = items.reduce(
+      (sum, i) => sum + (i.shippingUsd ?? 0) * i.quantity,
+      0
+    );
     return { itemCount, subtotal, shipping, total: subtotal + shipping };
   }, [items]);
 
