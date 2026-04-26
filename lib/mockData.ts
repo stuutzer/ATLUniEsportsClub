@@ -1,4 +1,6 @@
-export type CryptoToken = "ETH" | "AVAX" | "USDC";
+export type CryptoToken = "ETH" | "AVAX" | "USDC" | "dNZD";
+
+export const AGENT_IDENTITY_ROOT = "agentic.eth";
 
 export interface Product {
   id: string;
@@ -221,16 +223,16 @@ export const mockProducts: Product[] = [
   },
   {
     id: "12",
-    name: "Test Item",
+    name: "Keyboard Test Item",
     description:
-      "240mm liquid CPU cooler with NFT-animated RGB display on the pump head. Quiet and efficient.",
+      "Low-value keyboard listing for testing Base Sepolia dNZD deduction and MetaMask confirmation flows.",
     price: 0.01,
-    category: "Cooling",
-    acceptedCrypto: ["ETH", "USDC"],
-    merchantName: "ThermalDAO",
-    imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNPDT0Tdq4C2M4OtBgP5aTCaRzfnt9UrEBZA&s",
+    category: "Peripherals",
+    acceptedCrypto: ["dNZD", "USDC", "ETH"],
+    merchantName: "Quarter Test Merchant",
+    imageUrl: "/products/keyboards/neural-pro-keyboard.webp",
     aiReasons: [
-      "Competitive cooling performance; NFT display is novelty but not essential",
+      "Purpose-built for safe purchase testing with a tiny dNZD amount.",
     ],
   },
   {

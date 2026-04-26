@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { AGENT_IDENTITY_ROOT } from "@/lib/mockData";
 
 // Define the shape of a single transaction
 export type Transaction = {
@@ -25,9 +26,12 @@ interface AgentContextType {
   yieldEarned: number;
   liveApy: number;
   statusLabel: string;
+  agentIdentity: string | null;
+  setAgentIdentity: (label: string | null) => void;
 }
 
 const AgentContext = createContext<AgentContextType | undefined>(undefined);
+const AGENT_IDENTITY_STORAGE_KEY = "agentcart_agent_identity";
 
 // The initial hardcoded transactions you had in the Wallet Page
 const initialTransactions: Transaction[] = [
@@ -62,7 +66,15 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   const [agentBalanceUsdc, setAgentBalanceUsdc] = useState<number>(5000.00);
   const [isAaveEnabled, setIsAaveEnabled] = useState(false);
   const [yieldEarned, setYieldEarned] = useState(0);
+  const [agentIdentity, setAgentIdentityState] = useState<string | null>(null);
   const liveApy = 5.2;
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem(AGENT_IDENTITY_STORAGE_KEY);
+    if (saved) {
+      setAgentIdentityState(saved);
+    }
+  }, []);
 
   // The globally available purchase function that any button can call
   const executeAgentPurchase = useCallback((item: string, amount: number, token: string, realHash?: string) => {
@@ -92,6 +104,18 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
     setIsAaveEnabled((prev) => !prev);
   }, []);
 
+  const setAgentIdentity = useCallback((label: string | null) => {
+    if (!label) {
+      window.localStorage.removeItem(AGENT_IDENTITY_STORAGE_KEY);
+      setAgentIdentityState(null);
+      return;
+    }
+
+    const normalized = `${label.trim().toLowerCase()}.${AGENT_IDENTITY_ROOT}`;
+    window.localStorage.setItem(AGENT_IDENTITY_STORAGE_KEY, normalized);
+    setAgentIdentityState(normalized);
+  }, []);
+
   useEffect(() => {
     if (!isAaveEnabled) return;
 
@@ -117,6 +141,8 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
         yieldEarned,
         liveApy,
         statusLabel,
+        agentIdentity,
+        setAgentIdentity,
       }}
     >
       {children}

@@ -1,21 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { PurchaseModal } from "@/components/purchase-modal";
-import type { Product } from "@/lib/mockData";
+import { ShieldCheck, Truck } from "lucide-react";
+import { BuyItemButton } from "@/components/buy-item-button";
 import type { AgentRecommendation } from "@/lib/agent-types";
+import type { Product } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
-import { Bot, ShieldCheck, Truck } from "lucide-react";
-import { useAgent } from "@/context/AgentContext";
-import {
-  useSendTransaction,
-  useWaitForTransactionReceipt,
-  useSwitchChain,
-  useChainId,
-} from "wagmi";
-import { parseEther } from "viem";
-import { avalanche } from "wagmi/chains";
 
 const tokenStyles: Record<
   string,
@@ -131,51 +121,7 @@ function ChainBadge({ chain }: { chain: string }) {
   );
 }
 
-const DUMMY_MERCHANT_ADDRESS = "0x000000000000000000000000000000000000dEaD";
-const FLAT_AVAX_VALUE = parseEther("0.0003");
-
 export function ProductCard({ product, recommendation }: ProductCardProps) {
-  const { executeAgentPurchase } = useAgent();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [isPurchased, setIsPurchased] = useState(false);
-  const chainId = useChainId();
-  const { switchChainAsync } = useSwitchChain();
-  const { sendTransaction, data: hash, isPending: isWalletPending } =
-    useSendTransaction();
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
-    useWaitForTransactionReceipt({ hash });
-
-  useEffect(() => {
-    if (isConfirmed && hash && !isPurchased) {
-      executeAgentPurchase(product.name, product.price, "AVAX", hash);
-      setIsPurchased(true);
-    }
-  }, [isConfirmed, hash, isPurchased, executeAgentPurchase, product.name, product.price]);
-
-  const handleConfirmPayment = async () => {
-    setModalOpen(false);
-
-    if (chainId !== avalanche.id) {
-      try {
-        await switchChainAsync({ chainId: avalanche.id });
-      } catch (err) {
-        console.error("Failed to switch to Avalanche C-Chain", err);
-        return;
-      }
-    }
-
-    sendTransaction({
-      to: DUMMY_MERCHANT_ADDRESS,
-      value: FLAT_AVAX_VALUE,
-      chainId: avalanche.id,
-    });
-  };
-
-  let buttonText = "Let Agent Purchase";
-  if (isWalletPending) buttonText = "Confirm in Wallet...";
-  if (isConfirming) buttonText = "Processing on C-Chain...";
-  if (isConfirmed) buttonText = "Purchase Complete!";
-
   const merchantName = recommendation?.product.merchantName ?? product.merchantName;
   const merchantMark = getMerchantMark(merchantName);
   const subtotalUsd = recommendation?.subtotalUsd ?? product.price;
@@ -195,139 +141,116 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
     "Balanced pick based on price, merchant trust, and checkout flexibility.";
 
   return (
-    <>
-      <div
-        className={cn(
-          "relative flex h-full flex-col overflow-hidden rounded-2xl group",
-          "bg-[#121212] border border-white/[0.08]",
-          "transition-all duration-300",
-          "hover:border-sky-300/20 hover:shadow-[0_18px_44px_rgba(0,0,0,0.32)]"
-        )}
-      >
-        {/* Product image — links to detail */}
-        <Link href={`/product/${product.id}`} className="block cursor-pointer">
-          <div className="aspect-[4/3] bg-[#1a1a1a] overflow-hidden">
-            <img
-              src={product.imageUrl}
-              alt={product.name}
-              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-            />
+    <div
+      className={cn(
+        "relative flex h-full flex-col overflow-hidden rounded-2xl group",
+        "bg-[#121212] border border-white/[0.08]",
+        "transition-all duration-300",
+        "hover:border-sky-300/20 hover:shadow-[0_18px_44px_rgba(0,0,0,0.32)]"
+      )}
+    >
+      <Link href={`/product/${product.id}`} className="block cursor-pointer">
+        <div className="aspect-[4/3] overflow-hidden bg-[#1a1a1a]">
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            className="h-full w-full object-cover opacity-80 transition-all duration-500 group-hover:scale-105 group-hover:opacity-100"
+          />
+        </div>
+      </Link>
+
+      <div className="flex flex-1 flex-col p-4">
+        <span className="text-[10px] uppercase tracking-widest text-white/30">
+          {product.category}
+        </span>
+        <h3 className="mt-1 mb-3 line-clamp-2 text-sm font-semibold leading-snug text-white/90">
+          {product.name}
+        </h3>
+
+        <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2.5">
+          <div
+            className={cn(
+              "flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br text-[11px] font-black shadow-lg",
+              merchantMark.className
+            )}
+          >
+            {merchantMark.initials}
           </div>
-        </Link>
-
-        {/* Card body */}
-        <div className="p-4 flex flex-col flex-1">
-          <span className="text-[10px] text-white/30 uppercase tracking-widest">
-            {product.category}
-          </span>
-          <h3 className="text-white/90 font-semibold text-sm leading-snug line-clamp-2 mt-1 mb-3">
-            {product.name}
-          </h3>
-
-          <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2.5">
-            <div
-              className={cn(
-                "flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br text-[11px] font-black shadow-lg",
-                merchantMark.className
-              )}
-            >
-              {merchantMark.initials}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-medium text-white/80">{merchantName}</p>
-              <div className="mt-0.5 flex items-center gap-1 text-[10px] text-sky-200/70">
-                <ShieldCheck className="h-3 w-3" />
-                <span>{recommendation?.trustScore ?? 99}/100 merchant trust</span>
-              </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-medium text-white/80">{merchantName}</p>
+            <div className="mt-0.5 flex items-center gap-1 text-[10px] text-sky-200/70">
+              <ShieldCheck className="h-3 w-3" />
+              <span>{recommendation?.trustScore ?? 99}/100 merchant trust</span>
             </div>
           </div>
+        </div>
 
-          <div className="mb-4 rounded-xl border border-white/[0.07] bg-black/20 p-3">
-            <div className="mb-2 flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.14em] text-sky-200/45">
-                  Landed total
-                </p>
-                <p className="mt-1 text-lg font-bold text-white">
-                  ${totalUsd.toFixed(2)}
-                </p>
-              </div>
-              <div className="rounded-lg border border-white/[0.07] bg-white/[0.025] px-2.5 py-1.5 text-right">
-                <p className="text-[10px] text-white/35">Item</p>
-                <p className="text-xs font-medium text-white/75">
-                  ${subtotalUsd.toFixed(2)}
-                </p>
-              </div>
+        <div className="mb-4 rounded-xl border border-white/[0.07] bg-black/20 p-3">
+          <div className="mb-2 flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.14em] text-sky-200/45">
+                Landed total
+              </p>
+              <p className="mt-1 text-lg font-bold text-white">
+                ${totalUsd.toFixed(2)}
+              </p>
             </div>
-
-            <div className="flex items-center justify-between border-t border-white/[0.06] pt-2 text-xs">
-              <span className="flex items-center gap-1.5 text-white/40">
-                <Truck className="h-3.5 w-3.5" />
-                Shipping
-              </span>
-              <span className="font-medium text-white/70">${shippingUsd.toFixed(2)}</span>
+            <div className="rounded-lg border border-white/[0.07] bg-white/[0.025] px-2.5 py-1.5 text-right">
+              <p className="text-[10px] text-white/35">Item</p>
+              <p className="text-xs font-medium text-white/75">
+                ${subtotalUsd.toFixed(2)}
+              </p>
             </div>
           </div>
 
-          <div className="mb-4 space-y-3">
+          <div className="flex items-center justify-between border-t border-white/[0.06] pt-2 text-xs">
+            <span className="flex items-center gap-1.5 text-white/40">
+              <Truck className="h-3.5 w-3.5" />
+              Shipping
+            </span>
+            <span className="font-medium text-white/70">${shippingUsd.toFixed(2)}</span>
+          </div>
+        </div>
+
+        <div className="mb-4 space-y-3">
+          <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3">
+            <p className="mb-2 text-[10px] uppercase tracking-[0.14em] text-white/35">
+              Accepted assets
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {acceptedTokens.map((token) => (
+                <TokenBadge key={token} token={token} />
+              ))}
+            </div>
+          </div>
+
+          {supportedChains.length > 0 && (
             <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3">
               <p className="mb-2 text-[10px] uppercase tracking-[0.14em] text-white/35">
-                Accepted assets
+                Routes
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {acceptedTokens.map((token) => (
-                  <TokenBadge key={token} token={token} />
+                {supportedChains.map((chain) => (
+                  <ChainBadge key={chain} chain={chain} />
                 ))}
               </div>
             </div>
+          )}
 
-            {supportedChains.length > 0 && (
-              <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3">
-                <p className="mb-2 text-[10px] uppercase tracking-[0.14em] text-white/35">
-                  Routes
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {supportedChains.map((chain) => (
-                    <ChainBadge key={chain} chain={chain} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="rounded-xl border border-sky-300/[0.09] bg-sky-300/[0.035] px-3 py-2.5">
-              <p className="text-[10px] uppercase tracking-[0.14em] text-sky-200/45">
-                Agent note
-              </p>
-              <p className="mt-1 line-clamp-2 text-xs leading-5 text-white/55">
-                {agentNote}
-              </p>
-            </div>
+          <div className="rounded-xl border border-sky-300/[0.09] bg-sky-300/[0.035] px-3 py-2.5">
+            <p className="text-[10px] uppercase tracking-[0.14em] text-sky-200/45">
+              Agent note
+            </p>
+            <p className="mt-1 line-clamp-2 text-xs leading-5 text-white/55">
+              {agentNote}
+            </p>
           </div>
+        </div>
 
-          {/* Agent purchase button */}
-          <button
-            onClick={() => setModalOpen(true)}
-            disabled={isWalletPending || isConfirming || isConfirmed}
-            className={cn(
-              "mt-auto w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium",
-              "border border-white/[0.10] bg-white/[0.06] text-white/75 cursor-pointer",
-              "hover:bg-white/[0.11] hover:border-sky-200/25 hover:text-white",
-              "transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50"
-            )}
-          >
-            <Bot className="w-3.5 h-3.5" />
-            {buttonText}
-          </button>
+        <div className="mt-auto">
+          <BuyItemButton product={product} />
         </div>
       </div>
-
-      {modalOpen && (
-        <PurchaseModal
-          product={product}
-          onClose={() => setModalOpen(false)}
-          onConfirm={handleConfirmPayment}
-        />
-      )}
-    </>
+    </div>
   );
 }

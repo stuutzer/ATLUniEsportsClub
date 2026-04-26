@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useSignTypedData } from "wagmi";
 import {
+  Bot,
   Bell,
   Check,
   ChevronDown,
   Copy,
+  X,
   MapPin,
   ShieldCheck,
   ShieldOff,
@@ -17,6 +20,7 @@ import {
 import { CredentialCard } from "@/components/credential-card";
 import { useAgent } from "@/context/AgentContext";
 import { useIdentity } from "@/context/IdentityContext";
+import { AGENT_IDENTITY_ROOT } from "@/lib/mockData";
 import {
   buildCredentialDraft,
   buildTypedData,
@@ -565,13 +569,15 @@ function PermissionRow({
 }
 
 export default function ProfilePage() {
-  const { walletAddress, ensName, displayName, credential, setCredential } = useIdentity();
+  const { walletAddress, ensName, ensAvatar, displayName, credential, setCredential } = useIdentity();
   const {
     isAaveEnabled,
     liveApy,
     yieldEarned,
     statusLabel,
     toggleAaveYield,
+    agentIdentity,
+    setAgentIdentity,
   } = useAgent();
   const { signTypedDataAsync } = useSignTypedData();
 
@@ -596,6 +602,10 @@ export default function ProfilePage() {
   const [autoApprove, setAutoApprove] = useState(false);
   const [spendingLimit, setSpendingLimit] = useState("100");
   const [categories, setCategories] = useState<string[]>(["Electronics", "Software"]);
+  const [agentIdentityDraft, setAgentIdentityDraft] = useState(
+    agentIdentity ? agentIdentity.replace(`.${AGENT_IDENTITY_ROOT}`, "") : ""
+  );
+  const [agentIdentityModalOpen, setAgentIdentityModalOpen] = useState(false);
 
   useEffect(() => {
     if (!credential) return;
@@ -665,6 +675,14 @@ export default function ProfilePage() {
     );
   }
 
+  function handleRegisterAgentIdentity() {
+    const normalized = agentIdentityDraft.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
+    if (!normalized) return;
+    setAgentIdentity(normalized);
+    setAgentIdentityDraft(normalized);
+    setAgentIdentityModalOpen(false);
+  }
+
   const marketplaces: Integration[] = [
     {
       key: "amazon",
@@ -713,8 +731,12 @@ export default function ProfilePage() {
       </h1>
 
       <div className="mb-4 flex items-center gap-5 rounded-xl border border-white/[0.07] bg-[#141414] p-6 transition-[border-color,background-color] hover:border-white/[0.12] hover:bg-[#171717]">
-        <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full border border-sky-200/20 bg-sky-300/10 transition-[box-shadow,transform] duration-300 hover:scale-105 hover:shadow-[0_0_28px_rgba(125,211,252,0.14)]">
-          <span className="text-xl font-bold text-sky-200">{initials}</span>
+        <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-sky-200/20 bg-sky-300/10 transition-[box-shadow,transform] duration-300 hover:scale-105 hover:shadow-[0_0_28px_rgba(125,211,252,0.14)]">
+          {ensAvatar ? (
+            <img src={ensAvatar} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <span className="text-xl font-bold text-sky-200">{initials}</span>
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex flex-wrap items-center gap-2">
@@ -749,6 +771,127 @@ export default function ProfilePage() {
       </div>
 
       <div className="space-y-2">
+        <SectionBlock
+          label="Identity & Delegation"
+          iconBg="bg-indigo-600/30"
+          icon={<ShieldCheck className="h-4 w-4 text-white" />}
+          defaultOpen
+        >
+          <div className="px-4 pb-4 pt-2">
+            <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+              <div className="flex items-center justify-between gap-4 rounded-lg px-1 py-2">
+                <div className="min-w-0">
+                  <p className="text-[11px] uppercase tracking-widest text-white/30">
+                    Primary Identity
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-white">
+                    {ensName ?? displayName ?? "Not connected"}
+                  </p>
+                  <p className="mt-1 text-xs text-white/35">
+                    Auto-resolved from your connected wallet using ENS reverse lookup.
+                  </p>
+                </div>
+                <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-white/[0.08] bg-white/[0.04]">
+                  {ensAvatar ? (
+                    <img src={ensAvatar} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-sm font-semibold text-white/80">{initials}</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-3 h-px bg-white/[0.06]" />
+
+              <div className="flex items-center justify-between gap-4 rounded-lg px-1 py-4">
+                <div className="min-w-0">
+                  <p className="text-[11px] uppercase tracking-widest text-white/30">
+                    Agent Identity
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-white">
+                    {agentIdentity ?? `Unassigned .${AGENT_IDENTITY_ROOT}`}
+                  </p>
+                  <p className="mt-1 text-xs text-white/35">
+                    Give your AI agent a trusted identity for on-chain commerce.
+                  </p>
+                </div>
+                <Dialog.Root open={agentIdentityModalOpen} onOpenChange={setAgentIdentityModalOpen}>
+                  <Dialog.Trigger asChild>
+                    <button
+                      type="button"
+                      className="rounded-full border border-white/[0.15] bg-sky-200 px-4 py-2 text-xs font-semibold text-[#06131d] transition-all hover:bg-sky-100"
+                    >
+                      Assign Agent Identity
+                    </button>
+                  </Dialog.Trigger>
+                  <Dialog.Portal>
+                    <Dialog.Overlay className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" />
+                    <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[min(92vw,460px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/[0.10] bg-[#141414] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.5)]">
+                      <div className="mb-5 flex items-start justify-between gap-4">
+                        <div>
+                          <Dialog.Title className="text-lg font-semibold text-white">
+                            Name Your Personal Agent
+                          </Dialog.Title>
+                          <Dialog.Description className="mt-1 text-sm text-white/45">
+                            Give your AI agent a trusted identity for on-chain commerce.
+                          </Dialog.Description>
+                        </div>
+                        <Dialog.Close asChild>
+                          <button
+                            type="button"
+                            className="rounded-md p-1 text-white/30 transition-colors hover:bg-white/[0.06] hover:text-white/80"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </Dialog.Close>
+                      </div>
+
+                      <label className="mb-2 block text-[11px] uppercase tracking-widest text-white/30">
+                        Agent Label
+                      </label>
+                      <div className="flex items-center rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2">
+                        <input
+                          value={agentIdentityDraft}
+                          onChange={(e) => setAgentIdentityDraft(e.target.value)}
+                          placeholder="mybot"
+                          className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/20"
+                        />
+                        <span className="text-sm text-white/35">.{AGENT_IDENTITY_ROOT}</span>
+                      </div>
+
+                      <div className="mt-5 flex items-center justify-between gap-3">
+                        {agentIdentity ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAgentIdentity(null);
+                              setAgentIdentityDraft("");
+                              setAgentIdentityModalOpen(false);
+                            }}
+                            className="text-xs text-white/45 transition-colors hover:text-white/80"
+                          >
+                            Clear identity
+                          </button>
+                        ) : (
+                          <span className="text-xs text-white/30">
+                            Registered identities are simulated for demo flow.
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleRegisterAgentIdentity}
+                          className="rounded-full border border-white/[0.15] bg-sky-200 px-4 py-2 text-xs font-semibold text-[#06131d] transition-all hover:bg-sky-100"
+                        >
+                          Register Identity
+                        </button>
+                      </div>
+                    </Dialog.Content>
+                  </Dialog.Portal>
+                </Dialog.Root>
+              </div>
+            </div>
+          </div>
+        </SectionBlock>
+
         <SectionBlock
           label="Marketplace Connections"
           iconBg="bg-sky-300/[0.15]"
