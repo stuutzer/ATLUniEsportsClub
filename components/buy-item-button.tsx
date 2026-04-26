@@ -8,15 +8,17 @@ import { PurchaseModal, type SettlementStatus } from "@/components/purchase-moda
 import type { Product } from "@/lib/mockData";
 import {
   useChainId,
-  useSendTransaction,
+  useReadContract,
   useSwitchChain,
   useWaitForTransactionReceipt,
+  useWriteContract,
 } from "wagmi";
-import { parseEther } from "viem";
-import { avalanche } from "wagmi/chains";
+import { erc20Abi, parseUnits } from "viem";
+import { baseSepolia } from "wagmi/chains";
 
 const DUMMY_MERCHANT_ADDRESS = "0x000000000000000000000000000000000000dEaD";
-const FLAT_AVAX_VALUE = parseEther("0.0003");
+const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
+const DEFAULT_DNZD_DECIMALS = 6;
 
 export function BuyItemButton({ product }: { product: Product }) {
   const { executeAgentPurchase } = useAgent();
@@ -27,13 +29,24 @@ export function BuyItemButton({ product }: { product: Product }) {
   const [settlementError, setSettlementError] = useState<string | null>(null);
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
-  const { sendTransaction, data: hash, isPending: isWalletPending } = useSendTransaction();
+  const { writeContract, data: hash, isPending: isWalletPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({ hash });
+  const { data: dnzdDecimals } = useReadContract({
+    address: DNZD_CONTRACT_ADDRESS,
+    abi: erc20Abi,
+    functionName: "decimals",
+    chainId: baseSepolia.id,
+  });
+  const dnzdAmount = product.price.toFixed(2);
+  const settlementValue = parseUnits(
+    dnzdAmount,
+    Number(dnzdDecimals ?? DEFAULT_DNZD_DECIMALS)
+  );
 
   useEffect(() => {
     if (!isConfirmed || !hash || isPurchased) return;
-    executeAgentPurchase(product.name, product.price, "AVAX", hash);
+    executeAgentPurchase(product.name, product.price, "dNZD", hash);
     setIsPurchased(true);
     setSettlementStatus("settled");
     setModalOpen(false);
@@ -59,19 +72,21 @@ export function BuyItemButton({ product }: { product: Product }) {
     setSettlementError(null);
 
     try {
-      if (chainId !== avalanche.id) {
-        await switchChainAsync({ chainId: avalanche.id });
+      if (chainId !== baseSepolia.id) {
+        await switchChainAsync({ chainId: baseSepolia.id });
       }
 
-      sendTransaction({
-        to: DUMMY_MERCHANT_ADDRESS,
-        value: FLAT_AVAX_VALUE,
-        chainId: avalanche.id,
+      writeContract({
+        address: DNZD_CONTRACT_ADDRESS,
+        abi: erc20Abi,
+        functionName: "transfer",
+        args: [DUMMY_MERCHANT_ADDRESS, settlementValue],
+        chainId: baseSepolia.id,
       });
     } catch (err) {
       setSettlementStatus("failed");
       setSettlementError(
-        err instanceof Error ? err.message : "Avalanche C-Chain settlement failed"
+        err instanceof Error ? err.message : "Base Sepolia settlement failed"
       );
     }
   };
@@ -99,6 +114,9 @@ export function BuyItemButton({ product }: { product: Product }) {
           policyError={policyError}
           settlementStatus={settlementStatus}
           settlementError={settlementError}
+          paymentToken="dNZD"
+          paymentAmount={dnzdAmount}
+          networkLabel="Base Sepolia"
         />
       )}
     </>

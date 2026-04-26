@@ -21,7 +21,7 @@ const statusConfig: Record<TransactionStatus, { label: string; className: string
 };
 
 export function OrderTrackingModal({ transaction, onClose }: OrderTrackingModalProps) {
-  const { displayName } = useIdentity();
+  const { displayName, ensName, walletAddress } = useIdentity();
   const [downloading, setDownloading] = useState(false);
 
   // Close on Escape
@@ -44,6 +44,8 @@ export function OrderTrackingModal({ transaction, onClose }: OrderTrackingModalP
         status: transaction.status,
         hash: transaction.id,
         userName: displayName ?? undefined,
+        userENS: ensName ?? undefined,
+        userWallet: walletAddress ?? undefined,
       });
       const [{ pdf }, { InvoicePDF }] = await Promise.all([
         import("@react-pdf/renderer"),

@@ -2,20 +2,23 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { AgentCredential, loadCredential } from "@/lib/identity";
+import { resolveDemoIdentity } from "@/lib/demoIdentity";
 
 interface IdentityContextValue {
   walletAddress: string | null;
   ensName: string | null;
+  ensAvatar: string | null;
   displayName: string | null;
   credential: AgentCredential | null;
   isCredentialActive: boolean;
-  setIdentity: (address: string | null, ens: string | null) => void;
+  setIdentity: (address: string | null, ens: string | null, avatar: string | null) => void;
   setCredential: (c: AgentCredential | null) => void;
 }
 
 const IdentityContext = createContext<IdentityContextValue>({
   walletAddress: null,
   ensName: null,
+  ensAvatar: null,
   displayName: null,
   credential: null,
   isCredentialActive: false,
@@ -26,15 +29,18 @@ const IdentityContext = createContext<IdentityContextValue>({
 export function IdentityProvider({ children }: { children: ReactNode }) {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [ensName, setEnsName] = useState<string | null>(null);
+  const [ensAvatar, setEnsAvatar] = useState<string | null>(null);
   const [credential, setCredentialState] = useState<AgentCredential | null>(null);
 
   useEffect(() => {
     setCredentialState(loadCredential());
   }, []);
 
-  function setIdentity(address: string | null, ens: string | null) {
+  function setIdentity(address: string | null, ens: string | null, avatar: string | null) {
+    const resolved = resolveDemoIdentity(address, ens);
     setWalletAddress(address);
-    setEnsName(ens);
+    setEnsName(resolved.ensName);
+    setEnsAvatar(resolved.ensAvatar ?? avatar);
   }
 
   function setCredential(c: AgentCredential | null) {
@@ -43,13 +49,16 @@ export function IdentityProvider({ children }: { children: ReactNode }) {
 
   const displayName =
     ensName ??
-    (walletAddress ? "Justin" : null);
+    (walletAddress
+      ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+      : null);
 
   return (
     <IdentityContext.Provider
       value={{
         walletAddress,
         ensName,
+        ensAvatar,
         displayName,
         credential,
         isCredentialActive: !!credential,

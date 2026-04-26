@@ -30,7 +30,7 @@ function QuarterLogo() {
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { displayName, walletAddress, isCredentialActive } = useIdentity();
+  const { displayName, ensAvatar, walletAddress } = useIdentity();
   const { itemCount } = useCart();
 
   const initials = displayName
@@ -80,8 +80,10 @@ export function Sidebar() {
           href="/profile"
           className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-white/[0.04] transition-colors group"
         >
-          <div className="w-7 h-7 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center flex-shrink-0">
-            {initials ? (
+          <div className="w-7 h-7 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+            {ensAvatar ? (
+              <img src={ensAvatar} alt="" className="h-full w-full object-cover" />
+            ) : initials ? (
               <span className="text-white/80 text-[10px] font-semibold">{initials}</span>
             ) : (
               <User className="w-3.5 h-3.5 text-white/30" />

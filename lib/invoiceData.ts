@@ -1,3 +1,5 @@
+import { DEMO_ENS_NAME } from "@/lib/demoIdentity";
+
 export interface InvoiceItem {
   name: string;
   description: string;
@@ -65,6 +67,11 @@ export function generateInvoiceData(txn: TxnInput): InvoiceData {
   const token = txn.token || "AVAX";
   const itemName = txn.productName || txn.item || "Product";
   const usdVal = (amountNum * (MOCK_PRICES[token] ?? 1)).toFixed(2);
+  const resolvedUserENS = txn.userENS || DEMO_ENS_NAME;
+  const resolvedUserName =
+    txn.userName ||
+    resolvedUserENS ||
+    (txn.userWallet ? `${txn.userWallet.slice(0, 6)}...${txn.userWallet.slice(-4)}` : "User");
 
   return {
     invoiceNumber: `INV-2025-${String(Math.floor(Math.random() * 9000) + 1000)}`,
@@ -76,8 +83,8 @@ export function generateInvoiceData(txn: TxnInput): InvoiceData {
     agentName: "agentcart.eth",
     agentWallet: "0x1A2b3C4d5E6f7A8b9C0d1E2f3A4b5C6d7E8f9A0b",
 
-    userName: txn.userName || "Justin Tu.",
-    userENS: txn.userENS || "justin.eth",
+    userName: resolvedUserName,
+    userENS: resolvedUserENS,
     userWallet:
       txn.userWallet || "0xAbCd1234EfGh5678IjKl9012MnOp3456QrSt7890",
     userLocation: "Auckland, New Zealand",

@@ -49,7 +49,7 @@ function Toggle({ checked, onChange, disabled = false }: { checked: boolean; onC
 }
 
 export default function WalletPage() {
-  const { displayName } = useIdentity();
+  const { displayName, ensName, walletAddress } = useIdentity();
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [downloadingTx, setDownloadingTx] = useState<string | null>(null);
 
@@ -64,6 +64,8 @@ export default function WalletPage() {
         token: tx.token,
         status: tx.status,
         userName: displayName ?? undefined,
+        userENS: ensName ?? undefined,
+        userWallet: walletAddress ?? undefined,
       });
       const [{ pdf }, { InvoicePDF }] = await Promise.all([
         import("@react-pdf/renderer"),
@@ -93,6 +95,7 @@ export default function WalletPage() {
     yieldEarned,
     liveApy,
     statusLabel,
+    agentIdentity,
   } = useAgent();
 
   const { data: nativeBalance } = useBalance({
@@ -407,7 +410,14 @@ export default function WalletPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button className="text-white/20 hover:text-sky-200 transition-colors inline-flex items-center gap-1">
-                        <span className="font-mono text-xs">{tx.hash.slice(0, 6)}</span>
+                        <span
+                          className={cn(
+                            "text-xs",
+                            agentIdentity ? "text-emerald-300 animate-pulse" : "font-mono"
+                          )}
+                        >
+                          {agentIdentity ?? tx.hash.slice(0, 6)}
+                        </span>
                         <ExternalLink className="w-3 h-3" />
                       </button>
                     </td>
