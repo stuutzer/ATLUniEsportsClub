@@ -98,11 +98,16 @@ export default function CartPage() {
 
   useEffect(() => {
     if (!isConfirmed || !hash || status === "settled") return;
+    const lineItems = items.map(({ product, quantity }) => ({
+      name: product.name,
+      quantity,
+      unitPrice: product.price,
+    }));
     const summary =
       items.length === 1
         ? `${items[0].product.name}${items[0].quantity > 1 ? ` x${items[0].quantity}` : ""}`
         : `Cart bundle (${itemCount} items)`;
-    executeAgentPurchase(summary, total, "dNZD", hash);
+    executeAgentPurchase(summary, total, "dNZD", hash, { lineItems });
     setStatus("settled");
     clearCart();
   }, [isConfirmed, hash, status, items, itemCount, total, executeAgentPurchase, clearCart]);

@@ -54,6 +54,11 @@ type TxnInput = Partial<{
   userWallet: string;
   productDescription: string;
   agentName: string;
+  lineItems: {
+    name: string;
+    quantity: number;
+    unitPrice: number;
+  }[];
 }>;
 
 const MOCK_PRICES: Record<string, number> = {
@@ -117,6 +122,32 @@ export function generateInvoiceData(txn: TxnInput): InvoiceData {
   const amountNum = parseFloat(cleanAmount) || 0.24;
   const token = txn.token || "AVAX";
   const itemName = txn.productName || txn.item || "Product";
+  const invoiceItems: InvoiceItem[] =
+    txn.lineItems && txn.lineItems.length > 0
+      ? txn.lineItems.map((line) => ({
+          name: line.name,
+          description:
+            txn.productDescription ||
+            "Purchased autonomously by Quarter AI Agent",
+          quantity: line.quantity,
+          unitPrice: `${line.unitPrice.toFixed(2)} ${token}`,
+          total: `${(line.unitPrice * line.quantity).toFixed(2)} ${token}`,
+        }))
+      : [
+          {
+            name: itemName,
+            description:
+              txn.productDescription ||
+              "Purchased autonomously by Quarter AI Agent",
+            quantity: 1,
+            unitPrice: `${cleanAmount} ${token}`,
+            total: `${cleanAmount} ${token}`,
+          },
+        ];
+  const subtotalNum =
+    txn.lineItems && txn.lineItems.length > 0
+      ? txn.lineItems.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0)
+      : amountNum;
   const usdVal = (amountNum * (MOCK_PRICES[token] ?? 1)).toFixed(2);
   const resolvedUserENS = txn.userENS || DEMO_ENS_NAME;
   const resolvedUserName =
@@ -147,21 +178,11 @@ export function generateInvoiceData(txn: TxnInput): InvoiceData {
     merchantWebsite: txn.vendorWebsite || merchantInfo?.website || "quarter.eth",
     merchantWallet: "0xDEaD000000000000000042069000bEEF00000000",
 
-    items: [
-      {
-        name: itemName,
-        description:
-          txn.productDescription ||
-          "Purchased autonomously by Quarter AI Agent",
-        quantity: 1,
-        unitPrice: `${cleanAmount} ${token}`,
-        total: `${cleanAmount} ${token}`,
-      },
-    ],
+    items: invoiceItems,
 
-    subtotal: `${cleanAmount} ${token}`,
+    subtotal: `${subtotalNum.toFixed(2)} ${token}`,
     networkFee: `0.001 ${token}`,
-    total: `${(amountNum + 0.001).toFixed(3)} ${token}`,
+    total: `${(subtotalNum + 0.001).toFixed(3)} ${token}`,
     totalUSD: `≈ $${usdVal} USD`,
     token,
     network: "Base Sepolia Testnet",

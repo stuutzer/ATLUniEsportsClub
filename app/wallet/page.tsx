@@ -63,6 +63,7 @@ export default function WalletPage() {
         amount: tx.amount,
         token: tx.token,
         status: tx.status,
+        lineItems: tx.lineItems,
         userName: displayName ?? undefined,
         agentName: agentIdentity ?? undefined,
         userENS: ensName ?? undefined,
@@ -422,7 +423,7 @@ export default function WalletPage() {
                         <ExternalLink className="w-3 h-3" />
                       </button>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-6 py-4 text-center">
                       <button
                         onClick={() => handleDownloadInvoice(tx)}
                         disabled={downloadingTx === tx.id}
@@ -432,7 +433,7 @@ export default function WalletPage() {
                         {downloadingTx === tx.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : (
-                          <Download className="w-3.5 h-3.5" />
+                          <Download className="w-4.5 h-4.5" />
                         )}
                       </button>
                     </td>

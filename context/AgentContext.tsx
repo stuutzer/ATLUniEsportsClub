@@ -10,6 +10,11 @@ export type Transaction = {
   date: string;
   type: string;
   item: string;
+  lineItems?: {
+    name: string;
+    quantity: number;
+    unitPrice: number;
+  }[];
   amount: string;
   token: string;
   status: "Pending" | "Completed" | "Failed";
@@ -21,7 +26,19 @@ export type Transaction = {
 interface AgentContextType {
   transactions: Transaction[];
   agentBalanceUsdc: number; // Simulated local Agent budget/allowance
-  executeAgentPurchase: (item: string, amount: number, token: string, realHash?: string) => void;
+  executeAgentPurchase: (
+    item: string,
+    amount: number,
+    token: string,
+    realHash?: string,
+    options?: {
+      lineItems?: {
+        name: string;
+        quantity: number;
+        unitPrice: number;
+      }[];
+    }
+  ) => void;
   isAaveEnabled: boolean;
   toggleAaveYield: () => void;
   yieldEarned: number;
@@ -90,7 +107,19 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   }, [agentIdentityRoot]);
 
   // The globally available purchase function that any button can call
-  const executeAgentPurchase = useCallback((item: string, amount: number, token: string, realHash?: string) => {
+  const executeAgentPurchase = useCallback((
+    item: string,
+    amount: number,
+    token: string,
+    realHash?: string,
+    options?: {
+      lineItems?: {
+        name: string;
+        quantity: number;
+        unitPrice: number;
+      }[];
+    }
+  ) => {
     // 1. Create a new transaction record
     const newTxId = `tx-${Date.now()}`;
     const newTx: Transaction = {
@@ -98,6 +127,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
       date: "Just now",
       type: "Agent Purchase",
       item: item,
+      lineItems: options?.lineItems,
       amount: `-${amount.toFixed(2)}`,
       token: token,
       status: "Completed", // We set it to completed because the blockchain transaction is already mined
