@@ -10,6 +10,7 @@ export interface Product {
   merchantName: string;
   imageUrl: string;
   aiReasons: string[];
+  requiresFiatExchange?: boolean;
 }
 
 export interface PurchaseHistory {
@@ -61,12 +62,12 @@ export const mockProducts: Product[] = [
     price: 249.99,
     category: "Peripherals",
     acceptedCrypto: ["ETH", "AVAX", "USDC"],
-    merchantName: "TechVault Store",
+    merchantName: "Newegg",
     imageUrl: "/products/keyboards/neural-pro-keyboard.webp",
     aiReasons: [
-      "Lowest total cost when accounting for gas fees on Avalanche",
-      "Merchant has 99.2% trust score based on 3,400+ transactions",
-      "Price is 18% below market average for equivalent specs",
+      "Newegg is the best checkout path because it supports crypto payments through a crypto payment processor.",
+      "Lowest total cost when accounting for gas fees on Avalanche.",
+      "Price is 18% below market average for equivalent specs.",
     ],
   },
   {
@@ -232,6 +233,91 @@ export const mockProducts: Product[] = [
       "Competitive cooling performance; NFT display is novelty but not essential",
     ],
   },
+  {
+    id: "grocery-1",
+    name: "Royal Gala Apples 1kg",
+    description:
+      "Fresh New Zealand Royal Gala apples for a normal weekly fruit restock.",
+    price: 4.99,
+    category: "Groceries",
+    acceptedCrypto: ["USDC"],
+    merchantName: "Countdown",
+    imageUrl:
+      "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?auto=format&fit=crop&w=900&q=80",
+    aiReasons: [
+      "Good everyday fruit option from a New Zealand supermarket.",
+      "Requires a crypto-to-fiat exchange because Countdown does not accept crypto directly.",
+    ],
+    requiresFiatExchange: true,
+  },
+  {
+    id: "grocery-2",
+    name: "Pams Toilet Tissue 12 Pack",
+    description:
+      "Household toilet paper pack suitable for a weekly essentials order.",
+    price: 8.49,
+    category: "Groceries",
+    acceptedCrypto: ["USDC"],
+    merchantName: "New World",
+    imageUrl:
+      "https://images.unsplash.com/photo-1584556812952-905ffd0c611a?auto=format&fit=crop&w=900&q=80",
+    aiReasons: [
+      "Practical household essential from a New Zealand grocery retailer.",
+      "Quarter needs to exchange crypto to fiat before checkout with New World.",
+    ],
+    requiresFiatExchange: true,
+  },
+  {
+    id: "grocery-3",
+    name: "Anchor Blue Milk 2L",
+    description:
+      "Two-litre bottle of standard blue milk for fridge restocking.",
+    price: 3.99,
+    category: "Groceries",
+    acceptedCrypto: ["USDC"],
+    merchantName: "Countdown",
+    imageUrl:
+      "https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=900&q=80",
+    aiReasons: [
+      "Common fresh grocery staple available through Countdown.",
+      "Checkout uses fiat rails, so the payment flow includes an exchange step.",
+    ],
+    requiresFiatExchange: true,
+  },
+  {
+    id: "grocery-4",
+    name: "Freya's Soy & Linseed Bread",
+    description:
+      "Sliced soy and linseed bread for sandwiches, toast, and pantry basics.",
+    price: 4.79,
+    category: "Groceries",
+    acceptedCrypto: ["USDC"],
+    merchantName: "New World",
+    imageUrl:
+      "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=900&q=80",
+    aiReasons: [
+      "Useful staple for a realistic New Zealand grocery basket.",
+      "New World checkout requires a fiat exchange step before fulfilment.",
+    ],
+    requiresFiatExchange: true,
+  },
+  {
+    id: "grocery-5",
+    name: "Free Range Eggs 12 Pack",
+    description:
+      "Dozen free range eggs for breakfast, baking, and weekly meal prep.",
+    price: 9.29,
+    category: "Groceries",
+    acceptedCrypto: ["USDC"],
+    merchantName: "Countdown",
+    imageUrl:
+      "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?auto=format&fit=crop&w=900&q=80",
+    aiReasons: [
+      "High-utility fridge item for a normal household grocery order.",
+      "Countdown receives fiat after Quarter exchanges the crypto settlement.",
+    ],
+    requiresFiatExchange: true,
+  },
 ];
 
 // TODO: Replace with real wallet purchase history
@@ -331,7 +417,7 @@ export const mockAgentLog: AgentLog[] = [
   {
     id: "log9",
     timestamp: "14:23:14",
-    message: "Top pick: Neural Pro Keyboard from TechVault Store.",
+    message: "Top pick: Neural Pro Keyboard from Newegg.",
     type: "rank",
   },
   {
