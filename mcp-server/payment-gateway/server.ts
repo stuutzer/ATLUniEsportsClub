@@ -65,7 +65,7 @@ server.registerTool(
   {
     title: "Create cross-chain payment quote",
     description:
-      "Quotes native BTC or native ETH into Avalanche C-Chain USDC settlement calldata for an order.",
+      "Quotes native BTC or native ETH into Avalanche USDC settlement calldata for an order.",
     inputSchema: CrossChainQuoteInputSchema,
   },
   async (input) => jsonToolResult(await createCrossChainQuote(input))
@@ -76,7 +76,7 @@ server.registerTool(
   {
     title: "Monitor Avalanche payment",
     description:
-      "Polls Avalanche C-Chain for PaymentRegistered(orderId) with explicit timeout handling.",
+      "Polls Avalanche for PaymentRegistered(orderId) with explicit timeout handling.",
     inputSchema: MonitorPaymentInputSchema,
   },
   async (input) => jsonToolResult(await waitForAvalanchePayment(input))

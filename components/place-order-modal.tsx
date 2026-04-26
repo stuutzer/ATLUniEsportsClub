@@ -14,7 +14,6 @@ import {
   useSwitchChain,
   useWaitForTransactionReceipt,
 } from "wagmi";
-import { avalanche } from "wagmi/chains";
 import { parseEther } from "viem";
 import {
   ORDER_TYPE_DESCRIPTIONS,
@@ -27,6 +26,14 @@ import {
   type SettlementStatus,
 } from "@/components/purchase-modal";
 import type { Product } from "@/lib/mockData";
+import {
+  DEMO_MERCHANT_ADDRESS,
+  DEMO_PAYMENT_AMOUNT_AVAX,
+  DEMO_PAYMENT_CHAIN,
+  DEMO_PAYMENT_CHAIN_LABEL,
+  DEMO_PAYMENT_TOKEN,
+  demoPaymentErrorMessage,
+} from "@/lib/demoPayment";
 import { cn } from "@/lib/utils";
 
 const TYPE_ICON: Record<OrderType, React.ComponentType<{ className?: string }>> = {
@@ -35,17 +42,7 @@ const TYPE_ICON: Record<OrderType, React.ComponentType<{ className?: string }>> 
   availability: PackageSearch,
 };
 
-const COMMITMENT_AVAX = "0.0003";
-const DUMMY_MERCHANT_ADDRESS = "0x000000000000000000000000000000000000dEaD";
-
 type Phase = "configure" | "verifying" | "placed";
-
-function isUserRejection(err: unknown): boolean {
-  if (!err) return false;
-  const name = (err as { name?: string }).name ?? "";
-  const msg = (err as Error).message ?? "";
-  return /UserRejected|User rejected|denied/i.test(`${name} ${msg}`);
-}
 
 export function PlaceOrderModal({
   product,
@@ -96,13 +93,7 @@ export function PlaceOrderModal({
     if (sendError || receiptError) {
       const err = sendError ?? receiptError;
       setSettlementStatus("failed");
-      setSettlementError(
-        isUserRejection(err)
-          ? "Transaction cancelled."
-          : err instanceof Error
-          ? err.message
-          : "Avalanche C-Chain settlement failed"
-      );
+      setSettlementError(demoPaymentErrorMessage(err));
       reset();
       return;
     }
@@ -135,23 +126,17 @@ export function PlaceOrderModal({
     setSettlementError(null);
     setSettlementStatus("settling");
     try {
-      if (chainId !== avalanche.id) {
-        await switchChainAsync({ chainId: avalanche.id });
+      if (chainId !== DEMO_PAYMENT_CHAIN.id) {
+        await switchChainAsync({ chainId: DEMO_PAYMENT_CHAIN.id });
       }
       sendTransaction({
-        to: DUMMY_MERCHANT_ADDRESS,
-        value: parseEther(COMMITMENT_AVAX),
-        chainId: avalanche.id,
+        to: DEMO_MERCHANT_ADDRESS,
+        value: parseEther(DEMO_PAYMENT_AMOUNT_AVAX),
+        chainId: DEMO_PAYMENT_CHAIN.id,
       });
     } catch (err) {
       setSettlementStatus("failed");
-      setSettlementError(
-        isUserRejection(err)
-          ? "Transaction cancelled."
-          : err instanceof Error
-          ? err.message
-          : "Avalanche C-Chain settlement failed"
-      );
+      setSettlementError(demoPaymentErrorMessage(err));
     }
   };
 
@@ -169,9 +154,9 @@ export function PlaceOrderModal({
         onConfirm={handleConfirmCommitment}
         settlementStatus={settlementStatus}
         settlementError={settlementError}
-        paymentToken="AVAX"
-        paymentAmount={COMMITMENT_AVAX}
-        networkLabel="Avalanche C-Chain (commitment)"
+        paymentToken={DEMO_PAYMENT_TOKEN}
+        paymentAmount={DEMO_PAYMENT_AMOUNT_AVAX}
+        networkLabel={`${DEMO_PAYMENT_CHAIN_LABEL} (commitment)`}
         priceLabel={
           type === "price-drop"
             ? "Target price"
@@ -224,13 +209,13 @@ export function PlaceOrderModal({
             <div className="mt-6 flex justify-center gap-3">
               <button
                 onClick={onClose}
-                className="rounded-full border border-white/[0.08] bg-white/[0.04] px-5 py-2 text-sm text-white/75 hover:bg-white/[0.08] hover:text-white"
+                className="quarter-button px-5 py-2"
               >
                 Close
               </button>
               <a
                 href="/orders"
-                className="rounded-full border border-sky-300/25 bg-sky-300/10 px-5 py-2 text-sm font-medium text-sky-200 hover:bg-sky-300/15"
+                className="quarter-button px-5 py-2"
               >
                 View orders
               </a>
@@ -330,26 +315,23 @@ export function PlaceOrderModal({
 
             <p className="mt-4 text-[11px] leading-5 text-white/40">
               Quarter verifies your agent credential and signs a small{" "}
-              <span className="font-mono">{COMMITMENT_AVAX} AVAX</span> commitment
-              on Avalanche C-Chain so the merchant can prove the order is real.
+              <span className="font-mono">
+                {DEMO_PAYMENT_AMOUNT_AVAX} {DEMO_PAYMENT_TOKEN}
+              </span>{" "}
+              commitment on {DEMO_PAYMENT_CHAIN_LABEL} so the merchant can prove the order is real.
             </p>
 
             <div className="mt-5 flex gap-2">
               <button
                 onClick={onClose}
-                className="flex-1 rounded-full border border-white/[0.08] bg-transparent py-2.5 text-sm font-medium text-white/65 hover:bg-white/[0.04] hover:text-white"
+                className="quarter-button flex-1 py-2.5"
               >
                 Cancel
               </button>
               <button
                 onClick={handleStartVerify}
                 disabled={targetPriceInvalid}
-                className={cn(
-                  "flex-1 rounded-full py-2.5 text-sm font-semibold transition-colors",
-                  "border border-purple-300/25 bg-purple-500/15 text-purple-100",
-                  "hover:border-purple-200/40 hover:bg-purple-500/25 hover:text-white",
-                  "disabled:cursor-not-allowed disabled:opacity-50"
-                )}
+                className="quarter-button flex-1 py-2.5 font-semibold"
               >
                 Continue to Verification
               </button>

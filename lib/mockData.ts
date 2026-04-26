@@ -1,4 +1,4 @@
-export type CryptoToken = "ETH" | "AVAX" | "USDC" | "dNZD";
+export type CryptoToken = "ETH" | "AVAX" | "USDC";
 
 export interface Product {
   id: string;
@@ -182,7 +182,7 @@ export const mockAgentLog: AgentLog[] = [
   {
     id: "log5",
     timestamp: "14:23:07",
-    message: "Comparing gas fees across Ethereum and Avalanche C-Chain...",
+    message: "Comparing gas fees across Ethereum and Avalanche Fuji...",
     type: "compare",
   },
   {

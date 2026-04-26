@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ClipboardList, Plus, ShieldCheck, Truck, X } from "lucide-react";
+import { Check, ClipboardList, Eye, Plus, ShieldCheck, Truck, X } from "lucide-react";
 import { BuyItemButton } from "@/components/buy-item-button";
 import { PlaceOrderModal } from "@/components/place-order-modal";
 import { useCart } from "@/context/CartContext";
@@ -64,8 +64,6 @@ function formatChain(chain: string) {
     base: "Base",
     avalanche: "Avalanche",
     ethereum: "Ethereum",
-    "Base Sepolia": "Base Sepolia",
-    "Avalanche C-Chain": "Avalanche",
   };
 
   return chainLabels[chain] ?? chain;
@@ -167,19 +165,13 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
         "hover:border-sky-300/20 hover:shadow-[0_18px_44px_rgba(0,0,0,0.32)]"
       )}
     >
-      <button
-        type="button"
-        onClick={() => setQuickViewOpen(true)}
-        className="block cursor-pointer text-left"
-      >
-        <div className="aspect-[4/3] overflow-hidden bg-[#1a1a1a]">
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            className="h-full w-full object-cover opacity-80 transition-all duration-500 group-hover:scale-105 group-hover:opacity-100"
-          />
-        </div>
-      </button>
+      <div className="aspect-[4/3] overflow-hidden bg-[#1a1a1a]">
+        <img
+          src={product.imageUrl}
+          alt={product.name}
+          className="h-full w-full object-cover opacity-80 transition-all duration-500 group-hover:scale-105 group-hover:opacity-100"
+        />
+      </div>
 
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -280,29 +272,13 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
         </div>
 
         <div className="mt-auto flex flex-col gap-2">
-          <BuyItemButton product={product} shippingUsd={shippingUsd} />
           <button
-            onClick={handleAddToCart}
-            className={cn(
-              "w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors duration-200",
-              justAdded
-                ? "border border-emerald-300/25 bg-emerald-300/10 text-emerald-200"
-                : inCart
-                ? "border border-sky-300/20 bg-sky-300/10 text-sky-200 hover:bg-sky-300/15"
-                : "border border-white/[0.10] bg-transparent text-white/65 hover:bg-white/[0.06] hover:text-white"
-            )}
+            type="button"
+            onClick={() => setQuickViewOpen(true)}
+            className="quarter-button w-full gap-1.5 rounded-lg py-2 text-xs"
           >
-            {justAdded ? (
-              <>
-                <Check className="w-3.5 h-3.5" />
-                Added to cart
-              </>
-            ) : (
-              <>
-                <Plus className="w-3.5 h-3.5" />
-                {inCart ? "Add another" : "Add to cart"}
-              </>
-            )}
+            <Eye className="h-3.5 w-3.5" />
+            View Item
           </button>
         </div>
       </div>
@@ -488,12 +464,8 @@ function ProductQuickView({
               type="button"
               onClick={onAddToCart}
               className={cn(
-                "flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-medium transition-colors",
-                justAdded
-                  ? "border border-emerald-300/30 bg-emerald-300/10 text-emerald-200"
-                  : inCart
-                  ? "border border-sky-300/25 bg-sky-300/10 text-sky-200 hover:bg-sky-300/15"
-                  : "border border-white/[0.10] bg-transparent text-white/70 hover:bg-white/[0.06] hover:text-white"
+                "quarter-button w-full py-3",
+                justAdded && "text-white"
               )}
             >
               {justAdded ? (
@@ -511,10 +483,7 @@ function ProductQuickView({
             <button
               type="button"
               onClick={onPlaceOrder}
-              className={cn(
-                "flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-medium transition-colors",
-                "border border-white/[0.10] bg-transparent text-white/70 hover:bg-white/[0.06] hover:text-white"
-              )}
+              className="quarter-button w-full py-3"
             >
               <ClipboardList className="h-4 w-4" />
               Place an Order

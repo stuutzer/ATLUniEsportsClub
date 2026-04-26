@@ -25,9 +25,7 @@ export function WalletButton({ className }: WalletButtonProps = {}) {
         <button
           onClick={() => setShowMenu(!showMenu)}
           className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium",
-            "bg-white/10 hover:bg-white/[0.15] border border-white/10",
-            "text-white transition-all duration-200",
+            "quarter-button px-4 py-2",
             className
           )}
         >
@@ -43,7 +41,7 @@ export function WalletButton({ className }: WalletButtonProps = {}) {
             </div>
             <button
               onClick={() => { disconnect(); setShowMenu(false); }}
-              className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-white/5 transition-colors"
+              className="w-full px-4 py-3 text-left text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white"
             >
               Disconnect
             </button>
@@ -57,9 +55,7 @@ export function WalletButton({ className }: WalletButtonProps = {}) {
     <button
       onClick={() => connect({ connector: metaMask() })}
       className={cn(
-        "px-5 py-2 rounded-full text-sm font-semibold",
-        "border border-white/[0.15] bg-sky-200 text-[#06131d] hover:bg-sky-100",
-        "transition-all duration-200 shadow-[0_10px_28px_rgba(0,0,0,0.28)]",
+        "quarter-button px-5 py-2 font-semibold",
         className
       )}
     >

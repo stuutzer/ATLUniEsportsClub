@@ -43,24 +43,13 @@ export function WalletRequiredModal({ onClose }: { onClose: () => void }) {
         <div className="space-y-2.5">
           <button
             onClick={() => { onClose(); router.push("/wallet"); }}
-            className={cn(
-              "w-full rounded-full py-2.5 text-sm font-semibold",
-              "bg-sky-200 text-[#06131d]",
-              "transition-[background-color,transform,box-shadow] duration-200",
-              "hover:bg-sky-100 hover:-translate-y-px",
-              "shadow-[0_8px_24px_rgba(125,211,252,0.18)]"
-            )}
+            className="quarter-button w-full py-2.5 font-semibold"
           >
             Set Up Wallet
           </button>
           <button
             onClick={onClose}
-            className={cn(
-              "w-full rounded-full py-2.5 text-sm font-medium text-white/50",
-              "border border-white/[0.08] bg-transparent",
-              "transition-[background-color,color] duration-200",
-              "hover:bg-white/[0.05] hover:text-white/75"
-            )}
+            className="quarter-button w-full py-2.5"
           >
             Cancel
           </button>

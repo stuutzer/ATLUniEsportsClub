@@ -28,14 +28,14 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="min-h-screen bg-[#0a0a0a] text-white antialiased">
         <Web3Provider>
-          <AgentProvider>
-            <CartProvider>
-              <OrdersProvider>
+          <OrdersProvider>
+            <AgentProvider>
+              <CartProvider>
                 <Sidebar />
                 <main className="ml-[260px] min-h-screen">{children}</main>
-              </OrdersProvider>
-            </CartProvider>
-          </AgentProvider>
+              </CartProvider>
+            </AgentProvider>
+          </OrdersProvider>
         </Web3Provider>
       </body>
     </html>

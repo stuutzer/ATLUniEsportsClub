@@ -128,10 +128,10 @@ export default function OrdersPage() {
               key={f.id}
               onClick={() => setFilter(f.id)}
               className={cn(
-                "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
+                "quarter-button px-3.5 py-1.5 text-xs",
                 active
-                  ? "border-sky-300/30 bg-sky-300/10 text-sky-100"
-                  : "border-white/[0.08] bg-white/[0.02] text-white/55 hover:bg-white/[0.05] hover:text-white"
+                  ? "bg-white/10 text-white"
+                  : "bg-white/[0.02] text-white/55"
               )}
             >
               {f.label}
@@ -152,7 +152,7 @@ export default function OrdersPage() {
           {orders.length === 0 && (
             <Link
               href="/agent"
-              className="mt-5 inline-block rounded-full border border-sky-300/25 bg-sky-300/10 px-5 py-2 text-sm font-medium text-sky-200 hover:bg-sky-300/15"
+              className="quarter-button mt-5 px-5 py-2"
             >
               Browse products
             </Link>
@@ -230,7 +230,7 @@ export default function OrdersPage() {
                   {order.status === "ready" && (
                     <button
                       onClick={() => handleMoveToCart(order)}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/25 bg-emerald-300/10 px-3 py-1.5 text-xs font-medium text-emerald-200 hover:bg-emerald-300/15"
+                      className="quarter-button px-3 py-1.5 text-xs"
                     >
                       <ShoppingCart className="h-3.5 w-3.5" />
                       Move to cart
@@ -240,7 +240,7 @@ export default function OrdersPage() {
                     <button
                       onClick={() => markReady(order.id)}
                       title="Demo: simulate the watch trigger firing"
-                      className="inline-flex items-center gap-1.5 rounded-full border border-sky-300/20 bg-sky-300/[0.06] px-3 py-1.5 text-xs font-medium text-sky-200/85 hover:bg-sky-300/10"
+                      className="quarter-button px-3 py-1.5 text-xs"
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       Mark ready
@@ -249,7 +249,7 @@ export default function OrdersPage() {
                   {isActive && (
                     <button
                       onClick={() => cancelOrder(order.id)}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-transparent px-3 py-1.5 text-xs font-medium text-white/55 hover:bg-white/[0.04] hover:text-rose-200"
+                      className="quarter-button px-3 py-1.5 text-xs"
                     >
                       <XCircle className="h-3.5 w-3.5" />
                       Cancel
@@ -258,7 +258,7 @@ export default function OrdersPage() {
                   {!isActive && (
                     <button
                       onClick={() => removeOrder(order.id)}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-transparent px-3 py-1.5 text-xs font-medium text-white/45 hover:bg-white/[0.04] hover:text-rose-200"
+                      className="quarter-button px-3 py-1.5 text-xs"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                       Remove

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from "react";
 import { useIdentity } from "@/context/IdentityContext";
+import { useOrders } from "@/context/OrdersContext";
 import { getAgentIdentityRoot } from "@/lib/demoIdentity";
 
 // Define the shape of a single transaction
@@ -43,6 +44,9 @@ interface AgentContextType {
   toggleAaveYield: () => void;
   yieldEarned: number;
   liveApy: number;
+  isYieldActive: boolean;
+  yieldReservedUsd: number;
+  yieldEligibleOrderCount: number;
   statusLabel: string;
   agentIdentity: string | null;
   setAgentIdentity: (label: string | null) => void;
@@ -59,7 +63,7 @@ const initialTransactions: Transaction[] = [
     type: "Agent Purchase",
     item: "MSI GeForce RTX 4090 24GB",
     amount: "-1,850.00",
-    token: "dNZD",
+    token: "AVAX",
     status: "Completed",
     hash: "0x8f4a2d1e9b3c7f06a5d8e2b4c9f1a3d7e8b2c5f9a4d1e6b3c8f2a5d9e1b4c7f3",
     isAgent: true,
@@ -70,7 +74,7 @@ const initialTransactions: Transaction[] = [
     type: "Utility Payment",
     item: "Mercury Energy Bill (Auto-paid)",
     amount: "-124.50",
-    token: "dNZD",
+    token: "AVAX",
     status: "Completed",
     hash: "0x2b7e9f3a1d4c8b5e2f6a9d3c7e1b4f8a2d5c9e3b6f1a4d7c2e5b8f3a6d1c4e9b",
     isAgent: true,
@@ -79,6 +83,7 @@ const initialTransactions: Transaction[] = [
 
 export function AgentProvider({ children }: { children: React.ReactNode }) {
   const { ensName } = useIdentity();
+  const { orders } = useOrders();
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   
   // Simulated Agent Budget (e.g., User authorized $5000 for the Agent to use)
@@ -88,6 +93,20 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   const [agentIdentity, setAgentIdentityState] = useState<string | null>(null);
   const liveApy = 5.2;
   const agentIdentityRoot = useMemo(() => getAgentIdentityRoot(ensName), [ensName]);
+  const yieldEligibleOrders = useMemo(
+    () => orders.filter((order) => order.type === "price-drop" && order.status === "pending"),
+    [orders]
+  );
+  const yieldEligibleOrderCount = yieldEligibleOrders.length;
+  const yieldReservedUsd = useMemo(
+    () =>
+      yieldEligibleOrders.reduce(
+        (sum, order) => sum + (order.targetPrice ?? order.product.price),
+        0
+      ),
+    [yieldEligibleOrders]
+  );
+  const isYieldActive = isAaveEnabled && yieldReservedUsd > 0;
 
   useEffect(() => {
     const saved = window.localStorage.getItem(AGENT_IDENTITY_STORAGE_KEY);
@@ -160,18 +179,20 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   }, [agentIdentityRoot]);
 
   useEffect(() => {
-    if (!isAaveEnabled) return;
+    if (!isYieldActive) return;
 
     const interval = window.setInterval(() => {
-      setYieldEarned((prev) => prev + 0.0015);
+      setYieldEarned((prev) => prev + Math.max(yieldReservedUsd * 0.0000015, 0.0015));
     }, 1000);
 
     return () => window.clearInterval(interval);
-  }, [isAaveEnabled]);
+  }, [isYieldActive, yieldReservedUsd]);
 
-  const statusLabel = isAaveEnabled
-    ? "Agent is optimizing your idle funds"
-    : "Idle funds stay in wallet until optimization is enabled";
+  const statusLabel = !isAaveEnabled
+    ? "Smart Yield is off. Reserved order funds stay idle."
+    : yieldEligibleOrderCount === 0
+    ? "Waiting for an active price-drop order before routing funds into Aave."
+    : `Optimizing $${yieldReservedUsd.toFixed(2)} reserved across ${yieldEligibleOrderCount} price-drop order${yieldEligibleOrderCount === 1 ? "" : "s"}.`;
 
   return (
     <AgentContext.Provider
@@ -183,6 +204,9 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
         toggleAaveYield,
         yieldEarned,
         liveApy,
+        isYieldActive,
+        yieldReservedUsd,
+        yieldEligibleOrderCount,
         statusLabel,
         agentIdentity,
         setAgentIdentity,

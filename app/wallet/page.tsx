@@ -3,20 +3,18 @@
 import { useState } from "react";
 import { useAccount, useBalance, useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
-import { avalanche, baseSepolia } from "wagmi/chains";
+import { avalanche } from "wagmi/chains";
 import { Wallet, LogOut, CheckCircle, Clock, ExternalLink, Bot, AlertCircle, Download, Loader2, Beaker } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAgent } from "@/context/AgentContext";
 import { useIdentity } from "@/context/IdentityContext";
 import { generateInvoiceData, buildFilename } from "@/lib/invoiceData";
 import { AVALANCHE_USDC_ADDRESS } from "@/lib/aave";
-
-const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
+import { DEMO_PAYMENT_CHAIN } from "@/lib/demoPayment";
 
 // Hackathon MVP only: Local mock price oracle for USD value calculation
 const MOCK_TOKEN_PRICES: Record<string, number> = {
   AVAX: 35.50,
-  dNZD: 0.6,
   USDC: 1,
   ETH: 3000.00,
 };
@@ -96,17 +94,16 @@ export default function WalletPage() {
     toggleAaveYield,
     yieldEarned,
     liveApy,
+    isYieldActive,
+    yieldReservedUsd,
+    yieldEligibleOrderCount,
     statusLabel,
     agentIdentity,
   } = useAgent();
 
   const { data: nativeBalance } = useBalance({
     address,
-  });
-  const { data: dnzdBalance } = useBalance({
-    address,
-    token: DNZD_CONTRACT_ADDRESS,
-    chainId: baseSepolia.id,
+    chainId: DEMO_PAYMENT_CHAIN.id,
   });
   const { data: usdcBalance } = useBalance({
     address,
@@ -194,7 +191,7 @@ export default function WalletPage() {
                 href="https://metamask.io/download/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-xl border border-white/[0.15] bg-sky-200 py-3 font-semibold text-[#06131d] transition-colors hover:bg-sky-100"
+                className="quarter-button rounded-xl py-3 font-semibold"
                 onClick={() => setShowInstallModal(false)}
               >
                 Install MetaMask
@@ -231,7 +228,7 @@ export default function WalletPage() {
         {isConnected ? (
           <button
             onClick={() => disconnect()}
-            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white text-sm py-2 px-4 rounded-full transition-all flex-shrink-0"
+            className="quarter-button flex-shrink-0 px-4 py-2"
           >
             <LogOut className="w-4 h-4" />
             Disconnect
@@ -240,7 +237,7 @@ export default function WalletPage() {
           <button
             onClick={handleConnect}
             disabled={isConnecting}
-            className="flex-shrink-0 rounded-full border border-white/[0.15] bg-sky-200 px-5 py-2.5 text-sm font-semibold text-[#06131d] shadow-[0_10px_28px_rgba(0,0,0,0.25)] transition-all hover:bg-sky-100 disabled:opacity-50"
+            className="quarter-button flex-shrink-0 px-5 py-2.5 font-semibold"
           >
             {isConnecting ? "Connecting…" : "Connect MetaMask"}
           </button>
@@ -254,7 +251,7 @@ export default function WalletPage() {
             <p className="text-xs text-white/30 uppercase tracking-widest">
               Balances
             </p>
-            {isAaveEnabled && (
+            {isYieldActive && (
               <p className="mt-2 text-xs font-medium text-emerald-400 animate-pulse">
                 Earning {liveApy.toFixed(1)}% APY via Aave...
               </p>
@@ -264,7 +261,7 @@ export default function WalletPage() {
             <div className="min-w-0">
               <p className="text-xs font-medium text-white/80">Smart Yield</p>
               <p className="text-[11px] text-white/35">
-                Idle USDC auto-deposits into Aave after 24h
+                Reserved price-drop funds auto-route into Aave while orders wait
               </p>
             </div>
             <Toggle checked={isAaveEnabled} onChange={toggleAaveYield} />
@@ -272,13 +269,12 @@ export default function WalletPage() {
         </div>
 
         {isConnected ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {renderBalanceCard(nativeBalance?.symbol ?? "Native", nativeBalance)}
-            {renderBalanceCard("dNZD", dnzdBalance)}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {renderBalanceCard("AVAX", nativeBalance)}
             {renderBalanceCard(
               "USDC",
               usdcBalance,
-              isAaveEnabled ? (
+              isYieldActive ? (
                 <span className="inline-flex items-center rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300 animate-pulse">
                   Earning {liveApy.toFixed(1)}% APY via Aave...
                 </span>
@@ -298,7 +294,7 @@ export default function WalletPage() {
             </div>
             <button
               onClick={handleConnect}
-              className="rounded-full border border-white/[0.15] bg-sky-200 px-5 py-2.5 text-sm font-semibold text-[#06131d] shadow-[0_10px_28px_rgba(0,0,0,0.25)] transition-all hover:bg-sky-100"
+              className="quarter-button px-5 py-2.5 font-semibold"
             >
               Connect Wallet
             </button>
@@ -309,7 +305,7 @@ export default function WalletPage() {
           <span
             className={cn(
               "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium",
-              isAaveEnabled
+              isYieldActive
                 ? "border border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
                 : "border border-white/[0.10] bg-white/[0.04] text-white/55"
             )}
@@ -319,14 +315,17 @@ export default function WalletPage() {
           <span className="text-xs text-white/35">
             Total Yield Earned: ${yieldEarned.toFixed(2)} USDC
           </span>
-          {isAaveEnabled ? (
+          <span className="text-xs text-white/35">
+            Reserved for yield: ${yieldReservedUsd.toFixed(2)} across {yieldEligibleOrderCount} waiting price-drop order{yieldEligibleOrderCount === 1 ? "" : "s"}
+          </span>
+          {isYieldActive ? (
             <span className="inline-flex items-center gap-1 text-xs text-emerald-300 animate-pulse">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Auto-routing idle capital into Aave vault strategy...
+              Auto-routing reserved order capital into Aave vault strategy...
             </span>
           ) : (
             <span className="text-xs text-white/35">
-              Yield engine paused. Accrued gains remain in wallet balance.
+              Accrued gains remain in wallet balance until the next eligible order starts earning.
             </span>
           )}
         </div>
@@ -342,7 +341,7 @@ export default function WalletPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={simulatePurchase}
-              className="flex items-center gap-1.5 text-xs text-sky-200/80 bg-sky-300/10 hover:bg-sky-300/15 px-2.5 py-1 rounded-md border border-sky-300/20 transition-colors"
+              className="quarter-button rounded-md px-2.5 py-1 text-xs"
               title="Add a synthetic transaction (no wallet needed) to test invoice generation"
             >
               <Beaker className="w-3.5 h-3.5" />
@@ -411,7 +410,7 @@ export default function WalletPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="text-white/20 hover:text-sky-200 transition-colors inline-flex items-center gap-1">
+                      <button className="inline-flex items-center gap-1 text-white/20 transition-colors hover:text-white/70">
                         <span
                           className={cn(
                             "text-xs",
@@ -428,7 +427,7 @@ export default function WalletPage() {
                         onClick={() => handleDownloadInvoice(tx)}
                         disabled={downloadingTx === tx.id}
                         title="Download Invoice"
-                        className="text-white/20 hover:text-sky-200 transition-colors inline-flex items-center justify-center disabled:opacity-40"
+                        className="inline-flex items-center justify-center text-white/20 transition-colors hover:text-white/70 disabled:opacity-40"
                       >
                         {downloadingTx === tx.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />

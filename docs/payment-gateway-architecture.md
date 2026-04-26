@@ -1,12 +1,12 @@
 # Crypto-to-Fiat Payment Gateway Architecture
 
-This design uses the MCP server as the backend orchestrator for cross-chain payment routing, Avalanche C-Chain settlement, and fiat off-ramping.
+This design uses the MCP server as the backend orchestrator for cross-chain payment routing, Avalanche settlement, and fiat off-ramping. The current app demo uses Avalanche Fuji Testnet test AVAX; this gateway document describes the production-style crypto-to-fiat route.
 
 ## Components
 
 1. **Frontend checkout**
    - Collects `orderId`, merchant payout profile, and the user's source asset (`BTC` on Bitcoin or `ETH` on Ethereum).
-   - Calls the MCP tool `create_cross_chain_quote` to get a route from the source asset into Avalanche C-Chain USDC.
+   - Calls the MCP tool `create_cross_chain_quote` to get a route from the source asset into Avalanche USDC.
    - Presents the cross-chain route, estimated fees, expiry, recipient contract, and settlement calldata to the user.
    - The user signs the source-chain transaction directly in their wallet.
 
@@ -48,7 +48,7 @@ Cross-chain router
   -> calls AvalanchePaymentEscrowRouter.payOrder(...)
 
 MCP monitor_avalanche_payment
-  -> polls PaymentRegistered(orderId) on Avalanche C-Chain
+  -> polls PaymentRegistered(orderId) on Avalanche
   <- paid amount, merchant, payer, tx hash
 
 MCP trigger_fiat_offramp
