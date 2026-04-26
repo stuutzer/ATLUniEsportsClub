@@ -15,6 +15,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { CredentialCard } from "@/components/credential-card";
+import { useAgent } from "@/context/AgentContext";
 import { useIdentity } from "@/context/IdentityContext";
 import {
   buildCredentialDraft,
@@ -557,6 +558,13 @@ function PermissionRow({
 
 export default function ProfilePage() {
   const { walletAddress, ensName, displayName, credential, setCredential } = useIdentity();
+  const {
+    isAaveEnabled,
+    liveApy,
+    yieldEarned,
+    statusLabel,
+    toggleAaveYield,
+  } = useAgent();
   const { signTypedDataAsync } = useSignTypedData();
 
   const [copied, setCopied] = useState(false);
@@ -772,6 +780,58 @@ export default function ProfilePage() {
             value={network}
             onChange={setNetwork}
           />
+        </SectionBlock>
+
+        <SectionBlock
+          label="Yield Optimization"
+          iconBg="bg-green-600/30"
+          icon={<ShieldCheck className="h-4 w-4 text-white" />}
+        >
+          <div className="px-4 pb-4 pt-2">
+            <div className="flex items-center justify-between gap-4 rounded-lg px-4 py-3 transition-[background-color,transform] duration-200 hover:translate-x-0.5 hover:bg-white/[0.03]">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-white/85">Smart Yield Toggle</p>
+                <p className="mt-0.5 text-xs text-white/30">
+                  Agent monitors idle USDC and sweeps funds into Aave after 24 hours of inactivity.
+                </p>
+              </div>
+              <Toggle checked={isAaveEnabled} onChange={toggleAaveYield} />
+            </div>
+
+            <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+                <p className="text-[11px] uppercase tracking-widest text-white/30">
+                  Total Yield Earned
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-white">
+                  ${yieldEarned.toFixed(2)} USDC
+                </p>
+                <p className="mt-1 text-xs text-white/30">
+                  Agent-generated carry from idle capital while waiting for purchase execution.
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+                <p className="text-[11px] uppercase tracking-widest text-white/30">
+                  Live APY
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-emerald-300">
+                  {liveApy.toFixed(2)}% APY
+                </p>
+                <p className="mt-1 text-xs text-white/30">
+                  Current strategy target for idle USDC routed into Aave.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-emerald-400/15 bg-emerald-400/[0.05] px-4 py-3">
+              <span className="inline-flex items-center rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[11px] font-medium text-emerald-300">
+                {statusLabel}
+              </span>
+              <p className="text-xs text-white/40">
+                When your GPU target finally hits, the Agent can pull liquidity back before checkout.
+              </p>
+            </div>
+          </div>
         </SectionBlock>
 
         <SectionBlock

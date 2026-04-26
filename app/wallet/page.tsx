@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount, useConnect, useDisconnect, useBalance } from "wagmi";
+import { useAccount, useBalance, useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
-import { baseSepolia } from "wagmi/chains";
+import { avalanche, baseSepolia } from "wagmi/chains";
 import { Wallet, LogOut, CheckCircle, Clock, ExternalLink, Bot, AlertCircle, Download, Loader2, Beaker } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAgent } from "@/context/AgentContext";
 import { useIdentity } from "@/context/IdentityContext";
 import { generateInvoiceData, buildFilename } from "@/lib/invoiceData";
+import { AVALANCHE_USDC_ADDRESS } from "@/lib/aave";
 
 const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
 
@@ -16,9 +17,36 @@ const DNZD_CONTRACT_ADDRESS = "0x63ee4b77d3912dc7bce711c3be7bf12d532f1853";
 const MOCK_TOKEN_PRICES: Record<string, number> = {
   AVAX: 35.50,
   dNZD: 0.6,
+  USDC: 1,
   ETH: 3000.00,
 };
 
+function Toggle({ checked, onChange, disabled = false }: { checked: boolean; onChange: () => void; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={onChange}
+      className={cn(
+        "group relative h-5 w-9 flex-shrink-0 rounded-full transition-[background-color,box-shadow,transform] duration-300",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]",
+        "active:scale-95 disabled:cursor-not-allowed disabled:opacity-50",
+        checked
+          ? "bg-emerald-400 shadow-[0_0_18px_rgba(74,222,128,0.22)]"
+          : "bg-white/10 hover:bg-white/[0.16]"
+      )}
+    >
+      <span
+        className={cn(
+          "absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform duration-300",
+          checked && "translate-x-4"
+        )}
+      />
+    </button>
+  );
+}
 
 export default function WalletPage() {
   const { displayName } = useIdentity();
@@ -57,7 +85,15 @@ export default function WalletPage() {
   const { connect, isPending: isConnecting } = useConnect();
   const { disconnect } = useDisconnect();
 
-  const { transactions, executeAgentPurchase } = useAgent();
+  const {
+    transactions,
+    executeAgentPurchase,
+    isAaveEnabled,
+    toggleAaveYield,
+    yieldEarned,
+    liveApy,
+    statusLabel,
+  } = useAgent();
 
   const { data: nativeBalance } = useBalance({
     address,
@@ -66,6 +102,11 @@ export default function WalletPage() {
     address,
     token: DNZD_CONTRACT_ADDRESS,
     chainId: baseSepolia.id,
+  });
+  const { data: usdcBalance } = useBalance({
+    address,
+    token: AVALANCHE_USDC_ADDRESS,
+    chainId: avalanche.id,
   });
 
   function simulatePurchase() {
@@ -85,13 +126,19 @@ export default function WalletPage() {
     executeAgentPurchase(item, price, "AVAX", fakeHash);
   }
 
-  const renderBalanceCard = (fallbackSymbol: string, balanceData?: { formatted: string, symbol: string }) => {
+  const renderBalanceCard = (
+    fallbackSymbol: string,
+    balanceData?: { formatted: string, symbol: string },
+    statusNode?: React.ReactNode
+  ) => {
     const amount = balanceData ? Number(balanceData.formatted) : 0;
     const actualSymbol = balanceData?.symbol || fallbackSymbol;
+    const effectiveAmount =
+      actualSymbol === "USDC" ? amount + yieldEarned : amount;
     const price = MOCK_TOKEN_PRICES[actualSymbol] || 1.00;
-    const usdValue = amount * price;
+    const usdValue = effectiveAmount * price;
     const formattedAmount = actualSymbol.includes("USD") || actualSymbol.includes("NZD")
-      ? amount.toFixed(2)
+      ? effectiveAmount.toFixed(2)
       : amount.toFixed(4);
 
     return (
@@ -99,9 +146,12 @@ export default function WalletPage() {
         key={fallbackSymbol}
         className="rounded-xl bg-[#141414] border border-white/[0.07] p-6 relative overflow-hidden group hover:border-sky-200/20 transition-colors"
       >
-        <p className="text-xs text-white/30 uppercase tracking-widest mb-4">
-          {actualSymbol}
-        </p>
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <p className="text-xs text-white/30 uppercase tracking-widest">
+            {actualSymbol}
+          </p>
+          {statusNode}
+        </div>
         <p className="text-white font-bold text-3xl mb-1">
           {formattedAmount}{" "}
           <span className="text-lg text-white/40 font-normal">{actualSymbol}</span>
@@ -194,18 +244,41 @@ export default function WalletPage() {
 
       {/* ── Balances Panel ───────────────────────────────────────────────── */}
       <div className="rounded-xl bg-[#141414] border border-white/[0.07] p-6 mb-4">
-        <p className="text-xs text-white/30 uppercase tracking-widest mb-4">
-          Balances
-        </p>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-xs text-white/30 uppercase tracking-widest">
+              Balances
+            </p>
+            {isAaveEnabled && (
+              <p className="mt-2 text-xs font-medium text-emerald-400 animate-pulse">
+                Earning {liveApy.toFixed(1)}% APY via Aave...
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-3 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-2">
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-white/80">Smart Yield</p>
+              <p className="text-[11px] text-white/35">
+                Idle USDC auto-deposits into Aave after 24h
+              </p>
+            </div>
+            <Toggle checked={isAaveEnabled} onChange={toggleAaveYield} />
+          </div>
+        </div>
 
         {isConnected ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {renderBalanceCard(nativeBalance?.symbol ?? "Native", nativeBalance)}
             {renderBalanceCard("dNZD", dnzdBalance)}
-
-            <div className="rounded-xl bg-white/[0.02] border border-white/[0.07] border-dashed p-5 flex flex-col items-center justify-center text-white/20 hover:border-white/20 transition-colors cursor-pointer">
-              <span className="text-xs uppercase tracking-widest">+ Add Token</span>
-            </div>
+            {renderBalanceCard(
+              "USDC",
+              usdcBalance,
+              isAaveEnabled ? (
+                <span className="inline-flex items-center rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300 animate-pulse">
+                  Earning {liveApy.toFixed(1)}% APY via Aave...
+                </span>
+              ) : undefined
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center text-center py-8 gap-4">
@@ -226,6 +299,32 @@ export default function WalletPage() {
             </button>
           </div>
         )}
+
+        <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-white/[0.07] pt-4">
+          <span
+            className={cn(
+              "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium",
+              isAaveEnabled
+                ? "border border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
+                : "border border-white/[0.10] bg-white/[0.04] text-white/55"
+            )}
+          >
+            {statusLabel}
+          </span>
+          <span className="text-xs text-white/35">
+            Total Yield Earned: ${yieldEarned.toFixed(2)} USDC
+          </span>
+          {isAaveEnabled ? (
+            <span className="inline-flex items-center gap-1 text-xs text-emerald-300 animate-pulse">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              Auto-routing idle capital into Aave vault strategy...
+            </span>
+          ) : (
+            <span className="text-xs text-white/35">
+              Yield engine paused. Accrued gains remain in wallet balance.
+            </span>
+          )}
+        </div>
       </div>
 
       {/* ── Transaction History Panel ────────────────────────────────────── */}
