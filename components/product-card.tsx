@@ -29,6 +29,11 @@ const tokenStyles: Record<
     markClass: "bg-emerald-400/10 text-emerald-200 ring-emerald-300/25",
     textClass: "text-emerald-100",
   },
+  Fiat: {
+    mark: "$",
+    markClass: "bg-amber-300/10 text-amber-100 ring-amber-200/25",
+    textClass: "text-amber-100",
+  },
 };
 
 interface ProductCardProps {
@@ -144,8 +149,9 @@ export function ProductCard({ product, recommendation }: ProductCardProps) {
     product.name === "Neural Pro Keyboard"
       ? 261.99
       : recommendation?.totalUsd ?? subtotalUsd + shippingUsd;
-  const acceptedTokens =
-    product.name === "Neural Pro Keyboard"
+  const acceptedTokens = product.requiresFiatExchange
+    ? (["Fiat"] as const)
+    : product.name === "Neural Pro Keyboard"
       ? (["ETH", "AVAX", "USDC"] as const)
       : product.acceptedCrypto;
   const supportedChains = getSupportedChains(product, recommendation);
